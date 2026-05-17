@@ -1,5 +1,6 @@
 import * as splash from "./screens/splash.js";
 import * as map from "./screens/map.js";
+import * as add from "./screens/add.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -21,11 +22,19 @@ const router = {
     } else if (name === "map") {
       this.current = map.mount(stage, {}, this);
     } else if (name === "level") {
-      const div = document.createElement("div");
-      div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
-      div.textContent = `Level placeholder: ${ctx.world} L${ctx.level} — replaced in Tasks 26-29.`;
-      stage.appendChild(div);
-      this.current = () => div.remove();
+      if (ctx.world === "add") {
+        this.current = add.mount(stage, ctx, this);
+      } else {
+        const div = document.createElement("div");
+        div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
+        div.textContent = `Level placeholder: ${ctx.world} L${ctx.level} — replaced in Tasks 27-29.`;
+        stage.appendChild(div);
+        this.current = () => div.remove();
+      }
+    } else if (name === "complete") {
+      alert(`LEVEL COMPLETE! Wrong drops: ${ctx.wrongCount}. (Complete screen in Task 30.)`);
+      this.current = null;
+      this.go("map");
     } else if (name === "settings") {
       alert("Settings — Task 33");
     }
