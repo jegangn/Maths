@@ -1,6 +1,7 @@
 import * as splash from "./screens/splash.js";
 import * as map from "./screens/map.js";
 import * as add from "./screens/add.js";
+import * as sub from "./screens/sub.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -24,6 +25,8 @@ const router = {
     } else if (name === "level") {
       if (ctx.world === "add") {
         this.current = add.mount(stage, ctx, this);
+      } else if (ctx.world === "sub") {
+        this.current = sub.mount(stage, ctx, this);
       } else {
         const div = document.createElement("div");
         div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
