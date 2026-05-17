@@ -106,7 +106,7 @@ export function flyCarry(carrySlotEl, fromEl) {
   });
 }
 
-// ===== TASK 18: Borrow Animation =====
+// ===== TASK 18: Borrow Animation (descent with strikethrough and chip drop) =====
 
 export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue }) {
   return new Promise((resolve) => {
