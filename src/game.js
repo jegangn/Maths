@@ -1,3 +1,4 @@
+import { loadProgress } from "./logic.js";
 import * as splash from "./screens/splash.js";
 import * as map from "./screens/map.js";
 import * as add from "./screens/add.js";
@@ -5,6 +6,7 @@ import * as sub from "./screens/sub.js";
 import * as multTap from "./screens/mult-tap.js";
 import * as multDrag from "./screens/mult-drag.js";
 import * as complete from "./screens/complete.js";
+import * as settings from "./screens/settings.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -17,36 +19,39 @@ window.addEventListener("resize", fitStage);
 window.addEventListener("orientationchange", fitStage);
 fitStage();
 
+const state = { progress: loadProgress() };
+
 const router = {
   current: null,
   go(name, ctx = {}) {
     if (this.current) this.current();
-    if (name === "splash") {
-      this.current = splash.mount(stage, {}, this);
-    } else if (name === "map") {
-      this.current = map.mount(stage, {}, this);
-    } else if (name === "level") {
-      if (ctx.world === "add") {
-        this.current = add.mount(stage, ctx, this);
-      } else if (ctx.world === "sub") {
-        this.current = sub.mount(stage, ctx, this);
-      } else if (ctx.world === "mult" && ctx.level <= 3) {
-        this.current = multTap.mount(stage, ctx, this);
-      } else if (ctx.world === "mult" && ctx.level >= 4) {
-        this.current = multDrag.mount(stage, ctx, this);
-      } else {
-        const div = document.createElement("div");
-        div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
-        div.textContent = `Level placeholder: ${ctx.world} L${ctx.level} — replaced in Tasks 27-29.`;
-        stage.appendChild(div);
-        this.current = () => div.remove();
-      }
-    } else if (name === "complete") {
-      this.current = complete.mount(stage, ctx, this);
-    } else if (name === "settings") {
-      alert("Settings — Task 33");
+    let unmount;
+    switch (name) {
+      case "splash":
+        unmount = splash.mount(stage, state, this);
+        break;
+      case "map":
+        state.progress = loadProgress();
+        unmount = map.mount(stage, state, this);
+        break;
+      case "level":
+        if (ctx.world === "add") unmount = add.mount(stage, ctx, this);
+        else if (ctx.world === "sub") unmount = sub.mount(stage, ctx, this);
+        else if (ctx.world === "mult" && ctx.level <= 3) unmount = multTap.mount(stage, ctx, this);
+        else if (ctx.world === "mult" && ctx.level >= 4) unmount = multDrag.mount(stage, ctx, this);
+        break;
+      case "complete":
+        unmount = complete.mount(stage, ctx, this);
+        break;
+      case "settings":
+        unmount = settings.mount(stage, state, this);
+        break;
+      default:
+        console.warn("Unknown route:", name);
     }
-  }
+    this.current = unmount;
+  },
 };
 
 router.go("splash");
+window.__router = router;
