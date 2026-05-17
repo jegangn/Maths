@@ -3,6 +3,7 @@ import * as map from "./screens/map.js";
 import * as add from "./screens/add.js";
 import * as sub from "./screens/sub.js";
 import * as multTap from "./screens/mult-tap.js";
+import * as multDrag from "./screens/mult-drag.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -30,6 +31,8 @@ const router = {
         this.current = sub.mount(stage, ctx, this);
       } else if (ctx.world === "mult" && ctx.level <= 3) {
         this.current = multTap.mount(stage, ctx, this);
+      } else if (ctx.world === "mult" && ctx.level >= 4) {
+        this.current = multDrag.mount(stage, ctx, this);
       } else {
         const div = document.createElement("div");
         div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
