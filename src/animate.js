@@ -196,7 +196,7 @@ export function blockFlyIn(blocks) {
   });
 }
 
-// ===== TASK 20: Star Reveal Animation =====
+// ===== TASK 20: Star Reveal with Escalating Ding =====
 
 export function revealStars(starEls, earnedCount) {
   const delays = [400, 1100, 1900];
