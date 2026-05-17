@@ -141,12 +141,12 @@ export function mount(stage, ctx, router) {
           });
           trayWrongOnCurrentSlot = 0;
           syncTrayDim();
+          renderTray();
+          setupDrag();
+          attachTileListeners();
         } else {
           await advanceProblem();
         }
-        renderTray();
-        setupDrag();
-        attachTileListeners();
       },
     });
     attachTileListeners();
@@ -183,7 +183,11 @@ export function mount(stage, ctx, router) {
     }
     sfx.transition();
     setTimeout(() => {
-      renderProblem().then(() => attachTileListeners());
+      renderProblem().then(() => {
+        renderTray();
+        setupDrag();
+        attachTileListeners();
+      });
     }, 500);
   }
 
