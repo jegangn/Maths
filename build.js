@@ -6,7 +6,7 @@ const SRC = "src";
 const OUT = "dist";
 mkdirSync(OUT, { recursive: true });
 
-const bundled = spawnSync("npx", ["esbuild", "src/game.js", "--bundle", "--format=iife", "--target=es2020"], {
+const bundled = spawnSync("bunx", ["esbuild", "src/game.js", "--bundle", "--format=iife", "--target=es2020"], {
   encoding: "utf8",
   shell: true,
 });
