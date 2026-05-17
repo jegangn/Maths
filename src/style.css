@@ -117,3 +117,69 @@ html, body {
   50% { transform: rotate(-5deg); }
   75% { transform: rotate(3deg); }
 }
+
+.block-host {
+  width: 96px; height: 96px;
+  display: inline-block;
+  cursor: grab;
+  transition: transform .2s var(--ease-pop);
+  filter: drop-shadow(0 4px 0 rgba(120,70,20,0.25));
+}
+.block-host.idle-wobble { animation: blockWobble 2s ease-in-out infinite; }
+@keyframes blockWobble { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+.block-host.untapped { opacity: .55; filter: none; }
+.block-host.tapped   { opacity: 1; animation: blockPop .35s var(--ease-pop); }
+.block-host.dragging { transform: scale(1.15); animation: none; z-index: 200; cursor: grabbing; }
+.block-host.in-group { transform: scale(1); animation: none; }
+@keyframes blockPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.4); }
+  100% { transform: scale(1.05); }
+}
+
+.block-host .glow circle { transition: opacity .35s var(--ease-pop); }
+.block-host.tapped .glow circle { opacity: .7; }
+
+.count-badge {
+  position: absolute;
+  width: 32px; height: 32px;
+  background: #fff;
+  border: 3px solid var(--ink);
+  border-radius: var(--r-pill);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Lilita One', system-ui; font-size: 22px; color: var(--ink);
+  transform: scale(0); transition: transform .25s var(--ease-pop);
+  pointer-events: none;
+}
+.count-badge.show { transform: scale(1); }
+
+.group-tray {
+  width: 320px; height: 280px;
+  border-radius: var(--r-xl);
+  background: var(--bg-card);
+  border: 5px dashed var(--world-accent);
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 12px; padding: 24px 24px 56px;
+  transition: border-color .4s var(--ease-soft), box-shadow .4s var(--ease-soft);
+}
+.group-tray .ghost {
+  width: 96px; height: 96px;
+  border: 3px dashed var(--ink-soft);
+  border-radius: var(--r-pill);
+  opacity: .3;
+  justify-self: center; align-self: center;
+}
+.group-tray .count-chip {
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 22px;
+  background: var(--bg-card); padding: 4px 12px; border-radius: var(--r-pill);
+  border: 2px solid var(--ink); color: var(--ink);
+}
+.group-tray.full {
+  border-style: solid; border-color: var(--success-deep);
+  box-shadow: 0 0 0 6px rgba(74,214,109,.25);
+}
+.group-tray.full .count-chip { background: var(--star); font-family: 'Lilita One', system-ui; font-size: 28px; }
