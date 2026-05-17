@@ -110,3 +110,51 @@ test("analyze: subtraction with borrow", () => {
     borrowedOnes: 12,
   });
 });
+
+import { createAnswerState, dropDigit, isComplete } from "../src/logic.js";
+
+test("answer state for 2-digit answer: ones is active first", () => {
+  const s = createAnswerState(15);
+  expect(s.slots).toEqual([null, null]);
+  expect(s.activeIndex).toBe(1);
+});
+
+test("answer state for 1-digit answer: single slot", () => {
+  const s = createAnswerState(8);
+  expect(s.slots).toEqual([null]);
+  expect(s.activeIndex).toBe(0);
+});
+
+test("dropping correct ones digit advances to tens", () => {
+  let s = createAnswerState(21);
+  s = dropDigit(s, 1);
+  expect(s.slots).toEqual([null, 1]);
+  expect(s.activeIndex).toBe(0);
+  expect(s.lastDropCorrect).toBe(true);
+});
+
+test("dropping wrong digit rejects and increments wrongCount", () => {
+  let s = createAnswerState(21);
+  s = dropDigit(s, 7);
+  expect(s.slots).toEqual([null, null]);
+  expect(s.activeIndex).toBe(1);
+  expect(s.lastDropCorrect).toBe(false);
+  expect(s.wrongCount).toBe(1);
+});
+
+test("dropping on inactive slot is rejected", () => {
+  let s = createAnswerState(21);
+  s = dropDigit(s, 2, 0);
+  expect(s.slots).toEqual([null, null]);
+  expect(s.lastDropCorrect).toBe(false);
+  expect(s.wrongCount).toBe(1);
+});
+
+test("isComplete returns true only when all slots filled", () => {
+  let s = createAnswerState(21);
+  expect(isComplete(s)).toBe(false);
+  s = dropDigit(s, 1);
+  expect(isComplete(s)).toBe(false);
+  s = dropDigit(s, 2);
+  expect(isComplete(s)).toBe(true);
+});

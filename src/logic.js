@@ -62,3 +62,37 @@ export function analyze(p) {
   }
   return { aTens, aOnes, bTens, bOnes, answerTens, answerOnes };
 }
+
+export function createAnswerState(answer) {
+  const digits = answer < 10 ? [answer] : [Math.floor(answer / 10), answer % 10];
+  const slots = digits.map(() => null);
+  return {
+    expected: digits,
+    slots,
+    activeIndex: slots.length - 1,
+    wrongCount: 0,
+    lastDropCorrect: null,
+  };
+}
+
+export function dropDigit(state, digit, targetIndex = state.activeIndex) {
+  if (targetIndex !== state.activeIndex || state.slots[targetIndex] !== null) {
+    return { ...state, lastDropCorrect: false, wrongCount: state.wrongCount + 1 };
+  }
+  if (digit !== state.expected[targetIndex]) {
+    return { ...state, lastDropCorrect: false, wrongCount: state.wrongCount + 1 };
+  }
+  const slots = state.slots.slice();
+  slots[targetIndex] = digit;
+  const nextActive = targetIndex - 1;
+  return {
+    ...state,
+    slots,
+    activeIndex: nextActive >= 0 ? nextActive : -1,
+    lastDropCorrect: true,
+  };
+}
+
+export function isComplete(state) {
+  return state.slots.every((s) => s !== null);
+}
