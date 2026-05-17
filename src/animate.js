@@ -164,7 +164,7 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
   });
 }
 
-// ===== TASK 19: Block Tap-Count + Fly-In =====
+// ===== TASK 19: Block Tap-Count Badge + Fly-In Animation =====
 
 export function tapBlock(blockEl, count) {
   blockEl.classList.remove("untapped");
