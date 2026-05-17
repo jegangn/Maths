@@ -1,1 +1,66 @@
-/* design tokens added in Task 7 */
+:root {
+  --bg-paper: #FFF3DC;
+  --bg-card: #FFFAF0;
+  --ink: #2A1B0A;
+  --ink-soft: #6A4B28;
+  --success: #4AD66D;
+  --success-deep: #1F8A3E;
+  --gentle-no: #FF7A40;
+  --star: #FFC83A;
+  --star-glow: #FFF1A8;
+  --lock: #A89878;
+
+  --world-primary: #FFB933;
+  --world-accent: #FF7A40;
+  --world-sky: #7DD2F0;
+  --world-ground: #4AAE3F;
+
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
+  --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
+  --s-9: 96px; --s-10: 128px; --s-11: 160px;
+
+  --r-sm: 12px; --r-md: 20px; --r-lg: 32px; --r-xl: 48px; --r-pill: 9999px;
+
+  --sh-1: 0 3px 0 #C8985A, 0 4px 10px rgba(120,70,20,.18);
+  --sh-2: 0 6px 0 #B07A40, 0 8px 18px rgba(120,70,20,.24);
+  --sh-3: 0 8px 0 #B07A40, 0 14px 26px rgba(120,70,20,.28);
+  --sh-pressed: 0 2px 0 #B07A40, 0 3px 6px rgba(120,70,20,.2);
+
+  --ease-pop: cubic-bezier(0.34, 1.6, 0.5, 1);
+  --ease-soft: cubic-bezier(0.45, 0.05, 0.25, 1);
+  --ease-snap: cubic-bezier(0.25, 0.9, 0.3, 1.4);
+  --ease-elastic: cubic-bezier(0.7, -0.5, 0.3, 1.5);
+  --ease-arc: cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+#stage[data-world="add"]  { --world-primary:#FFB933; --world-accent:#FF7A40; --world-sky:#7DD2F0; --world-ground:#4AAE3F; }
+#stage[data-world="sub"]  { --world-primary:#3DC5C5; --world-accent:#4A9EFF; --world-sky:#A8E5E5; --world-ground:#5FAF9A; }
+#stage[data-world="mult"] { --world-primary:#E89A2A; --world-accent:#7AB344; --world-sky:#F8D27A; --world-ground:#8A6A2E; }
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%; overflow: hidden;
+  background: var(--bg-paper); color: var(--ink);
+  font-family: 'Nunito', 'Avenir Next', system-ui, sans-serif;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+#viewport {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+#stage {
+  position: relative;
+  width: 1280px; height: 800px;
+  transform-origin: center center;
+  background: var(--world-sky);
+  overflow: hidden;
+}
+
+.screen { position: absolute; inset: 0; display: none; }
+.screen.active { display: block; }
+.display { font-family: 'Lilita One', 'Bungee', system-ui; font-weight: 400; }
