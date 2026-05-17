@@ -579,3 +579,20 @@ html, body {
   display: flex; gap: 24px;
 }
 .confetti-host { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+/* ===== TASK 33: Settings Panel with Parent Gate ===== */
+#screen-settings { background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; }
+.parent-gate-card, .settings-card {
+  background: var(--bg-card);
+  border: 5px solid var(--ink);
+  border-radius: var(--r-lg);
+  padding: 48px 64px; text-align: center;
+  min-width: 600px; box-shadow: var(--sh-3);
+}
+.parent-gate-card h2, .settings-card h2 { font-size: 48px; margin: 0 0 24px; }
+.parent-gate-card p { font-size: 28px; margin: 0 0 24px; font-weight: 700; }
+.pg-buttons { display: flex; gap: 16px; justify-content: center; }
+.pg-buttons .btn { min-width: 120px; height: 90px; font-size: 48px; }
+.pg-error { margin-top: 16px; color: var(--gentle-no); font-weight: 900; }
+.pg-error.hidden { display: none; }
+.settings-card .btn { display: block; margin: 16px auto; min-width: 400px; }
