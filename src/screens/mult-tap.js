@@ -132,11 +132,16 @@ export function mount(stage, ctx, router) {
   }
 
   function syncTrayDim() {
-    const expected = state.expected[state.activeIndex];
     sec.querySelectorAll(".tile").forEach((tile) => {
       tile.classList.remove("dim", "hint-dim", "hint-target");
-      if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
     });
+    // Only dim when working on the tens column (ones already filled)
+    if (state.slots.length === 2 && state.activeIndex === 0) {
+      const expected = state.expected[state.activeIndex];
+      sec.querySelectorAll(".tile").forEach((tile) => {
+        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+      });
+    }
   }
 
   function applyHint() {

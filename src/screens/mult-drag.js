@@ -164,19 +164,19 @@ export function mount(stage, ctx, router) {
           const tray = target.el;
           const ghosts = tray.querySelectorAll(".ghost");
           const slot = ghosts[gc.filled];
-          const slotRect = slot.getBoundingClientRect();
           sourceEl.classList.remove("dragging", "idle-wobble");
           sourceEl.classList.add("in-group");
           sourceEl.style.position = "absolute";
-          sourceEl.style.left = `${slotRect.left}px`;
-          sourceEl.style.top = `${slotRect.top}px`;
+          sourceEl.style.left = `${slot.offsetLeft}px`;
+          sourceEl.style.top = `${slot.offsetTop}px`;
           tray.appendChild(sourceEl);
           gc.filled++;
           tray.querySelector(".count-chip").textContent = `${gc.filled} / ${gc.needed}`;
-          sfx.trayFull();
+          sfx.tilePickup();
           if (gc.filled === gc.needed) {
             tray.classList.add("full");
             tray.querySelector(".count-chip").textContent = `★ ${gc.needed}`;
+            sfx.trayFull();
           }
           if (groupContents.every((g) => g.filled === g.needed)) {
             setTimeout(showAnswerPhase, 800);
@@ -220,11 +220,16 @@ export function mount(stage, ctx, router) {
   }
 
   function syncTrayDim() {
-    const expected = state.expected[state.activeIndex];
     sec.querySelectorAll(".tile").forEach((tile) => {
       tile.classList.remove("dim", "hint-dim", "hint-target");
-      if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
     });
+    // Only dim when working on the tens column (ones already filled)
+    if (state.slots.length === 2 && state.activeIndex === 0) {
+      const expected = state.expected[state.activeIndex];
+      sec.querySelectorAll(".tile").forEach((tile) => {
+        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+      });
+    }
   }
 
   function applyHint() {
