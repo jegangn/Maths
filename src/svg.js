@@ -123,3 +123,48 @@ export const firefly = (state = "default") => `
     <circle cx="52" cy="48" r="3" fill="#2A1B0A"/>
   </g>
 </svg>`;
+
+export const star = (filled = true) => `
+<svg viewBox="0 0 80 80" class="star ${filled ? 'filled' : 'empty'}">
+  <path d="M40,6 L49,29 L73,32 L55,49 L60,73 L40,61 L20,73 L25,49 L7,32 L31,29 Z"
+        fill="${filled ? '#FFC83A' : 'transparent'}"
+        stroke="#2A1B0A" stroke-width="3" stroke-linejoin="round"
+        opacity="${filled ? 1 : 0.35}"/>
+</svg>`;
+
+export const padlock = () => `
+<svg viewBox="0 0 48 48" class="padlock">
+  <g class="shackle"><path d="M14,22 v-6 a10,10 0 0 1 20,0 v6" stroke="#5C4A2A" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+  <g class="body">
+    <rect x="9" y="20" width="30" height="22" rx="4" fill="#8A6A4A" stroke="#2A1B0A" stroke-width="2"/>
+    <circle cx="24" cy="30" r="3" fill="#2A1B0A"/>
+    <rect x="22" y="30" width="4" height="8" fill="#2A1B0A"/>
+  </g>
+</svg>`;
+
+export const lilypad = (tint = "var(--world-sky)") => `
+<svg viewBox="0 0 320 280" class="lilypad" preserveAspectRatio="none">
+  <ellipse cx="160" cy="140" rx="150" ry="120" fill="${tint}" stroke="#6A4A28" stroke-width="3" opacity=".95"/>
+</svg>`;
+
+export const leaf = (rot = 0) => `
+<svg viewBox="0 0 60 100" class="leaf" style="transform:rotate(${rot}deg)">
+  <path d="M30,5 q25,40 0,90 q-25,-50 0,-90 z" fill="#4AAE3F" stroke="#2A1B0A" stroke-width="2"/>
+  <path d="M30,15 v75" stroke="#2A1B0A" stroke-width="1.5" fill="none"/>
+</svg>`;
+
+export const confettiShape = (kind = "rect", color = "#FFC83A") => {
+  const shapes = {
+    rect:   `<rect x="-6" y="-3" width="12" height="6" fill="${color}"/>`,
+    tear:   `<path d="M0,-8 q6,5 0,16 q-6,-11 0,-16 z" fill="${color}"/>`,
+    circle: `<circle cx="0" cy="0" r="5" fill="${color}"/>`,
+    zig:    `<polyline points="-6,-3 -2,3 2,-3 6,3" stroke="${color}" stroke-width="3" fill="none"/>`,
+  };
+  return `<svg viewBox="-10 -10 20 20" class="confetti">${shapes[kind] || shapes.rect}</svg>`;
+};
+
+export const home = () => `
+<svg viewBox="0 0 48 48" class="icon home"><path d="M24,6 L42,22 V42 H30 V28 H18 V42 H6 V22 Z" fill="none" stroke="#2A1B0A" stroke-width="4" stroke-linejoin="round"/></svg>`;
+
+export const cog = () => `
+<svg viewBox="0 0 48 48" class="icon cog"><g fill="none" stroke="#6A4B28" stroke-width="3"><circle cx="24" cy="24" r="6"/><path d="M24,4 v6 M24,38 v6 M4,24 h6 M38,24 h6 M10,10 l4,4 M34,34 l4,4 M10,38 l4,-4 M34,14 l4,-4"/></g></svg>`;
