@@ -12,6 +12,7 @@ export function mount(stage, ctx, router) {
   let totalWrong = 0;
   let state = null;
   let dragMgr = null;
+  let trayWrongOnCurrentSlot = 0;
   const groupContents = [];
 
   const sec = document.createElement("section");
@@ -76,6 +77,7 @@ export function mount(stage, ctx, router) {
   }
 
   function renderProblem() {
+    trayWrongOnCurrentSlot = 0;
     const p = problems[idx];
     state = createAnswerState(p.answer);
     groupContents.length = 0;
@@ -185,7 +187,12 @@ export function mount(stage, ctx, router) {
           const next = dropDigit(state, payload.digit, slotIndex);
           if (!next.lastDropCorrect) {
             totalWrong++; state = next;
-            return tileBounceBack(sourceEl, origin);
+            trayWrongOnCurrentSlot++;
+            await tileBounceBack(sourceEl, origin);
+            target.el.classList.add("flash-no");
+            setTimeout(() => target.el.classList.remove("flash-no"), 200);
+            if (trayWrongOnCurrentSlot >= 2) applyHint();
+            return;
           }
           state = next;
           await tileSnapIn(sourceEl, target.el);
@@ -204,10 +211,33 @@ export function mount(stage, ctx, router) {
               if (i === state.activeIndex) el.classList.add("active");
               else if (!el.classList.contains("filled")) el.classList.add("inactive");
             });
+            trayWrongOnCurrentSlot = 0;
+            syncTrayDim();
           }
         }
       },
     });
+  }
+
+  function syncTrayDim() {
+    const expected = state.expected[state.activeIndex];
+    sec.querySelectorAll(".tile").forEach((tile) => {
+      tile.classList.remove("dim", "hint-dim", "hint-target");
+      if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+    });
+  }
+
+  function applyHint() {
+    const expected = state.expected[state.activeIndex];
+    sec.querySelectorAll(".tile").forEach((tile) => {
+      if (parseInt(tile.dataset.digit, 10) === expected) {
+        tile.classList.remove("dim");
+        tile.classList.add("hint-target");
+      } else {
+        tile.classList.add("hint-dim");
+      }
+    });
+    sfx.hintHmm();
   }
 
   function showAnswerPhase() {
@@ -238,6 +268,7 @@ export function mount(stage, ctx, router) {
       t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", digit: n });
       digitTray.appendChild(t);
     }
+    syncTrayDim();
   }
 
   stage.appendChild(sec);

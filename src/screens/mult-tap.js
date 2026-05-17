@@ -14,6 +14,7 @@ export function mount(stage, ctx, router) {
   let dragMgr = null;
   let globalCount = 0;
   let tappedSet = new Set();
+  let trayWrongOnCurrentSlot = 0;
 
   const sec = document.createElement("section");
   sec.className = "screen active";
@@ -48,6 +49,7 @@ export function mount(stage, ctx, router) {
   }
 
   function renderProblem() {
+    trayWrongOnCurrentSlot = 0;
     const p = problems[idx];
     state = createAnswerState(p.answer);
     globalCount = 0;
@@ -125,7 +127,29 @@ export function mount(stage, ctx, router) {
       t.textContent = String(n);
       tray.appendChild(t);
     }
+    syncTrayDim();
     setupDrag();
+  }
+
+  function syncTrayDim() {
+    const expected = state.expected[state.activeIndex];
+    sec.querySelectorAll(".tile").forEach((tile) => {
+      tile.classList.remove("dim", "hint-dim", "hint-target");
+      if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+    });
+  }
+
+  function applyHint() {
+    const expected = state.expected[state.activeIndex];
+    sec.querySelectorAll(".tile").forEach((tile) => {
+      if (parseInt(tile.dataset.digit, 10) === expected) {
+        tile.classList.remove("dim");
+        tile.classList.add("hint-target");
+      } else {
+        tile.classList.add("hint-dim");
+      }
+    });
+    sfx.hintHmm();
   }
 
   function setupDrag() {
@@ -143,7 +167,11 @@ export function mount(stage, ctx, router) {
         const next = dropDigit(state, payload.digit, parseInt(target.id, 10));
         if (!next.lastDropCorrect) {
           totalWrong++; state = next;
+          trayWrongOnCurrentSlot++;
           await tileBounceBack(sourceEl, origin);
+          target.el.classList.add("flash-no");
+          setTimeout(() => target.el.classList.remove("flash-no"), 200);
+          if (trayWrongOnCurrentSlot >= 2) applyHint();
           return;
         }
         state = next;
@@ -164,6 +192,8 @@ export function mount(stage, ctx, router) {
             if (i === state.activeIndex) el.classList.add("active");
             else if (!el.classList.contains("filled")) el.classList.add("inactive");
           });
+          trayWrongOnCurrentSlot = 0;
+          syncTrayDim();
         }
         renderTrayListeners();
       },
