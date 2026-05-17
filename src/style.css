@@ -318,3 +318,29 @@ html, body {
 /* ===== TASK 23: Node Unlock Styles ===== */
 .level-node.unlocking { animation: nodeShake .4s var(--ease-elastic); }
 @keyframes nodeShake { 0%,100% { transform: scale(1); } 25% { transform: scale(1.06) rotate(6deg); } 75% { transform: scale(1.06) rotate(-6deg); } }
+
+/* ===== TASK 24: Splash Screen ===== */
+#screen-splash {
+  background: linear-gradient(to bottom, var(--world-sky) 0%, var(--world-sky) 60%, var(--world-ground) 60%, var(--world-ground) 100%);
+}
+.splash-title {
+  position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
+  font-size: 96px; color: var(--ink);
+  text-shadow: 0 4px 0 var(--star);
+  letter-spacing: 2px;
+}
+.splash-mascot {
+  position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
+  width: 380px; height: 380px;
+}
+.splash-mascot svg { width: 100%; height: 100%; }
+.splash-play {
+  position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%);
+  animation: playPulse 2s var(--ease-soft) infinite;
+}
+@keyframes playPulse {
+  0%,100% { box-shadow: var(--sh-3), 0 0 0 0 var(--world-primary); }
+  50%     { box-shadow: var(--sh-3), 0 0 0 18px transparent; }
+}
+.cog-corner { position: absolute; top: 32px; right: 32px; width: 80px; height: 80px; cursor: pointer; }
+.cog-corner svg { width: 100%; height: 100%; }
