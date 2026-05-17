@@ -269,7 +269,7 @@ export function burstConfetti(container, count = 80) {
   }
 }
 
-// ===== TASK 23: Node Unlock Animation =====
+// ===== TASK 23: Node Unlock with Padlock Break Animation =====
 
 export function unlockNode(nodeEl) {
   return new Promise((resolve) => {
