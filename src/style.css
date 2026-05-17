@@ -400,6 +400,7 @@ html, body {
   font-family: 'Lilita One', system-ui;
 }
 .worksheet .row { display: flex; gap: 16px; justify-content: flex-end; }
+.worksheet .row.top { position: relative; }
 .worksheet .row.bot .op { font-size: 96px; line-height: 120px; width: 60px; text-align: center; }
 .worksheet .cell { width: 100px; height: 120px; font-size: 96px; line-height: 120px; text-align: center; }
 .worksheet .cell.empty { opacity: 0; }

@@ -121,9 +121,8 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
     newTens.textContent = String(newTensDigit);
     tensTopEl.parentElement.appendChild(newTens);
 
-    const tensRect = tensTopEl.getBoundingClientRect();
-    newTens.style.left = `${tensRect.left}px`;
-    newTens.style.top = `${tensRect.top - 70}px`;
+    newTens.style.left = `${tensTopEl.offsetLeft}px`;
+    newTens.style.top  = `${tensTopEl.offsetTop - 70}px`;
     newTens.animate([{ opacity: 0, transform: "translateY(20px)" }, { opacity: 1, transform: "translateY(0)" }],
       { duration: 200, easing: "ease-out", fill: "forwards" });
 
