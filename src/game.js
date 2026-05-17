@@ -4,6 +4,7 @@ import * as add from "./screens/add.js";
 import * as sub from "./screens/sub.js";
 import * as multTap from "./screens/mult-tap.js";
 import * as multDrag from "./screens/mult-drag.js";
+import * as complete from "./screens/complete.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -41,9 +42,7 @@ const router = {
         this.current = () => div.remove();
       }
     } else if (name === "complete") {
-      alert(`LEVEL COMPLETE! Wrong drops: ${ctx.wrongCount}. (Complete screen in Task 30.)`);
-      this.current = null;
-      this.go("map");
+      this.current = complete.mount(stage, ctx, this);
     } else if (name === "settings") {
       alert("Settings — Task 33");
     }
