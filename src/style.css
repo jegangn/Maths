@@ -183,3 +183,39 @@ html, body {
   box-shadow: 0 0 0 6px rgba(74,214,109,.25);
 }
 .group-tray.full .count-chip { background: var(--star); font-family: 'Lilita One', system-ui; font-size: 28px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 12px;
+  min-width: 280px; height: 110px;
+  border-radius: var(--r-pill);
+  border: 4px solid var(--ink);
+  background: var(--world-primary); color: var(--ink);
+  font-family: 'Lilita One', system-ui; font-size: 36px;
+  cursor: pointer; user-select: none;
+  box-shadow: var(--sh-3);
+  transition: transform .08s var(--ease-pop), box-shadow .08s var(--ease-pop), filter .15s;
+  padding: 0 32px;
+}
+.btn:active { transform: translateY(6px); box-shadow: var(--sh-pressed); }
+.btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
+.btn.ghost  { background: var(--bg-card); }
+.btn.success{ background: var(--success); color: #fff; }
+.btn:disabled, .btn.disabled {
+  opacity: .55; cursor: not-allowed; box-shadow: none;
+  background: var(--ink-soft);
+}
+
+.star-meter { display: inline-flex; gap: 8px; align-items: center; }
+.star-meter .star { width: 32px; height: 32px; }
+.star-meter.big .star { width: 160px; height: 160px; }
+.star-meter .star.empty path { opacity: .25; }
+.star-meter .star.earned {
+  filter: drop-shadow(0 0 12px var(--star-glow));
+  animation: starReveal .5s var(--ease-pop);
+}
+@keyframes starReveal {
+  0%   { transform: translateY(-80px) scale(0); opacity: 0; }
+  60%  { transform: translateY(0) scale(1.3); opacity: 1; }
+  100% { transform: translateY(0) scale(1); }
+}
