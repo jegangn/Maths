@@ -1,4 +1,5 @@
 import * as splash from "./screens/splash.js";
+import * as map from "./screens/map.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -18,9 +19,11 @@ const router = {
     if (name === "splash") {
       this.current = splash.mount(stage, {}, this);
     } else if (name === "map") {
+      this.current = map.mount(stage, {}, this);
+    } else if (name === "level") {
       const div = document.createElement("div");
       div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
-      div.textContent = "Map placeholder — replaced in Task 25.";
+      div.textContent = `Level placeholder: ${ctx.world} L${ctx.level} — replaced in Tasks 26-29.`;
       stage.appendChild(div);
       this.current = () => div.remove();
     } else if (name === "settings") {
