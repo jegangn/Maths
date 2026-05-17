@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__whatsapp__list_messages",
+      "Bash(sqlite3 --version)",
+      "Bash(sqlite3 -readonly \"/c/dev/mcp/whatsapp-mcp-v2/whatsapp-bridge/store/messages.db\" \"SELECT MAX\\(timestamp\\);\")",
+      "Bash(sqlite3 \"file:/c/dev/mcp/whatsapp-mcp-v2/whatsapp-bridge/store/messages.db?mode=ro&immutable=0\" \"SELECT MAX\\(timestamp\\);\")"
+    ]
+  }
+}

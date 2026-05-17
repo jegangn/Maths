@@ -1,0 +1,10 @@
+{
+  "name": "jhanavs-math-quest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun dev.js",
+    "test": "bun test"
+  }
+}
