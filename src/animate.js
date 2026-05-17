@@ -240,7 +240,7 @@ export function mascotCelebrate(svgRoot) {
   setTimeout(() => mascotIdle(svgRoot), 2400);
 }
 
-// ===== TASK 22: Confetti Particles =====
+// ===== TASK 22: Confetti Particle Burst (80 particles, 4 shapes, 6 colors) =====
 
 const CONFETTI_COLORS = ["#FFC83A", "#FF7A40", "#4AAE3F", "#3DC5C5", "#E03E3E", "#FFB933"];
 const CONFETTI_KINDS = ["rect", "tear", "circle", "zig"];
