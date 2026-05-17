@@ -86,3 +86,40 @@ export const pip = (state = "idle") => `
     <path d="M170,205 q10,8 20,0" stroke="#2A1B0A" stroke-width="3" fill="none"/>
   </g>
 </svg>`;
+
+export const banana = (state = "default") => `
+<svg viewBox="0 0 96 96" class="block banana ${state}">
+  <path d="M20,75 q-10,-50 35,-65 q15,5 5,15 q-30,15 -25,55 z" fill="#FFD13A" stroke="#7A4A08" stroke-width="3"/>
+  <path d="M55,12 q3,-5 8,-2 q3,3 -2,7 z" fill="#4AAE3F" stroke="#2A1B0A" stroke-width="2"/>
+</svg>`;
+
+export const coconut = (state = "default") => `
+<svg viewBox="0 0 96 96" class="block coconut ${state}">
+  <circle cx="48" cy="50" r="36" fill="#6A3A1A" stroke="#2A1B0A" stroke-width="3"/>
+  <g stroke="#3A1F08" stroke-width="2" fill="none">
+    <path d="M20,40 q10,8 20,2"/><path d="M55,38 q10,6 22,4"/>
+    <path d="M25,55 q12,8 24,2"/><path d="M55,60 q12,6 22,2"/>
+  </g>
+  <circle cx="40" cy="35" r="3" fill="#FFFAF0"/>
+  <circle cx="56" cy="36" r="3" fill="#FFFAF0"/>
+</svg>`;
+
+export const mango = (state = "default") => `
+<svg viewBox="0 0 96 96" class="block mango ${state}">
+  <path d="M48,12 q35,8 32,45 q-3,28 -32,30 q-29,-2 -32,-30 q-3,-37 32,-45 z" fill="#FF7A1A" stroke="#7A2A04" stroke-width="3"/>
+  <path d="M30,30 q15,-6 30,2" stroke="#FF3E6B" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="48" cy="13" rx="3" ry="6" fill="#4AAE3F" stroke="#2A1B0A" stroke-width="2"/>
+</svg>`;
+
+export const firefly = (state = "default") => `
+<svg viewBox="0 0 96 96" class="block firefly ${state}">
+  <g class="glow"><circle cx="48" cy="50" r="42" fill="#FFF8C8" opacity="0"/></g>
+  <g class="wing-l"><ellipse cx="32" cy="40" rx="22" ry="14" fill="#FFFAF0" opacity=".75"/></g>
+  <g class="wing-r"><ellipse cx="64" cy="40" rx="22" ry="14" fill="#FFFAF0" opacity=".75"/></g>
+  <g class="body">
+    <ellipse cx="48" cy="55" rx="18" ry="22" fill="#FFE680" stroke="#6A4A08" stroke-width="3"/>
+    <ellipse cx="48" cy="68" rx="14" ry="10" fill="#FFD13A"/>
+    <circle cx="44" cy="48" r="3" fill="#2A1B0A"/>
+    <circle cx="52" cy="48" r="3" fill="#2A1B0A"/>
+  </g>
+</svg>`;
