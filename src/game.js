@@ -2,6 +2,7 @@ import * as splash from "./screens/splash.js";
 import * as map from "./screens/map.js";
 import * as add from "./screens/add.js";
 import * as sub from "./screens/sub.js";
+import * as multTap from "./screens/mult-tap.js";
 
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
@@ -27,6 +28,8 @@ const router = {
         this.current = add.mount(stage, ctx, this);
       } else if (ctx.world === "sub") {
         this.current = sub.mount(stage, ctx, this);
+      } else if (ctx.world === "mult" && ctx.level <= 3) {
+        this.current = multTap.mount(stage, ctx, this);
       } else {
         const div = document.createElement("div");
         div.style.cssText = "padding:40px;font:bold 32px sans-serif;color:#2A1B0A;";
