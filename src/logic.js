@@ -38,3 +38,27 @@ export function getProblems(world, level) {
     answer: op === "+" ? a + b : a - b,
   }));
 }
+
+export function analyze(p) {
+  const aTens = Math.floor(p.a / 10);
+  const aOnes = p.a % 10;
+  const bTens = Math.floor(p.b / 10);
+  const bOnes = p.b % 10;
+  const answerTens = Math.floor(p.answer / 10);
+  const answerOnes = p.answer % 10;
+  if (p.op === "+") {
+    return { aTens, aOnes, bTens, bOnes, answerTens, answerOnes,
+             carry: aOnes + bOnes >= 10 };
+  }
+  if (p.op === "-") {
+    const needsBorrow = aOnes < bOnes;
+    const out = { aTens, aOnes, bTens, bOnes, answerTens, answerOnes,
+                  borrow: needsBorrow };
+    if (needsBorrow) {
+      out.borrowFromTens = aTens - 1;
+      out.borrowedOnes = aOnes + 10;
+    }
+    return out;
+  }
+  return { aTens, aOnes, bTens, bOnes, answerTens, answerOnes };
+}

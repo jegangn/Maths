@@ -70,3 +70,43 @@ test("all subtraction problems have non-negative answer", () => {
     }
   }
 });
+
+import { analyze } from "../src/logic.js";
+
+test("analyze: addition with no carry", () => {
+  const r = analyze({ op: "+", a: 12, b: 3, answer: 15 });
+  expect(r).toEqual({
+    aTens: 1, aOnes: 2, bTens: 0, bOnes: 3,
+    answerTens: 1, answerOnes: 5,
+    carry: false,
+  });
+});
+
+test("analyze: addition with carry on ones", () => {
+  const r = analyze({ op: "+", a: 15, b: 6, answer: 21 });
+  expect(r).toEqual({
+    aTens: 1, aOnes: 5, bTens: 0, bOnes: 6,
+    answerTens: 2, answerOnes: 1,
+    carry: true,
+  });
+});
+
+test("analyze: subtraction without borrow", () => {
+  const r = analyze({ op: "-", a: 45, b: 23, answer: 22 });
+  expect(r).toEqual({
+    aTens: 4, aOnes: 5, bTens: 2, bOnes: 3,
+    answerTens: 2, answerOnes: 2,
+    borrow: false,
+  });
+});
+
+test("analyze: subtraction with borrow", () => {
+  const r = analyze({ op: "-", a: 32, b: 15, answer: 17 });
+  expect(r).toEqual({
+    aTens: 3, aOnes: 2, bTens: 1, bOnes: 5,
+    answerTens: 1, answerOnes: 7,
+    borrow: true,
+    borrowFromTens: 2,
+    borrowedOnes: 12,
+  });
+});
