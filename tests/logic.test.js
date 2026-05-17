@@ -176,3 +176,48 @@ test("starsFor returns 1 star for 5+ wrongs", () => {
   expect(starsFor(5)).toBe(1);
   expect(starsFor(20)).toBe(1);
 });
+
+import { loadProgress, recordStars, isLevelUnlocked, totalStars } from "../src/logic.js";
+
+const fakeStorage = () => {
+  const m = new Map();
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, v),
+    removeItem: (k) => m.delete(k),
+  };
+};
+
+test("loadProgress returns empty map on fresh storage", () => {
+  expect(loadProgress(fakeStorage())).toEqual({ add: {}, sub: {}, mult: {} });
+});
+
+test("recordStars writes new high-water mark; loadProgress reads it", () => {
+  const s = fakeStorage();
+  recordStars(s, "add", 1, 2);
+  expect(loadProgress(s).add[1]).toBe(2);
+});
+
+test("recordStars does not overwrite a higher prior score", () => {
+  const s = fakeStorage();
+  recordStars(s, "add", 1, 3);
+  recordStars(s, "add", 1, 1);
+  expect(loadProgress(s).add[1]).toBe(3);
+});
+
+test("recordStars DOES overwrite when score improves", () => {
+  const s = fakeStorage();
+  recordStars(s, "add", 1, 1);
+  recordStars(s, "add", 1, 3);
+  expect(loadProgress(s).add[1]).toBe(3);
+});
+
+test("L1 always unlocked; L2+ requires prior level cleared", () => {
+  expect(isLevelUnlocked({ add: {}, sub: {}, mult: {} }, "add", 1)).toBe(true);
+  expect(isLevelUnlocked({ add: {}, sub: {}, mult: {} }, "add", 2)).toBe(false);
+  expect(isLevelUnlocked({ add: { 1: 2 }, sub: {}, mult: {} }, "add", 2)).toBe(true);
+});
+
+test("totalStars sums across worlds", () => {
+  expect(totalStars({ add: { 1: 3, 2: 2 }, sub: { 1: 1 }, mult: {} })).toBe(6);
+});
