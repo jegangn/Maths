@@ -227,7 +227,7 @@ export function revealStars(starEls, earnedCount) {
   });
 }
 
-// ===== TASK 21: Mascot Idle + Celebrate =====
+// ===== TASK 21: Mascot Idle (breathing, blinking) and Celebrate (jump & wings) =====
 
 export function mascotIdle(svgRoot) {
   svgRoot.classList.add("idle");
