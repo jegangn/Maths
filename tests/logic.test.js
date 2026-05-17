@@ -158,3 +158,21 @@ test("isComplete returns true only when all slots filled", () => {
   s = dropDigit(s, 2);
   expect(isComplete(s)).toBe(true);
 });
+
+import { starsFor } from "../src/logic.js";
+
+test("starsFor returns 3 stars for 0 or 1 wrongs", () => {
+  expect(starsFor(0)).toBe(3);
+  expect(starsFor(1)).toBe(3);
+});
+
+test("starsFor returns 2 stars for 2-4 wrongs", () => {
+  expect(starsFor(2)).toBe(2);
+  expect(starsFor(3)).toBe(2);
+  expect(starsFor(4)).toBe(2);
+});
+
+test("starsFor returns 1 star for 5+ wrongs", () => {
+  expect(starsFor(5)).toBe(1);
+  expect(starsFor(20)).toBe(1);
+});

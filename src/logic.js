@@ -96,3 +96,9 @@ export function dropDigit(state, digit, targetIndex = state.activeIndex) {
 export function isComplete(state) {
   return state.slots.every((s) => s !== null);
 }
+
+export function starsFor(wrongCount) {
+  if (wrongCount <= 1) return 3;
+  if (wrongCount <= 4) return 2;
+  return 1;
+}
