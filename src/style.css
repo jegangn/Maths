@@ -64,3 +64,56 @@ html, body {
 .screen { position: absolute; inset: 0; display: none; }
 .screen.active { display: block; }
 .display { font-family: 'Lilita One', 'Bungee', system-ui; font-weight: 400; }
+
+.tile {
+  width: 96px; height: 96px;
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  border: 4px solid var(--ink);
+  box-shadow: var(--sh-2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Lilita One', system-ui;
+  font-size: 64px; color: var(--ink);
+  cursor: grab; user-select: none;
+  transition: transform .12s var(--ease-pop), box-shadow .12s var(--ease-pop);
+  position: relative;
+}
+.tile.dragging {
+  transform: scale(1.15) translateY(-8px);
+  box-shadow: var(--sh-3);
+  z-index: 200; cursor: grabbing;
+  transition: none;
+}
+.tile.dim     { opacity: .3; transform: scale(.94); pointer-events: auto; }
+.tile.hint-dim{ opacity: .18; transform: scale(.92); }
+.tile.hint-target { animation: hintPulse 2s var(--ease-soft) infinite; }
+@keyframes hintPulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 var(--star-glow); }
+  50%     { transform: scale(1.05); box-shadow: 0 0 24px 8px var(--star-glow); }
+}
+
+.slot {
+  width: 100px; height: 120px;
+  border-radius: var(--r-md);
+  border: 4px dashed var(--ink-soft);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Lilita One', system-ui;
+  font-size: 96px; color: var(--ink);
+  position: relative;
+}
+.slot.inactive  { opacity: .5; }
+.slot.active    { border-style: solid; border-color: var(--world-primary); animation: slotPulse 1.8s var(--ease-soft) infinite; }
+.slot.filled    { border-style: solid; border-color: var(--ink); animation: none; }
+.slot.flash-no  { border-color: var(--gentle-no); animation: slotShake .3s var(--ease-elastic); }
+@keyframes slotPulse {
+  0%   { box-shadow: 0 0 0 0 var(--world-primary); }
+  60%  { box-shadow: 0 0 0 16px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes slotShake {
+  0%,100% { transform: rotate(0); }
+  25% { transform: rotate(5deg); }
+  50% { transform: rotate(-5deg); }
+  75% { transform: rotate(3deg); }
+}
