@@ -1136,17 +1136,32 @@ html, body {
     function start(e, sourceEl, payload) {
       e.preventDefault();
       const tileRect = sourceEl.getBoundingClientRect();
-      const { rect: sRect, scale } = stageInfo();
+      const { stage: stage2, rect: sRect, scale } = stageInfo();
       const tileLocalLeft = (tileRect.left - sRect.left) / scale;
       const tileLocalTop = (tileRect.top - sRect.top) / scale;
       const pointerLocal = toStageLocal(e.clientX, e.clientY);
       const offsetX = pointerLocal.x - tileLocalLeft;
       const offsetY = pointerLocal.y - tileLocalTop;
       const origin = { x: tileLocalLeft, y: tileLocalTop };
-      dragging = { sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId };
+      const originalParent = sourceEl.parentNode;
+      const originalNextSibling = sourceEl.nextSibling;
+      dragging = {
+        sourceEl,
+        payload,
+        origin,
+        offsetX,
+        offsetY,
+        pointerId: e.pointerId,
+        originalParent,
+        originalNextSibling
+      };
       sourceEl.setPointerCapture?.(e.pointerId);
-      sourceEl.classList.add("dragging");
       onPickup?.(payload, sourceEl);
+      sourceEl.style.position = "absolute";
+      sourceEl.style.left = `${origin.x}px`;
+      sourceEl.style.top = `${origin.y}px`;
+      stage2.appendChild(sourceEl);
+      sourceEl.classList.add("dragging");
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", end);
       window.addEventListener("pointercancel", end);
@@ -1161,7 +1176,7 @@ html, body {
     }
     function end(e) {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
-      const { sourceEl, payload, origin } = dragging;
+      const { sourceEl, payload, origin, originalParent, originalNextSibling } = dragging;
       const targets = getTargets();
       const target = findDropTarget(targets, e.clientX, e.clientY, 40);
       sourceEl.classList.remove("dragging");
@@ -1169,7 +1184,7 @@ html, body {
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", end);
       dragging = null;
-      onDrop?.(payload, target, sourceEl, origin);
+      onDrop?.(payload, target, sourceEl, origin, { originalParent, originalNextSibling });
     }
     return { start };
   }
@@ -1179,7 +1194,7 @@ html, body {
     el.classList.add("dragging");
     sfx.tilePickup();
   }
-  function tileBounceBack(el, origin) {
+  function tileBounceBack(el, origin, parentInfo) {
     return new Promise((resolve) => {
       const stage2 = document.getElementById("stage");
       const sRect = stage2.getBoundingClientRect();
@@ -1204,6 +1219,13 @@ html, body {
         el.style.left = "";
         el.style.top = "";
         el.style.transform = "";
+        if (parentInfo?.originalParent) {
+          if (parentInfo.originalNextSibling) {
+            parentInfo.originalParent.insertBefore(el, parentInfo.originalNextSibling);
+          } else {
+            parentInfo.originalParent.appendChild(el);
+          }
+        }
         resolve();
       };
       sfx.tileDropWrong();
@@ -1531,15 +1553,15 @@ html, body {
         onPickup(payload, el) {
           tilePickup(el);
         },
-        async onDrop(payload, target, sourceEl, origin) {
-          if (!target) return tileBounceBack(sourceEl, origin);
+        async onDrop(payload, target, sourceEl, origin, parentInfo) {
+          if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
           const targetIndex = parseInt(target.id, 10);
           const next = dropDigit(activeState, payload.digit, targetIndex);
           if (!next.lastDropCorrect) {
             totalWrong++;
             activeState = next;
             trayWrongOnCurrentSlot++;
-            await tileBounceBack(sourceEl, origin);
+            await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
             if (trayWrongOnCurrentSlot >= 2) applyHint();
@@ -1721,15 +1743,15 @@ html, body {
         onPickup(payload, el) {
           tilePickup(el);
         },
-        async onDrop(payload, target, sourceEl, origin) {
-          if (!target) return tileBounceBack(sourceEl, origin);
+        async onDrop(payload, target, sourceEl, origin, parentInfo) {
+          if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
           const targetIndex = parseInt(target.id, 10);
           const next = dropDigit(activeState, payload.digit, targetIndex);
           if (!next.lastDropCorrect) {
             totalWrong++;
             activeState = next;
             trayWrongOnCurrentSlot++;
-            await tileBounceBack(sourceEl, origin);
+            await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
             if (trayWrongOnCurrentSlot >= 2) applyHint();
@@ -1951,14 +1973,14 @@ html, body {
         onPickup(payload, el) {
           tilePickup(el);
         },
-        async onDrop(payload, target, sourceEl, origin) {
-          if (!target) return tileBounceBack(sourceEl, origin);
+        async onDrop(payload, target, sourceEl, origin, parentInfo) {
+          if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
           const next = dropDigit(state2, payload.digit, parseInt(target.id, 10));
           if (!next.lastDropCorrect) {
             totalWrong++;
             state2 = next;
             trayWrongOnCurrentSlot++;
-            await tileBounceBack(sourceEl, origin);
+            await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
             if (trayWrongOnCurrentSlot >= 2) applyHint();
@@ -2133,17 +2155,17 @@ html, body {
           sfx.tilePickup();
           el.classList.add("dragging");
         },
-        async onDrop(payload, target, sourceEl, origin) {
+        async onDrop(payload, target, sourceEl, origin, parentInfo) {
           if (payload.kind === "block") {
             if (!target || !target.id || String(target.id).startsWith("slot-")) {
               sourceEl.classList.remove("dragging");
-              return tileBounceBack(sourceEl, origin);
+              return tileBounceBack(sourceEl, origin, parentInfo);
             }
             const gIdx = parseInt(target.id, 10);
             const gc = groupContents[gIdx];
             if (gc.filled >= gc.needed) {
               sourceEl.classList.remove("dragging");
-              return tileBounceBack(sourceEl, origin);
+              return tileBounceBack(sourceEl, origin, parentInfo);
             }
             const tray = target.el;
             const ghosts = tray.querySelectorAll(".ghost");
@@ -2166,14 +2188,14 @@ html, body {
               setTimeout(showAnswerPhase, 800);
             }
           } else if (payload.kind === "digit") {
-            if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin);
+            if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin, parentInfo);
             const slotIndex = parseInt(String(target.id).replace("slot-", ""), 10);
             const next = dropDigit(state2, payload.digit, slotIndex);
             if (!next.lastDropCorrect) {
               totalWrong++;
               state2 = next;
               trayWrongOnCurrentSlot++;
-              await tileBounceBack(sourceEl, origin);
+              await tileBounceBack(sourceEl, origin, parentInfo);
               target.el.classList.add("flash-no");
               setTimeout(() => target.el.classList.remove("flash-no"), 200);
               if (trayWrongOnCurrentSlot >= 2) applyHint();
