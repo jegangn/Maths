@@ -167,13 +167,13 @@ export function mount(stage, ctx, router) {
         }));
       },
       onPickup(payload, el) { tilePickup(el); },
-      async onDrop(payload, target, sourceEl, origin) {
-        if (!target) return tileBounceBack(sourceEl, origin);
+      async onDrop(payload, target, sourceEl, origin, parentInfo) {
+        if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
         const next = dropDigit(state, payload.digit, parseInt(target.id, 10));
         if (!next.lastDropCorrect) {
           totalWrong++; state = next;
           trayWrongOnCurrentSlot++;
-          await tileBounceBack(sourceEl, origin);
+          await tileBounceBack(sourceEl, origin, parentInfo);
           target.el.classList.add("flash-no");
           setTimeout(() => target.el.classList.remove("flash-no"), 200);
           if (trayWrongOnCurrentSlot >= 2) applyHint();

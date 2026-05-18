@@ -149,17 +149,17 @@ export function mount(stage, ctx, router) {
         })));
       },
       onPickup(_p, el) { sfx.tilePickup(); el.classList.add("dragging"); },
-      async onDrop(payload, target, sourceEl, origin) {
+      async onDrop(payload, target, sourceEl, origin, parentInfo) {
         if (payload.kind === "block") {
           if (!target || !target.id || String(target.id).startsWith("slot-")) {
             sourceEl.classList.remove("dragging");
-            return tileBounceBack(sourceEl, origin);
+            return tileBounceBack(sourceEl, origin, parentInfo);
           }
           const gIdx = parseInt(target.id, 10);
           const gc = groupContents[gIdx];
           if (gc.filled >= gc.needed) {
             sourceEl.classList.remove("dragging");
-            return tileBounceBack(sourceEl, origin);
+            return tileBounceBack(sourceEl, origin, parentInfo);
           }
           const tray = target.el;
           const ghosts = tray.querySelectorAll(".ghost");
@@ -182,13 +182,13 @@ export function mount(stage, ctx, router) {
             setTimeout(showAnswerPhase, 800);
           }
         } else if (payload.kind === "digit") {
-          if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin);
+          if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin, parentInfo);
           const slotIndex = parseInt(String(target.id).replace("slot-", ""), 10);
           const next = dropDigit(state, payload.digit, slotIndex);
           if (!next.lastDropCorrect) {
             totalWrong++; state = next;
             trayWrongOnCurrentSlot++;
-            await tileBounceBack(sourceEl, origin);
+            await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
             if (trayWrongOnCurrentSlot >= 2) applyHint();

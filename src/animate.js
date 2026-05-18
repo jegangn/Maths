@@ -8,7 +8,7 @@ export function tilePickup(el) {
   sfx.tilePickup();
 }
 
-export function tileBounceBack(el, origin) {
+export function tileBounceBack(el, origin, parentInfo) {
   return new Promise((resolve) => {
     const stage = document.getElementById("stage");
     const sRect = stage.getBoundingClientRect();
@@ -33,6 +33,15 @@ export function tileBounceBack(el, origin) {
       el.style.left = "";
       el.style.top = "";
       el.style.transform = "";
+      // Re-parent back to the original container (digit-tray) so the tile
+      // re-joins the flex layout after a failed drop.
+      if (parentInfo?.originalParent) {
+        if (parentInfo.originalNextSibling) {
+          parentInfo.originalParent.insertBefore(el, parentInfo.originalNextSibling);
+        } else {
+          parentInfo.originalParent.appendChild(el);
+        }
+      }
       resolve();
     };
     sfx.tileDropWrong();

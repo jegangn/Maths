@@ -38,7 +38,7 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
   function start(e, sourceEl, payload) {
     e.preventDefault();
     const tileRect = sourceEl.getBoundingClientRect();
-    const { rect: sRect, scale } = stageInfo();
+    const { stage, rect: sRect, scale } = stageInfo();
     // Tile origin in stage-local coords
     const tileLocalLeft = (tileRect.left - sRect.left) / scale;
     const tileLocalTop  = (tileRect.top  - sRect.top)  / scale;
@@ -49,10 +49,23 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
     const offsetY = pointerLocal.y - tileLocalTop;
     const origin = { x: tileLocalLeft, y: tileLocalTop };
 
-    dragging = { sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId };
+    // Save original DOM position so bounce-back can restore it
+    const originalParent = sourceEl.parentNode;
+    const originalNextSibling = sourceEl.nextSibling;
+
+    dragging = { sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId,
+                 originalParent, originalNextSibling };
     sourceEl.setPointerCapture?.(e.pointerId);
-    sourceEl.classList.add("dragging");
     onPickup?.(payload, sourceEl);
+
+    // Re-parent to #stage so absolute positioning is relative to the stage,
+    // not to the digit-tray. Set position before appending to avoid flicker.
+    sourceEl.style.position = "absolute";
+    sourceEl.style.left = `${origin.x}px`;
+    sourceEl.style.top  = `${origin.y}px`;
+    stage.appendChild(sourceEl);
+
+    sourceEl.classList.add("dragging");
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
@@ -69,7 +82,7 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
 
   function end(e) {
     if (!dragging || e.pointerId !== dragging.pointerId) return;
-    const { sourceEl, payload, origin } = dragging;
+    const { sourceEl, payload, origin, originalParent, originalNextSibling } = dragging;
     const targets = getTargets();
     // Targets use viewport-pixel rects (from getBoundingClientRect on slots).
     // Pointer event is in viewport pixels too. Hit-test stays in viewport space.
@@ -79,7 +92,7 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
     window.removeEventListener("pointerup", end);
     window.removeEventListener("pointercancel", end);
     dragging = null;
-    onDrop?.(payload, target, sourceEl, origin);
+    onDrop?.(payload, target, sourceEl, origin, { originalParent, originalNextSibling });
   }
 
   return { start };
