@@ -10,9 +10,14 @@ export function tilePickup(el) {
 
 export function tileBounceBack(el, origin) {
   return new Promise((resolve) => {
-    const start = el.getBoundingClientRect();
-    const dx = origin.x - start.left;
-    const dy = origin.y - start.top;
+    const stage = document.getElementById("stage");
+    const sRect = stage.getBoundingClientRect();
+    const scale = sRect.width / 1280;
+    const elRect = el.getBoundingClientRect();
+    const startLocalX = (elRect.left - sRect.left) / scale;
+    const startLocalY = (elRect.top  - sRect.top)  / scale;
+    const dx = origin.x - startLocalX;
+    const dy = origin.y - startLocalY;
     const apex = -24;
     el.style.transition = "none";
     el.classList.remove("dragging");

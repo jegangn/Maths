@@ -17,15 +17,38 @@ export function findDropTarget(targets, x, y, tol = 0) {
   return best;
 }
 
+function stageInfo() {
+  const stage = document.getElementById("stage");
+  const rect = stage.getBoundingClientRect();
+  const scale = rect.width / 1280;
+  return { stage, rect, scale };
+}
+
+function toStageLocal(clientX, clientY) {
+  const { rect, scale } = stageInfo();
+  return {
+    x: (clientX - rect.left) / scale,
+    y: (clientY - rect.top) / scale,
+  };
+}
+
 export function createDragManager({ getTargets, onPickup, onDrop }) {
   let dragging = null;
 
   function start(e, sourceEl, payload) {
     e.preventDefault();
-    const rect = sourceEl.getBoundingClientRect();
-    const origin = { x: rect.left, y: rect.top };
-    const offsetX = e.clientX - rect.left;
-    const offsetY = e.clientY - rect.top;
+    const tileRect = sourceEl.getBoundingClientRect();
+    const { rect: sRect, scale } = stageInfo();
+    // Tile origin in stage-local coords
+    const tileLocalLeft = (tileRect.left - sRect.left) / scale;
+    const tileLocalTop  = (tileRect.top  - sRect.top)  / scale;
+    // Pointer in stage-local coords
+    const pointerLocal = toStageLocal(e.clientX, e.clientY);
+    // Offset from pointer to tile origin, in stage-local coords
+    const offsetX = pointerLocal.x - tileLocalLeft;
+    const offsetY = pointerLocal.y - tileLocalTop;
+    const origin = { x: tileLocalLeft, y: tileLocalTop };
+
     dragging = { sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId };
     sourceEl.setPointerCapture?.(e.pointerId);
     sourceEl.classList.add("dragging");
@@ -38,15 +61,18 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
   function move(e) {
     if (!dragging || e.pointerId !== dragging.pointerId) return;
     const { sourceEl, offsetX, offsetY } = dragging;
+    const p = toStageLocal(e.clientX, e.clientY);
     sourceEl.style.position = "absolute";
-    sourceEl.style.left = `${e.clientX - offsetX}px`;
-    sourceEl.style.top  = `${e.clientY - offsetY}px`;
+    sourceEl.style.left = `${p.x - offsetX}px`;
+    sourceEl.style.top  = `${p.y - offsetY}px`;
   }
 
   function end(e) {
     if (!dragging || e.pointerId !== dragging.pointerId) return;
     const { sourceEl, payload, origin } = dragging;
     const targets = getTargets();
+    // Targets use viewport-pixel rects (from getBoundingClientRect on slots).
+    // Pointer event is in viewport pixels too. Hit-test stays in viewport space.
     const target = findDropTarget(targets, e.clientX, e.clientY, 40);
     sourceEl.classList.remove("dragging");
     window.removeEventListener("pointermove", move);
