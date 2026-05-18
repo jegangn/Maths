@@ -79,20 +79,39 @@ export async function dragDigitToSlot(page, digit, slotLocator) {
 }
 
 /**
+ * Drag a compound tile (10-18) onto the active answer slot.
+ * Used for carry addition problems — the ones slot only accepts compound tiles.
+ */
+export async function dragCompoundToSlot(page, value, slotLocator) {
+  const tile = page.locator(`.tile.compound[data-compound="${value}"]`).first();
+  const tBox = await tile.boundingBox();
+  const sBox = await slotLocator.boundingBox();
+  await page.mouse.move(tBox.x + tBox.width / 2, tBox.y + tBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sBox.x + sBox.width / 2, sBox.y + sBox.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(350); // snap-in animation
+}
+
+/**
  * Enter a full answer (ones-first, then tens if 2-digit).
  * hasCarry: set true for addition problems where onesA + onesB >= 10.
+ *   In carry mode the ones slot requires the compound tile (onesSum), not a single digit.
  * hasBorrow: ignored for answer-entry (borrow fires before player touches tiles).
  */
-export async function enterAnswer(page, answer, { hasCarry = false } = {}) {
+export async function enterAnswer(page, answer, { hasCarry = false, onesSum = null } = {}) {
   if (answer < 10) {
     await dragDigitToSlot(page, answer, page.locator('.slot.active[data-index="0"]'));
   } else {
     const ones = answer % 10;
     const tens = Math.floor(answer / 10);
-    await dragDigitToSlot(page, ones, page.locator(".slot.active"));
-    if (hasCarry) {
-      // flyCarry animation: ~1400ms total
+    if (hasCarry && onesSum !== null) {
+      // Use compound tile for the ones slot
+      await dragCompoundToSlot(page, onesSum, page.locator(".slot.active"));
+      // flyCarry animation: ~1400ms total (snap + carry fly)
       await page.waitForTimeout(1400);
+    } else {
+      await dragDigitToSlot(page, ones, page.locator(".slot.active"));
     }
     await dragDigitToSlot(page, tens, page.locator(".slot.active"));
   }

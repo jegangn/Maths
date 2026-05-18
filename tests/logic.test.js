@@ -111,7 +111,7 @@ test("analyze: subtraction with borrow", () => {
   });
 });
 
-import { createAnswerState, dropDigit, isComplete } from "../src/logic.js";
+import { createAnswerState, dropDigit, dropCompound, isComplete } from "../src/logic.js";
 
 test("answer state for 2-digit answer: ones is active first", () => {
   const s = createAnswerState(15);
@@ -148,6 +148,48 @@ test("dropping on inactive slot is rejected", () => {
   expect(s.slots).toEqual([null, null]);
   expect(s.lastDropCorrect).toBe(false);
   expect(s.wrongCount).toBe(1);
+});
+
+test("dropCompound: valid 11 fills ones slot and signals carryFromCompound=1", () => {
+  let s = createAnswerState(21); // expected = [2, 1]
+  s = dropCompound(s, 11, 11);
+  expect(s.slots).toEqual([null, 1]);
+  expect(s.activeIndex).toBe(0);
+  expect(s.lastDropCorrect).toBe(true);
+  expect(s.carryFromCompound).toBe(1);
+  expect(s.wrongCount).toBe(0);
+});
+
+test("dropCompound: wrong compound value rejected, wrongCount incremented", () => {
+  let s = createAnswerState(21);
+  s = dropCompound(s, 12, 11);
+  expect(s.slots).toEqual([null, null]);
+  expect(s.activeIndex).toBe(1);
+  expect(s.lastDropCorrect).toBe(false);
+  expect(s.wrongCount).toBe(1);
+});
+
+test("dropCompound: rejected when not at ones slot (activeIndex=0)", () => {
+  let s = createAnswerState(21);
+  s = { ...s, activeIndex: 0 };
+  s = dropCompound(s, 11, 11);
+  expect(s.lastDropCorrect).toBe(false);
+  expect(s.wrongCount).toBe(1);
+});
+
+test("dropCompound: rejected on 1-digit answer state", () => {
+  let s = createAnswerState(8);
+  s = dropCompound(s, 11, 11);
+  expect(s.lastDropCorrect).toBe(false);
+});
+
+test("dropCompound: valid 15 (e.g., 7+8) fills ones=5, carryFromCompound=1", () => {
+  // answer = 15, expected = [1, 5]
+  let s = createAnswerState(15);
+  s = dropCompound(s, 15, 15);
+  expect(s.slots).toEqual([null, 5]);
+  expect(s.carryFromCompound).toBe(1);
+  expect(s.lastDropCorrect).toBe(true);
 });
 
 test("isComplete returns true only when all slots filled", () => {

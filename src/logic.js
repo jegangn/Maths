@@ -93,6 +93,30 @@ export function dropDigit(state, digit, targetIndex = state.activeIndex) {
   };
 }
 
+export function dropCompound(state, compoundValue, expectedSum) {
+  // Only valid at the ones slot of a 2-digit answer
+  if (state.slots.length !== 2 || state.activeIndex !== state.slots.length - 1) {
+    return { ...state, lastDropCorrect: false, wrongCount: state.wrongCount + 1 };
+  }
+  if (compoundValue !== expectedSum) {
+    return { ...state, lastDropCorrect: false, wrongCount: state.wrongCount + 1 };
+  }
+  const onesDigit = compoundValue % 10;
+  const tensDigit = Math.floor(compoundValue / 10);
+  if (onesDigit !== state.expected[state.slots.length - 1]) {
+    return { ...state, lastDropCorrect: false, wrongCount: state.wrongCount + 1 };
+  }
+  const slots = state.slots.slice();
+  slots[state.slots.length - 1] = onesDigit;
+  return {
+    ...state,
+    slots,
+    activeIndex: 0,
+    lastDropCorrect: true,
+    carryFromCompound: tensDigit,
+  };
+}
+
 export function isComplete(state) {
   return state.slots.every((s) => s !== null);
 }

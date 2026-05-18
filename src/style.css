@@ -203,6 +203,7 @@ html, body {
   color: var(--ink);
   opacity: 0;
   transition: opacity .3s var(--ease-pop);
+  /* left/top set inline by JS per problem — no hardcoded position here */
 }
 .carry-slot.filled { opacity: 1; border-style: solid; }
 
@@ -408,8 +409,34 @@ html, body {
 .worksheet .cell.empty { opacity: 0; }
 .worksheet .line { background: var(--ink); height: 6px; border-radius: 3px; margin: 0 0 0 76px; max-width: 232px; }
 .worksheet .row.ans { gap: 16px; justify-content: flex-end; }
-.carry-slot { position: absolute; top: 32px; right: 132px; width: 60px; height: 60px; }
 .carry-slot.hidden { display: none; }
+
+/* Compound tiles (10-18): wider to fit two digits */
+.tile.compound {
+  width: 140px;
+  font-size: 52px;
+}
+
+/* Two-row tray when compound tiles are present */
+.digit-tray.two-row {
+  height: 232px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: center;
+}
+.digit-tray .tile-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Raise corner mascot when tray has two rows */
+#screen-add.two-row-active .corner-mascot {
+  bottom: 280px;
+}
 
 .digit-tray {
   position: absolute; bottom: 20px; left: 80px; width: 1120px; height: 120px;

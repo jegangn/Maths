@@ -55,25 +55,59 @@ async function dragDigit(page, digit, slotSelector) {
 }
 
 /**
+ * Drag a compound tile (10-18) to the active slot.
+ * Used for carry addition — the ones slot only accepts compound tiles.
+ * @param {Page}   page
+ * @param {number} value        10-18 (onesSum for the current problem)
+ */
+async function dragCompound(page, value) {
+  const tile = page.locator(`.tile.compound[data-compound="${value}"]`).first();
+  const slot = page.locator('.slot.active').first();
+
+  const tBox = await tile.boundingBox();
+  const sBox = await slot.boundingBox();
+
+  await page.mouse.move(tBox.x + tBox.width / 2, tBox.y + tBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sBox.x + sBox.width / 2, sBox.y + sBox.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(350);
+}
+
+/**
  * Complete one addition/subtraction answer by dragging ones then tens.
  * @param {Page}   page
  * @param {number} answer       expected answer (e.g. 15 → ones=5, tens=1)
- * @param {boolean} hasCarry    if true, wait ~1400ms after ones drop for carry animation
+ * @param {boolean|number} hasCarry
+ *   - false (default): non-carry problem, drag single-digit ones
+ *   - true: carry problem but onesSum unknown — NOT supported (pass number instead)
+ *   - number (10-18): carry problem, this is the onesSum compound value to drag
  */
 async function enterAnswer(page, answer, hasCarry = false) {
   if (answer < 10) {
     // Single digit — one slot, data-index="0"
     await dragDigit(page, answer, '.slot.active[data-index="0"]');
   } else {
-    const ones = answer % 10;
     const tens = Math.floor(answer / 10);
-    // Ones slot is active first
-    await dragDigit(page, ones, '.slot.active');
-    if (hasCarry) {
-      // flyCarry animation: ~1400ms total (tileSnapIn 220ms + chip 920ms + bounce 220ms)
+    if (hasCarry && typeof hasCarry === 'number') {
+      // Carry problem: drag compound tile for ones
+      await dragCompound(page, hasCarry);
+      // flyCarry animation: ~1400ms total
       await page.waitForTimeout(1400);
+    } else if (hasCarry === true) {
+      // Legacy call without onesSum — should not be used but we keep backward compat
+      // by computing onesSum from answer (this only works when ones+carry=answer%10+10)
+      // In practice every carry problem in our seeds has tensDigit-of-onesSum = 1,
+      // so onesSum = answer % 10 + 10. Works for all seeds with single carry digit.
+      const onesSum = (answer % 10) + 10;
+      await dragCompound(page, onesSum);
+      await page.waitForTimeout(1400);
+    } else {
+      // Non-carry: drag single-digit ones
+      const ones = answer % 10;
+      await dragDigit(page, ones, '.slot.active');
     }
-    // After ones fills (and carry completes), tens slot becomes active
+    // After ones fills (and carry completes if any), tens slot becomes active
     await dragDigit(page, tens, '.slot.active');
   }
 }
@@ -180,11 +214,11 @@ test("Test 2: Add L3 carry animation — carry slot fills after ones drop", asyn
   await goToLevel(page, "add", 3);
   await expect(page.locator("#screen-add")).toBeVisible();
 
-  // Problem 1: 15+6=21. Ones answer = 1, tens = 2.
-  // First drop: digit 1 (ones of 21) into active slot (ones slot, data-index=1)
-  await dragDigit(page, 1, ".slot.active");
+  // Problem 1: 15+6=21. onesSum=11, ones answer = 1, tens = 2.
+  // Drop compound tile "11" onto ones slot — it splits into 1 (ones) + carry chip
+  await dragCompound(page, 11);
 
-  // flyCarry animation total: tileSnapIn(220) + chip scale-in(200) + delay(200) +
+  // flyCarry animation total: snap(220) + chip scale-in(200) + delay(200) +
   // path(500) + bounce(200) + cleanup(220) = ~1540ms. Wait 1600 to be safe.
   await page.waitForTimeout(1600);
   const carryFilled = await page.locator(".carry-slot.filled").count();
@@ -194,10 +228,11 @@ test("Test 2: Add L3 carry animation — carry slot fills after ones drop", asyn
   await dragDigit(page, 2, ".slot.active");
   await page.waitForTimeout(900);
 
-  // Complete the remaining 4 problems (all have carry: 22, 31, 32, 26)
-  const remaining = [22, 31, 32, 26];
-  for (const ans of remaining) {
-    await enterAnswer(page, ans, true /* hasCarry */);
+  // Complete the remaining 4 problems (all have carry)
+  // L3 seeds: [18,4]=22 onesSum=12, [23,8]=31 onesSum=11, [27,5]=32 onesSum=12, [19,7]=26 onesSum=16
+  const remaining = [[22, 12], [31, 11], [32, 12], [26, 16]];
+  for (const [ans, onesSum] of remaining) {
+    await enterAnswer(page, ans, onesSum);
     await page.waitForTimeout(900);
   }
 
@@ -613,10 +648,12 @@ test("Test 13: Add L6 full playthrough — all problems have carry", async ({
   await goToLevel(page, "add", 6);
   await expect(page.locator("#screen-add")).toBeVisible();
 
-  // All L6 add problems have carry — pass hasCarry=true to wait for fly animation
-  const answers = [85, 80, 66, 83, 85];
-  for (const ans of answers) {
-    await enterAnswer(page, ans, true /* hasCarry */);
+  // All L6 add problems have carry.
+  // L6 seeds: [47,38]=85 onesSum=15, [56,24]=80 onesSum=10,
+  //           [39,27]=66 onesSum=16, [65,18]=83 onesSum=13, [49,36]=85 onesSum=15
+  const problems = [[85, 15], [80, 10], [66, 16], [83, 13], [85, 15]];
+  for (const [ans, onesSum] of problems) {
+    await enterAnswer(page, ans, onesSum);
     await page.waitForTimeout(900);
   }
 

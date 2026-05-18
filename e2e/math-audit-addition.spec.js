@@ -15,6 +15,7 @@ import {
   unlockAll,
   goToLevel,
   dragDigitToSlot,
+  dragCompoundToSlot,
   enterAnswer,
   readWorksheetOperands,
 } from "./helpers/math.js";
@@ -45,7 +46,8 @@ for (let level = 1; level <= 6; level++) {
     for (let i = 0; i < seeds.length; i++) {
       const [seedA, seedB] = seeds[i];
       const expected = computeAnswer("add", seedA, seedB);
-      const hasCarry = (seedA % 10) + (seedB % 10) >= 10;
+      const onesSum = (seedA % 10) + (seedB % 10);
+      const hasCarry = onesSum >= 10;
 
       // Wait for problem to render (transition from prior problem = 500ms setTimeout
       // in advanceProblem, plus a little buffer)
@@ -57,7 +59,8 @@ for (let level = 1; level <= 6; level++) {
       expect(b, `L${level} P${i + 1}: expected operand b=${seedB}, got ${b}`).toBe(seedB);
 
       // --- Enter the correct answer ---
-      await enterAnswer(page, expected, { hasCarry });
+      // Carry problems require compound tile for ones slot
+      await enterAnswer(page, expected, { hasCarry, onesSum: hasCarry ? onesSum : null });
 
       // Brief pause after final digit so advance animation starts
       await page.waitForTimeout(300);
