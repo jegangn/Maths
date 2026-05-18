@@ -296,14 +296,16 @@ html, body {
   background: linear-gradient(to bottom, var(--world-sky) 0%, var(--world-sky) 60%, var(--world-ground) 60%, var(--world-ground) 100%);
 }
 .splash-title {
-  position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-  font-size: 96px; color: var(--ink);
+  position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+  font-size: 88px; line-height: 1; margin: 0;
+  color: var(--ink);
   text-shadow: 0 4px 0 var(--star);
   letter-spacing: 2px;
+  text-align: center;
 }
 .splash-mascot {
-  position: absolute; top: 180px; left: 50%; transform: translateX(-50%);
-  width: 380px; height: 380px;
+  position: absolute; top: 220px; left: 50%; transform: translateX(-50%);
+  width: 340px; height: 340px;
 }
 .splash-mascot svg { width: 100%; height: 100%; }
 .splash-play {
@@ -412,6 +414,7 @@ html, body {
   font-family: 'Lilita One', system-ui;
 }
 .worksheet .row { display: flex; gap: 16px; justify-content: flex-end; }
+.worksheet .row.top { position: relative; }
 .worksheet .row.bot .op { font-size: 96px; line-height: 120px; width: 60px; text-align: center; }
 .worksheet .cell { width: 100px; height: 120px; font-size: 96px; line-height: 120px; text-align: center; }
 .worksheet .cell.empty { opacity: 0; }
@@ -1115,14 +1118,31 @@ html, body {
     }
     return best;
   }
+  function stageInfo() {
+    const stage2 = document.getElementById("stage");
+    const rect = stage2.getBoundingClientRect();
+    const scale = rect.width / 1280;
+    return { stage: stage2, rect, scale };
+  }
+  function toStageLocal(clientX, clientY) {
+    const { rect, scale } = stageInfo();
+    return {
+      x: (clientX - rect.left) / scale,
+      y: (clientY - rect.top) / scale
+    };
+  }
   function createDragManager({ getTargets, onPickup, onDrop }) {
     let dragging = null;
     function start(e, sourceEl, payload) {
       e.preventDefault();
-      const rect = sourceEl.getBoundingClientRect();
-      const origin = { x: rect.left, y: rect.top };
-      const offsetX = e.clientX - rect.left;
-      const offsetY = e.clientY - rect.top;
+      const tileRect = sourceEl.getBoundingClientRect();
+      const { rect: sRect, scale } = stageInfo();
+      const tileLocalLeft = (tileRect.left - sRect.left) / scale;
+      const tileLocalTop = (tileRect.top - sRect.top) / scale;
+      const pointerLocal = toStageLocal(e.clientX, e.clientY);
+      const offsetX = pointerLocal.x - tileLocalLeft;
+      const offsetY = pointerLocal.y - tileLocalTop;
+      const origin = { x: tileLocalLeft, y: tileLocalTop };
       dragging = { sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId };
       sourceEl.setPointerCapture?.(e.pointerId);
       sourceEl.classList.add("dragging");
@@ -1134,9 +1154,10 @@ html, body {
     function move(e) {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
       const { sourceEl, offsetX, offsetY } = dragging;
+      const p = toStageLocal(e.clientX, e.clientY);
       sourceEl.style.position = "absolute";
-      sourceEl.style.left = `${e.clientX - offsetX}px`;
-      sourceEl.style.top = `${e.clientY - offsetY}px`;
+      sourceEl.style.left = `${p.x - offsetX}px`;
+      sourceEl.style.top = `${p.y - offsetY}px`;
     }
     function end(e) {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
@@ -1160,9 +1181,14 @@ html, body {
   }
   function tileBounceBack(el, origin) {
     return new Promise((resolve) => {
-      const start = el.getBoundingClientRect();
-      const dx = origin.x - start.left;
-      const dy = origin.y - start.top;
+      const stage2 = document.getElementById("stage");
+      const sRect = stage2.getBoundingClientRect();
+      const scale = sRect.width / 1280;
+      const elRect = el.getBoundingClientRect();
+      const startLocalX = (elRect.left - sRect.left) / scale;
+      const startLocalY = (elRect.top - sRect.top) / scale;
+      const dx = origin.x - startLocalX;
+      const dy = origin.y - startLocalY;
       const apex = -24;
       el.style.transition = "none";
       el.classList.remove("dragging");
@@ -1265,9 +1291,8 @@ html, body {
       newTens.className = "borrow-replacement";
       newTens.textContent = String(newTensDigit);
       tensTopEl.parentElement.appendChild(newTens);
-      const tensRect = tensTopEl.getBoundingClientRect();
-      newTens.style.left = `${tensRect.left}px`;
-      newTens.style.top = `${tensRect.top - 70}px`;
+      newTens.style.left = `${tensTopEl.offsetLeft}px`;
+      newTens.style.top = `${tensTopEl.offsetTop - 70}px`;
       newTens.animate(
         [{ opacity: 0, transform: "translateY(20px)" }, { opacity: 1, transform: "translateY(0)" }],
         { duration: 200, easing: "ease-out", fill: "forwards" }
@@ -1482,11 +1507,15 @@ html, body {
       syncTrayDim();
     }
     function syncTrayDim() {
-      const expected = activeState.expected[activeState.activeIndex];
       sec.querySelectorAll(".tile").forEach((tile) => {
         tile.classList.remove("dim", "hint-dim", "hint-target");
-        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
       });
+      if (activeState.slots.length === 2 && activeState.activeIndex === 0) {
+        const expected = activeState.expected[activeState.activeIndex];
+        sec.querySelectorAll(".tile").forEach((tile) => {
+          if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+        });
+      }
     }
     function setupDrag() {
       dragMgr = createDragManager({
@@ -1668,11 +1697,15 @@ html, body {
       syncTrayDim();
     }
     function syncTrayDim() {
-      const expected = activeState.expected[activeState.activeIndex];
       sec.querySelectorAll(".tile").forEach((tile) => {
         tile.classList.remove("dim", "hint-dim", "hint-target");
-        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
       });
+      if (activeState.slots.length === 2 && activeState.activeIndex === 0) {
+        const expected = activeState.expected[activeState.activeIndex];
+        sec.querySelectorAll(".tile").forEach((tile) => {
+          if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+        });
+      }
     }
     function setupDrag() {
       dragMgr = createDragManager({
@@ -1882,11 +1915,15 @@ html, body {
       setupDrag();
     }
     function syncTrayDim() {
-      const expected = state2.expected[state2.activeIndex];
       sec.querySelectorAll(".tile").forEach((tile) => {
         tile.classList.remove("dim", "hint-dim", "hint-target");
-        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
       });
+      if (state2.slots.length === 2 && state2.activeIndex === 0) {
+        const expected = state2.expected[state2.activeIndex];
+        sec.querySelectorAll(".tile").forEach((tile) => {
+          if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+        });
+      }
     }
     function applyHint() {
       const expected = state2.expected[state2.activeIndex];
@@ -2110,19 +2147,19 @@ html, body {
             const tray = target.el;
             const ghosts = tray.querySelectorAll(".ghost");
             const slot = ghosts[gc.filled];
-            const slotRect = slot.getBoundingClientRect();
             sourceEl.classList.remove("dragging", "idle-wobble");
             sourceEl.classList.add("in-group");
             sourceEl.style.position = "absolute";
-            sourceEl.style.left = `${slotRect.left}px`;
-            sourceEl.style.top = `${slotRect.top}px`;
+            sourceEl.style.left = `${slot.offsetLeft}px`;
+            sourceEl.style.top = `${slot.offsetTop}px`;
             tray.appendChild(sourceEl);
             gc.filled++;
             tray.querySelector(".count-chip").textContent = `${gc.filled} / ${gc.needed}`;
-            sfx.trayFull();
+            sfx.tilePickup();
             if (gc.filled === gc.needed) {
               tray.classList.add("full");
               tray.querySelector(".count-chip").textContent = `\u2605 ${gc.needed}`;
+              sfx.trayFull();
             }
             if (groupContents.every((g) => g.filled === g.needed)) {
               setTimeout(showAnswerPhase, 800);
@@ -2167,11 +2204,15 @@ html, body {
       });
     }
     function syncTrayDim() {
-      const expected = state2.expected[state2.activeIndex];
       sec.querySelectorAll(".tile").forEach((tile) => {
         tile.classList.remove("dim", "hint-dim", "hint-target");
-        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
       });
+      if (state2.slots.length === 2 && state2.activeIndex === 0) {
+        const expected = state2.expected[state2.activeIndex];
+        sec.querySelectorAll(".tile").forEach((tile) => {
+          if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+        });
+      }
     }
     function applyHint() {
       const expected = state2.expected[state2.activeIndex];
