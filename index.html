@@ -71,6 +71,7 @@ html, body {
   transform-origin: center center;
   background: var(--world-sky);
   overflow: hidden;
+  touch-action: none;
 }
 
 .screen { position: absolute; inset: 0; display: none; }
@@ -89,6 +90,7 @@ html, body {
   cursor: grab; user-select: none;
   transition: transform .12s var(--ease-pop), box-shadow .12s var(--ease-pop);
   position: relative;
+  touch-action: none;
 }
 .tile.dragging {
   transform: scale(1.15) translateY(-8px);
@@ -136,6 +138,7 @@ html, body {
   cursor: grab;
   transition: transform .2s var(--ease-pop);
   filter: drop-shadow(0 4px 0 rgba(120,70,20,0.25));
+  touch-action: none;
 }
 .block-host.idle-wobble { animation: blockWobble 2s ease-in-out infinite; }
 @keyframes blockWobble { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
