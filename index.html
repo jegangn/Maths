@@ -215,6 +215,7 @@ html, body {
   color: var(--ink);
   opacity: 0;
   transition: opacity .3s var(--ease-pop);
+  /* left/top set inline by JS per problem — no hardcoded position here */
 }
 .carry-slot.filled { opacity: 1; border-style: solid; }
 
@@ -420,8 +421,34 @@ html, body {
 .worksheet .cell.empty { opacity: 0; }
 .worksheet .line { background: var(--ink); height: 6px; border-radius: 3px; margin: 0 0 0 76px; max-width: 232px; }
 .worksheet .row.ans { gap: 16px; justify-content: flex-end; }
-.carry-slot { position: absolute; top: 32px; right: 132px; width: 60px; height: 60px; }
 .carry-slot.hidden { display: none; }
+
+/* Compound tiles (10-18): wider to fit two digits */
+.tile.compound {
+  width: 140px;
+  font-size: 52px;
+}
+
+/* Two-row tray when compound tiles are present */
+.digit-tray.two-row {
+  height: 232px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: center;
+}
+.digit-tray .tile-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Raise corner mascot when tray has two rows */
+#screen-add.two-row-active .corner-mascot {
+  bottom: 280px;
+}
 
 .digit-tray {
   position: absolute; bottom: 20px; left: 80px; width: 1120px; height: 120px;
@@ -683,6 +710,28 @@ html, body {
       slots,
       activeIndex: nextActive >= 0 ? nextActive : -1,
       lastDropCorrect: true
+    };
+  }
+  function dropCompound(state2, compoundValue, expectedSum) {
+    if (state2.slots.length !== 2 || state2.activeIndex !== state2.slots.length - 1) {
+      return { ...state2, lastDropCorrect: false, wrongCount: state2.wrongCount + 1 };
+    }
+    if (compoundValue !== expectedSum) {
+      return { ...state2, lastDropCorrect: false, wrongCount: state2.wrongCount + 1 };
+    }
+    const onesDigit = compoundValue % 10;
+    const tensDigit = Math.floor(compoundValue / 10);
+    if (onesDigit !== state2.expected[state2.slots.length - 1]) {
+      return { ...state2, lastDropCorrect: false, wrongCount: state2.wrongCount + 1 };
+    }
+    const slots = state2.slots.slice();
+    slots[state2.slots.length - 1] = onesDigit;
+    return {
+      ...state2,
+      slots,
+      activeIndex: 0,
+      lastDropCorrect: true,
+      carryFromCompound: tensDigit
     };
   }
   function isComplete(state2) {
@@ -1495,12 +1544,39 @@ html, body {
     function renderTray() {
       const tray = sec.querySelector(".digit-tray");
       tray.innerHTML = "";
-      for (let n = 0; n <= 9; n++) {
-        const t = document.createElement("div");
-        t.className = "tile";
-        t.dataset.digit = String(n);
-        t.textContent = String(n);
-        tray.appendChild(t);
+      const a = analyze(problems[idx]);
+      const useCompound = a.carry;
+      tray.classList.toggle("two-row", useCompound);
+      sec.classList.toggle("two-row-active", useCompound);
+      if (useCompound) {
+        const row1 = document.createElement("div");
+        row1.className = "tile-row";
+        for (let n = 0; n <= 9; n++) {
+          const t = document.createElement("div");
+          t.className = "tile";
+          t.dataset.digit = String(n);
+          t.textContent = String(n);
+          row1.appendChild(t);
+        }
+        tray.appendChild(row1);
+        const row2 = document.createElement("div");
+        row2.className = "tile-row";
+        for (let n = 10; n <= 18; n++) {
+          const t = document.createElement("div");
+          t.className = "tile compound";
+          t.dataset.compound = String(n);
+          t.textContent = String(n);
+          row2.appendChild(t);
+        }
+        tray.appendChild(row2);
+      } else {
+        for (let n = 0; n <= 9; n++) {
+          const t = document.createElement("div");
+          t.className = "tile";
+          t.dataset.digit = String(n);
+          t.textContent = String(n);
+          tray.appendChild(t);
+        }
       }
     }
     function renderProblem() {
@@ -1527,6 +1603,25 @@ html, body {
       </div>
     `;
       sec.dataset.problem = `${p.a}${p.op}${p.b}`;
+      if (a.carry) {
+        requestAnimationFrame(() => {
+          const tensCell = ws.querySelector(".row.top .cell:nth-child(1)");
+          const carrySlot = ws.querySelector(".carry-slot");
+          if (tensCell && carrySlot) {
+            const stageEl = document.getElementById("stage");
+            const stageRect = stageEl.getBoundingClientRect();
+            const scale = stageRect.width / 1280;
+            const tensRect = tensCell.getBoundingClientRect();
+            const wsRect = ws.getBoundingClientRect();
+            const tensLeftLocal = (tensRect.left - wsRect.left) / scale;
+            const tensWidthLocal = tensRect.width / scale;
+            const tensCenter = tensLeftLocal + tensWidthLocal / 2;
+            carrySlot.style.left = `${tensCenter - 30}px`;
+            carrySlot.style.top = "-72px";
+            carrySlot.style.right = "auto";
+          }
+        });
+      }
       syncTrayDim();
     }
     function syncTrayDim() {
@@ -1535,8 +1630,11 @@ html, body {
       });
       if (activeState.slots.length === 2 && activeState.activeIndex === 0) {
         const expected = activeState.expected[activeState.activeIndex];
-        sec.querySelectorAll(".tile").forEach((tile) => {
+        sec.querySelectorAll(".tile:not(.compound)").forEach((tile) => {
           if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
+        });
+        sec.querySelectorAll(".tile.compound").forEach((tile) => {
+          tile.classList.add("dim");
         });
       }
     }
@@ -1556,6 +1654,59 @@ html, body {
         async onDrop(payload, target, sourceEl, origin, parentInfo) {
           if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
           const targetIndex = parseInt(target.id, 10);
+          const a = analyze(problems[idx]);
+          if (payload.kind === "compound") {
+            if (!a.carry || targetIndex !== activeState.slots.length - 1) {
+              totalWrong++;
+              trayWrongOnCurrentSlot++;
+              await tileBounceBack(sourceEl, origin, parentInfo);
+              target.el.classList.add("flash-no");
+              setTimeout(() => target.el.classList.remove("flash-no"), 200);
+              if (trayWrongOnCurrentSlot >= 2) applyHint();
+              return;
+            }
+            const expectedSum = a.aOnes + a.bOnes;
+            const next2 = dropCompound(activeState, payload.value, expectedSum);
+            if (!next2.lastDropCorrect) {
+              totalWrong++;
+              activeState = next2;
+              trayWrongOnCurrentSlot++;
+              await tileBounceBack(sourceEl, origin, parentInfo);
+              target.el.classList.add("flash-no");
+              setTimeout(() => target.el.classList.remove("flash-no"), 200);
+              if (trayWrongOnCurrentSlot >= 2) applyHint();
+              return;
+            }
+            activeState = next2;
+            sourceEl.textContent = String(payload.value % 10);
+            await tileSnapIn(sourceEl, target.el);
+            const carrySlot = sec.querySelector(".carry-slot");
+            if (carrySlot) {
+              carrySlot.classList.remove("hidden");
+              await flyCarry(carrySlot, target.el);
+            }
+            sec.querySelectorAll(".slot").forEach((el) => {
+              const i = parseInt(el.dataset.index, 10);
+              el.classList.remove("active", "inactive");
+              if (i === activeState.activeIndex) el.classList.add("active");
+              else if (!el.classList.contains("filled")) el.classList.add("inactive");
+            });
+            trayWrongOnCurrentSlot = 0;
+            syncTrayDim();
+            renderTray();
+            setupDrag();
+            attachTileListeners();
+            return;
+          }
+          if (a.carry && targetIndex === activeState.slots.length - 1) {
+            totalWrong++;
+            trayWrongOnCurrentSlot++;
+            await tileBounceBack(sourceEl, origin, parentInfo);
+            target.el.classList.add("flash-no");
+            setTimeout(() => target.el.classList.remove("flash-no"), 200);
+            if (trayWrongOnCurrentSlot >= 2) applyHint();
+            return;
+          }
           const next = dropDigit(activeState, payload.digit, targetIndex);
           if (!next.lastDropCorrect) {
             totalWrong++;
@@ -1567,22 +1718,14 @@ html, body {
             if (trayWrongOnCurrentSlot >= 2) applyHint();
             return;
           }
-          const oldIndex = activeState.activeIndex;
           activeState = next;
           await tileSnapIn(sourceEl, target.el);
-          const a = analyze(problems[idx]);
-          if (oldIndex === activeState.expected.length - 1 && a.carry) {
-            const fromEl = target.el;
-            const carrySlot = sec.querySelector(".carry-slot");
-            await flyCarry(carrySlot, fromEl);
-          }
           if (!isComplete(activeState)) {
             sec.querySelectorAll(".slot").forEach((el) => {
               const i = parseInt(el.dataset.index, 10);
               el.classList.remove("active", "inactive");
               if (i === activeState.activeIndex) el.classList.add("active");
-              else if (el.classList.contains("filled")) {
-              } else el.classList.add("inactive");
+              else if (!el.classList.contains("filled")) el.classList.add("inactive");
             });
             trayWrongOnCurrentSlot = 0;
             syncTrayDim();
@@ -1599,21 +1742,40 @@ html, body {
     function attachTileListeners() {
       sec.querySelectorAll(".tile").forEach((tile) => {
         tile.onpointerdown = (e) => {
-          const digit = parseInt(tile.dataset.digit, 10);
-          dragMgr.start(e, tile, { digit });
+          if (tile.dataset.compound) {
+            const value = parseInt(tile.dataset.compound, 10);
+            dragMgr.start(e, tile, { kind: "compound", value });
+          } else {
+            const digit = parseInt(tile.dataset.digit, 10);
+            dragMgr.start(e, tile, { kind: "digit", digit });
+          }
         };
       });
     }
     function applyHint() {
-      const expected = activeState.expected[activeState.activeIndex];
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        if (parseInt(tile.dataset.digit, 10) === expected) {
-          tile.classList.remove("dim");
-          tile.classList.add("hint-target");
-        } else {
-          tile.classList.add("hint-dim");
-        }
-      });
+      const a = analyze(problems[idx]);
+      const isOnesSlot = activeState.slots.length === 2 && activeState.activeIndex === 1;
+      if (a.carry && isOnesSlot) {
+        const expectedSum = a.aOnes + a.bOnes;
+        sec.querySelectorAll(".tile").forEach((tile) => {
+          if (tile.dataset.compound && parseInt(tile.dataset.compound, 10) === expectedSum) {
+            tile.classList.remove("dim");
+            tile.classList.add("hint-target");
+          } else {
+            tile.classList.add("hint-dim");
+          }
+        });
+      } else {
+        const expected = activeState.expected[activeState.activeIndex];
+        sec.querySelectorAll(".tile:not(.compound)").forEach((tile) => {
+          if (parseInt(tile.dataset.digit, 10) === expected) {
+            tile.classList.remove("dim");
+            tile.classList.add("hint-target");
+          } else {
+            tile.classList.add("hint-dim");
+          }
+        });
+      }
       sfx.hintHmm();
     }
     async function advanceProblem() {
