@@ -212,6 +212,7 @@ export function revealStars(starEls, earnedCount) {
         return;
       }
       setTimeout(() => {
+        el.classList.remove("empty");
         el.classList.add("earned");
         sfx.starDing(i + 1);
         el.animate(
