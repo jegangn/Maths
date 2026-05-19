@@ -636,11 +636,14 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
       const ones = onesTopEl.getBoundingClientRect();
       const sx = tens.left + tens.width/2;
       const sy = tens.top + tens.height/2;
-      // Chip's final CENTER: horizontally aligned with the ones cell, 80px
-      // ABOVE its top edge. That leaves a 50px gap between the chip's
-      // bottom and the cell's top, into which the "+" sign tucks neatly.
+      // Chip's final CENTER: horizontally aligned with the ones cell.
+      // Position the chip so that the chip + plus + cell-digit read as one
+      // tight vertical equation with uniform ~8px gaps between each piece.
+      // Cell line-height is 120px so the digit's visible top sits ~26px below
+      // the cell border; placing plus center at the cell top edge puts the
+      // "+" just above where the digit appears.
       const ex = ones.left + ones.width / 2;
-      const ey = ones.top - 80;
+      const ey = ones.top - 56;
       chip.style.left = `${sx - 30}px`;
       chip.style.top  = `${sy - 30}px`;
 
@@ -661,7 +664,7 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
         plus.textContent = "+";
         document.body.appendChild(plus);
         plus.style.left = `${ex - 18}px`;
-        plus.style.top  = `${ones.top - 44}px`;
+        plus.style.top  = `${ones.top - 18}px`;
         plus.animate(
           [{ opacity: 0, transform: "scale(0.4)" },
            { opacity: 1, transform: "scale(1)" }],

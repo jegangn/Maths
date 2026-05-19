@@ -31,13 +31,16 @@ test('borrow: 10 + 4 equation is briefly visible before ones digit becomes 14', 
   const onesText = (await onesCell.textContent()).trim();
   expect(onesText.length).toBe(1); // still single digit ("2"), not "12" yet
 
-  // Visual sanity: chip should be ABOVE the ones cell vertically,
-  // and the "+" should be between them (still above the cell).
+  // Visual sanity: chip is above the plus, and the plus is above the
+  // visible digit. The plus may overlap the cell's whitespace area since
+  // the digit itself is centered in the cell with ~26px of empty space
+  // at the top.
   const chipBox = await chip.boundingBox();
   const plusBox = await plus.boundingBox();
   const onesBox = await onesCell.boundingBox();
-  expect(chipBox.y + chipBox.height).toBeLessThanOrEqual(plusBox.y + 10);
-  expect(plusBox.y + plusBox.height).toBeLessThanOrEqual(onesBox.y + 10);
+  expect(chipBox.y + chipBox.height).toBeLessThanOrEqual(plusBox.y + 12);
+  // Plus must sit above the cell's vertical centre (where the digit actually is)
+  expect(plusBox.y + plusBox.height).toBeLessThanOrEqual(onesBox.y + onesBox.height / 2);
 
   // Chip and "+" should be horizontally aligned with the ones cell (within tolerance)
   const chipCenterX = chipBox.x + chipBox.width / 2;
