@@ -290,6 +290,21 @@ html, body {
   animation: strikeDraw 1.3s cubic-bezier(0.45, 0.05, 0.25, 1) forwards;
 }
 @keyframes strikeDraw { to { stroke-dashoffset: 0; } }
+
+.borrow-plus {
+  position: fixed;
+  width: 36px; height: 36px;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  pointer-events: none;
+  z-index: 500;
+}
 .borrow-replacement {
   position: absolute;
   width: 60px; height: 60px;
@@ -2168,7 +2183,7 @@ html, body {
         const sx = tens.left + tens.width / 2;
         const sy = tens.top + tens.height / 2;
         const ex = ones.left + ones.width / 2;
-        const ey = ones.top + ones.height / 2;
+        const ey = ones.top - 80;
         chip.style.left = `${sx - 30}px`;
         chip.style.top = `${sy - 30}px`;
         chip.animate(
@@ -2178,29 +2193,58 @@ html, body {
             { left: `${(sx + ex) / 2 - 30}px`, top: `${(sy + ey) / 2 - 30}px`, transform: "scale(1.1)", opacity: 1, offset: 0.6 },
             { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 }
           ],
-          { duration: 1500, easing: SMOOTH, fill: "forwards" }
+          { duration: 1300, easing: SMOOTH, fill: "forwards" }
         ).onfinish = () => {
-          onesTopEl.animate(
+          const plus = document.createElement("div");
+          plus.className = "borrow-plus";
+          plus.textContent = "+";
+          document.body.appendChild(plus);
+          plus.style.left = `${ex - 18}px`;
+          plus.style.top = `${ones.top - 44}px`;
+          plus.animate(
             [
-              { opacity: 1, transform: "scale(1)" },
-              { opacity: 0, transform: "scale(0.4)" }
+              { opacity: 0, transform: "scale(0.4)" },
+              { opacity: 1, transform: "scale(1)" }
             ],
-            { duration: 500, easing: SMOOTH, fill: "forwards" }
-          ).onfinish = () => {
-            onesTopEl.textContent = String(newOnesValue);
+            { duration: 350, easing: SMOOTH, fill: "forwards" }
+          );
+          setTimeout(() => {
+            plus.animate(
+              [
+                { opacity: 1, transform: "scale(1)" },
+                { opacity: 0, transform: "scale(0.5)" }
+              ],
+              { duration: 400, easing: SMOOTH, fill: "forwards" }
+            ).onfinish = () => plus.remove();
+            const targetTop = ones.top + ones.height / 2 - 30;
+            chip.animate(
+              [
+                { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
+                { left: `${ex - 30}px`, top: `${targetTop}px`, transform: "scale(0.5)", opacity: 0 }
+              ],
+              { duration: 500, easing: SMOOTH, fill: "forwards" }
+            ).onfinish = () => chip.remove();
             onesTopEl.animate(
               [
-                { opacity: 0, transform: "scale(0.4)" },
-                { opacity: 1, transform: "scale(1)" }
+                { opacity: 1, transform: "scale(1)" },
+                { opacity: 0, transform: "scale(0.6)" }
               ],
-              { duration: 600, easing: SMOOTH, fill: "forwards" }
+              { duration: 400, easing: SMOOTH, fill: "forwards" }
             ).onfinish = () => {
-              chip.remove();
-              setTimeout(resolve, 400);
+              onesTopEl.textContent = String(newOnesValue);
+              onesTopEl.animate(
+                [
+                  { opacity: 0, transform: "scale(0.6)" },
+                  { opacity: 1, transform: "scale(1)" }
+                ],
+                { duration: 500, easing: SMOOTH, fill: "forwards" }
+              ).onfinish = () => {
+                setTimeout(resolve, 350);
+              };
             };
-          };
+          }, 1100);
         };
-      }, 1700);
+      }, 1600);
     });
   }
   function tapBlock(blockEl, count) {
