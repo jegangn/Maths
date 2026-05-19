@@ -314,6 +314,13 @@ html, body {
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
 }
+/* Pencil-style "1" carry mark above-LEFT of the unchanged ones digit.
+   Same size as the new-tens digit above the struck "3" so they read as
+   a matched pair; tinted with the borrow accent so the kid sees it as
+   a teacher annotation. */
+.borrow-replacement.borrow-carry {
+  color: #FF7A40;
+}
 
 /* ===== TASK 19: Block Styles ===== */
 .count-badge {
@@ -431,8 +438,24 @@ html, body {
   0%,100% { box-shadow: var(--sh-3), 0 0 0 0 var(--world-primary); }
   50%     { box-shadow: var(--sh-3), 0 0 0 18px transparent; }
 }
-.cog-corner { position: absolute; top: 32px; right: 32px; width: 80px; height: 80px; cursor: pointer; }
-.cog-corner svg { width: 100%; height: 100%; }
+.cog-corner {
+  position: absolute; top: 32px; right: 32px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-pill);
+  box-shadow: var(--sh-1);
+}
+.cog-corner svg { width: 56px; height: 56px; }
+.cog-label { font-size: 28px; color: var(--ink); letter-spacing: 0.04em; }
+.parent-lock-banner {
+  position: absolute; top: 250px; left: 50%; transform: translateX(-50%);
+  background: var(--gentle-no); color: #FFF; border: 4px solid var(--ink);
+  border-radius: var(--r-pill);
+  padding: 18px 40px; font-size: 32px; box-shadow: var(--sh-2);
+  letter-spacing: 0.04em;
+  z-index: 50;
+}
 
 /* ===== TASK 25: World Map Screen ===== */
 #screen-map {
@@ -459,7 +482,7 @@ html, body {
 
 .world-grid {
   display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 24px; height: 100%; padding-top: 24px;
+  gap: 24px; height: 100%; padding: 120px 24px 24px;
 }
 .world-panel {
   background: var(--bg-card);
@@ -552,6 +575,13 @@ html, body {
   height: 96px;
   font-size: 56px;
 }
+/* Smaller compound variant used by multiplication answer options — many
+   more tiles need to fit in the tray (11–16 in a row vs. 5 for addition). */
+.tile.compound.mult-option {
+  width: 76px;
+  height: 76px;
+  font-size: 44px;
+}
 
 /* Two-row tray when compound tiles are present */
 .digit-tray.two-row {
@@ -606,16 +636,57 @@ html, body {
 .op-chip.q { border-style: dashed; background: transparent; animation: slotPulse 1.8s var(--ease-soft) infinite; }
 .op-sym { font-size: 80px; color: var(--ink); }
 .firefly-area {
-  position: absolute; top: 260px; left: 80px; width: 1120px; height: 230px;
-  display: flex; gap: 80px; justify-content: center; align-items: center;
+  position: absolute; top: 240px; left: 80px; width: 1120px; height: 260px;
+  display: flex; gap: 40px; justify-content: center; align-items: center;
 }
-.lily-group { position: relative; width: 320px; height: 230px; }
+/* Lily-pads must NOT shrink when there are 4 groups (L3 of mult-tap) — keep
+   them at a fixed 240×240 so the ellipse stays roughly circular and there
+   is room to arrange up to 5 fireflies inside. */
+.lily-group { position: relative; width: 240px; height: 240px; flex-shrink: 0; }
 .lily-group svg.lilypad { position: absolute; inset: 0; }
+/* Fireflies are arranged inside the lily-pad ellipse. With the lily-group
+   at 240×240, the ellipse is roughly 225 wide × 206 tall. We pick a
+   per-count layout that keeps every firefly visually inside the curve. */
 .block-grid {
   position: absolute; inset: 0;
-  display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr);
-  place-items: center; gap: 12px; padding: 40px;
+  display: grid;
+  place-content: center;
+  justify-items: center; align-items: center;
+  gap: 10px;
 }
+.block-grid .block-host { width: 72px; height: 72px; }
+
+.block-grid[data-count="1"] { grid-template-columns: 72px; }
+.block-grid[data-count="2"] { grid-template-columns: repeat(2, 72px); }
+
+/* 3 fireflies in a 1-top / 2-bottom triangle so they sit comfortably
+   inside the ellipse instead of poking out the sides of a 3-wide row. */
+.block-grid[data-count="3"] {
+  grid-template-columns: repeat(2, 72px);
+  grid-template-rows: repeat(2, 72px);
+}
+.block-grid[data-count="3"] > :nth-child(1) { grid-column: 1 / span 2; grid-row: 1; }
+.block-grid[data-count="3"] > :nth-child(2) { grid-column: 1; grid-row: 2; }
+.block-grid[data-count="3"] > :nth-child(3) { grid-column: 2; grid-row: 2; }
+
+.block-grid[data-count="4"] {
+  grid-template-columns: repeat(2, 72px);
+  grid-template-rows: repeat(2, 72px);
+}
+
+/* 5 fireflies in a 3-on-top / 2-on-bottom pyramid. The 3-wide top row
+   only fits inside the ellipse at a smaller firefly size. */
+.block-grid[data-count="5"] {
+  grid-template-columns: repeat(6, 28px);
+  grid-template-rows: repeat(2, 56px);
+  gap: 4px;
+}
+.block-grid[data-count="5"] .block-host { width: 56px; height: 56px; }
+.block-grid[data-count="5"] > :nth-child(1) { grid-column: 1 / span 2; grid-row: 1; }
+.block-grid[data-count="5"] > :nth-child(2) { grid-column: 3 / span 2; grid-row: 1; }
+.block-grid[data-count="5"] > :nth-child(3) { grid-column: 5 / span 2; grid-row: 1; }
+.block-grid[data-count="5"] > :nth-child(4) { grid-column: 2 / span 2; grid-row: 2; }
+.block-grid[data-count="5"] > :nth-child(5) { grid-column: 4 / span 2; grid-row: 2; }
 .total-reveal {
   position: absolute; top: 520px; left: 50%; transform: translateX(-50%);
   width: 380px; height: 120px;
@@ -683,7 +754,7 @@ html, body {
   padding: 24px; align-items: center; justify-content: center;
 }
 .ans-host {
-  position: absolute; top: 220px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 390px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 16px; align-items: center;
   background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
   padding: 16px 24px; box-shadow: var(--sh-2);
@@ -875,7 +946,7 @@ html, body {
   }
   var KEY_PREFIX = "bm.stars";
   function loadProgress(storage = globalThis.localStorage) {
-    const out = { add: {}, sub: {}, mult: {} };
+    const out = { add: {}, sub: {}, mult: {}, unlockAll: false };
     if (!storage) return out;
     for (const w of ["add", "sub", "mult"]) {
       for (let l = 1; l <= 6; l++) {
@@ -883,6 +954,7 @@ html, body {
         if (v) out[w][l] = parseInt(v, 10);
       }
     }
+    out.unlockAll = storage.getItem("bm.unlockAll") === "1";
     return out;
   }
   function recordStars(storage, world, level, stars) {
@@ -892,6 +964,7 @@ html, body {
     if (stars > prior) storage.setItem(key, String(stars));
   }
   function isLevelUnlocked(progress, world, level) {
+    if (progress.unlockAll) return true;
     if (level === 1) return true;
     return (progress[world][level - 1] || 0) > 0;
   }
@@ -1352,6 +1425,14 @@ html, body {
       notes.forEach((f, i) => setTimeout(() => tone({ freq: f, type: "sine", dur: 0.18, gain: 0.28 }), i * 60));
       setTimeout(() => tone({ freq: 1568, type: "sine", dur: 0.4, gain: 0.18, decay: 0.4 }), 120);
     },
+    // Longer, more festive ding for completing a whole multiplication problem.
+    // Ascending C-major arpeggio + a top-octave bell shimmer.
+    correctYay: () => {
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((f, i) => setTimeout(() => tone({ freq: f, type: "triangle", dur: 0.22, gain: 0.26 }), i * 80));
+      setTimeout(() => tone({ freq: 1568, type: "sine", dur: 0.5, gain: 0.2, decay: 0.5 }), 320);
+      setTimeout(() => tone({ freq: 2093, type: "sine", dur: 0.5, gain: 0.16, decay: 0.5 }), 400);
+    },
     tileDropWrong: () => tone({ freq: 180, freqEnd: 90, type: "triangle", dur: 0.25, gain: 0.22, lp: 800 }),
     slotFill: () => tone({ freq: 1568, type: "sine", dur: 0.12, gain: 0.2 }),
     carryWhoosh: () => {
@@ -1394,6 +1475,10 @@ html, body {
     sec.id = "screen-splash";
     const cogWrap = document.createElement("div");
     cogWrap.className = "cog-corner";
+    const cogLabel = document.createElement("span");
+    cogLabel.className = "cog-label display";
+    cogLabel.textContent = "PARENTS";
+    cogWrap.appendChild(cogLabel);
     cogWrap.insertAdjacentHTML("beforeend", cog());
     sec.appendChild(cogWrap);
     const title = document.createElement("h1");
@@ -1408,7 +1493,40 @@ html, body {
     btn.className = "btn pill splash-play";
     btn.textContent = "TAP TO PLAY \u25B6";
     sec.appendChild(btn);
+    const lockUntil = parseInt(localStorage.getItem("bm.parentLockUntil") || "0", 10);
+    const lockRemaining = Math.max(0, lockUntil - Date.now());
+    let lockBanner = null;
+    let lockTimer = null;
+    if (lockRemaining > 0) {
+      lockBanner = document.createElement("div");
+      lockBanner.className = "parent-lock-banner display";
+      const swallow = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      lockBanner.addEventListener("pointerdown", swallow);
+      lockBanner.addEventListener("pointerup", swallow);
+      lockBanner.addEventListener("click", swallow);
+      sec.appendChild(lockBanner);
+      const tick = () => {
+        const left = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1e3));
+        if (left <= 0) {
+          localStorage.removeItem("bm.parentLockUntil");
+          lockBanner.remove();
+          lockBanner = null;
+          clearInterval(lockTimer);
+        } else {
+          lockBanner.textContent = `PARENTS: PLEASE WAIT ${left}s`;
+        }
+      };
+      tick();
+      lockTimer = setInterval(tick, 250);
+    }
+    function isLocked() {
+      return lockBanner !== null;
+    }
     function go() {
+      if (isLocked()) return;
       unlockAudio();
       sfx.transition();
       router2.go("map");
@@ -1418,14 +1536,15 @@ html, body {
       if (e.target.closest(".cog-corner")) return;
       if (!e.target.closest("button")) go();
     });
-    let holdTimer = null;
-    cogWrap.addEventListener("pointerdown", () => {
-      holdTimer = setTimeout(() => router2.go("settings"), 1500);
+    cogWrap.addEventListener("pointerup", () => {
+      if (isLocked()) return;
+      router2.go("settings");
     });
-    cogWrap.addEventListener("pointerup", () => clearTimeout(holdTimer));
-    cogWrap.addEventListener("pointerleave", () => clearTimeout(holdTimer));
     stage2.appendChild(sec);
-    return () => sec.remove();
+    return () => {
+      if (lockTimer) clearInterval(lockTimer);
+      sec.remove();
+    };
   }
 
   // src/screens/map.js
@@ -1646,23 +1765,26 @@ html, body {
       el.classList.remove("dragging");
       el.animate(
         [
-          { transform: `translate(0,0) scale(1.15)` },
-          { transform: `translate(${dx}px,${dy}px) scale(0.96)`, offset: 0.8 },
-          { transform: `translate(${dx}px,${dy}px) scale(1)` }
+          { transform: `translate(0,0) scale(1.08)`, opacity: 1 },
+          { transform: `translate(${dx}px,${dy}px) scale(1)`, opacity: 1, offset: 0.85 },
+          { transform: `translate(${dx}px,${dy}px) scale(1)`, opacity: 0 }
         ],
-        { duration: 220, easing: "cubic-bezier(0.25,0.9,0.3,1.4)" }
-      ).onfinish = () => {
-        el.remove();
+        { duration: 360, easing: "cubic-bezier(0.33, 0, 0.2, 1)", fill: "forwards" }
+      );
+      setTimeout(() => {
         targetEl.classList.remove("active");
         targetEl.classList.add("filled");
         targetEl.textContent = el.textContent;
         targetEl.classList.add("just-filled");
-        setTimeout(() => targetEl.classList.remove("just-filled"), 700);
         correctBurst(targetEl);
         const mascot = document.querySelector(".corner-mascot svg");
         if (mascot) mascotCheer(mascot);
+      }, 280);
+      setTimeout(() => {
+        el.remove();
+        setTimeout(() => targetEl.classList.remove("just-filled"), 400);
         resolve();
-      };
+      }, 380);
       sfx.correctDing();
     });
   }
@@ -2141,7 +2263,7 @@ html, body {
   function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue }) {
     return new Promise((resolve) => {
       sfx.borrowWhoosh();
-      const PHASE_A_MS = 1300;
+      const PHASE_A_MS = 1800;
       const SMOOTH = "cubic-bezier(0.45, 0.05, 0.25, 1)";
       const SVG_NS = "http://www.w3.org/2000/svg";
       const strike = document.createElement("div");
@@ -2164,9 +2286,8 @@ html, body {
       newTens.className = "borrow-replacement";
       newTens.textContent = String(newTensDigit);
       tensTopEl.parentElement.appendChild(newTens);
-      const NEW_TENS_W = 60;
-      newTens.style.left = `${tensTopEl.offsetLeft + (tensTopEl.offsetWidth - NEW_TENS_W) / 2}px`;
-      newTens.style.top = `${tensTopEl.offsetTop - 70}px`;
+      newTens.style.left = `${tensTopEl.offsetLeft - 20}px`;
+      newTens.style.top = `${tensTopEl.offsetTop - 25}px`;
       newTens.animate(
         [
           { opacity: 0, transform: "scale(0.4)" },
@@ -2194,7 +2315,7 @@ html, body {
             { left: `${(sx + ex) / 2 - 30}px`, top: `${(sy + ey) / 2 - 30}px`, transform: "scale(1.1)", opacity: 1, offset: 0.6 },
             { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 }
           ],
-          { duration: 1300, easing: SMOOTH, fill: "forwards" }
+          { duration: 1700, easing: SMOOTH, fill: "forwards" }
         ).onfinish = () => {
           const plus = document.createElement("div");
           plus.className = "borrow-plus";
@@ -2207,7 +2328,7 @@ html, body {
               { opacity: 0, transform: "scale(0.4)" },
               { opacity: 1, transform: "scale(1)" }
             ],
-            { duration: 350, easing: SMOOTH, fill: "forwards" }
+            { duration: 500, easing: SMOOTH, fill: "forwards" }
           );
           setTimeout(() => {
             plus.animate(
@@ -2215,37 +2336,34 @@ html, body {
                 { opacity: 1, transform: "scale(1)" },
                 { opacity: 0, transform: "scale(0.5)" }
               ],
-              { duration: 400, easing: SMOOTH, fill: "forwards" }
+              { duration: 500, easing: SMOOTH, fill: "forwards" }
             ).onfinish = () => plus.remove();
-            const targetTop = ones.top + ones.height / 2 - 30;
             chip.animate(
               [
                 { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
-                { left: `${ex - 30}px`, top: `${targetTop}px`, transform: "scale(0.5)", opacity: 0 }
+                { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(0.7)", opacity: 0 }
               ],
-              { duration: 500, easing: SMOOTH, fill: "forwards" }
+              { duration: 600, easing: SMOOTH, fill: "forwards" }
             ).onfinish = () => chip.remove();
-            onesTopEl.animate(
+            const carryDigit = Math.floor(newOnesValue / 10);
+            const carry = document.createElement("div");
+            carry.className = "borrow-replacement borrow-carry";
+            carry.textContent = String(carryDigit);
+            onesTopEl.parentElement.appendChild(carry);
+            carry.style.left = `${onesTopEl.offsetLeft - 20}px`;
+            carry.style.top = `${onesTopEl.offsetTop - 25}px`;
+            carry.animate(
               [
-                { opacity: 1, transform: "scale(1)" },
-                { opacity: 0, transform: "scale(0.6)" }
+                { opacity: 0, transform: "scale(0.4)" },
+                { opacity: 1, transform: "scale(1)" }
               ],
-              { duration: 400, easing: SMOOTH, fill: "forwards" }
+              { duration: 700, easing: SMOOTH, fill: "forwards" }
             ).onfinish = () => {
-              onesTopEl.textContent = String(newOnesValue);
-              onesTopEl.animate(
-                [
-                  { opacity: 0, transform: "scale(0.6)" },
-                  { opacity: 1, transform: "scale(1)" }
-                ],
-                { duration: 500, easing: SMOOTH, fill: "forwards" }
-              ).onfinish = () => {
-                setTimeout(resolve, 350);
-              };
+              setTimeout(resolve, 500);
             };
-          }, 1100);
+          }, 1500);
         };
-      }, 1600);
+      }, 2300);
     });
   }
   function tapBlock(blockEl, count) {
@@ -2575,6 +2693,7 @@ html, body {
             setupDrag();
             attachTileListeners();
           } else {
+            sfx.correctYay();
             await advanceProblem();
           }
         }
@@ -2778,6 +2897,7 @@ html, body {
             setupDrag();
             attachTileListeners();
           } else {
+            sfx.correctYay();
             await advanceProblem();
           }
         }
@@ -2824,13 +2944,18 @@ html, body {
   }
 
   // src/screens/mult-tap.js
+  function compoundOptions(correct) {
+    const max = Math.max(20, correct);
+    const tiles = [];
+    for (let n = 10; n <= max; n++) tiles.push(n);
+    return tiles;
+  }
   function mount5(stage2, ctx2, router2) {
     const { world, level } = ctx2;
     stage2.dataset.world = "mult";
     const problems = getProblems(world, level);
     let idx = 0;
     let totalWrong = 0;
-    let state2 = null;
     let dragMgr = null;
     let globalCount = 0;
     let tappedSet = /* @__PURE__ */ new Set();
@@ -2866,7 +2991,6 @@ html, body {
     function renderProblem() {
       trayWrongOnCurrentSlot = 0;
       const p = problems[idx];
-      state2 = createAnswerState(p.answer);
       globalCount = 0;
       tappedSet.clear();
       const probEl = sec.querySelector(".mult-problem");
@@ -2886,6 +3010,7 @@ html, body {
         pad.insertAdjacentHTML("beforeend", lilypad());
         const blocks = document.createElement("div");
         blocks.className = "block-grid";
+        blocks.dataset.count = String(p.b);
         for (let i = 0; i < p.b; i++) {
           const wrap = document.createElement("div");
           wrap.className = "block-host untapped";
@@ -2900,9 +3025,7 @@ html, body {
         area.appendChild(pad);
       }
       blockFlyIn(blockEls);
-      const reveal = sec.querySelector(".total-reveal");
-      reveal.classList.add("hidden");
-      sec.querySelector(".digit-tray").innerHTML = "";
+      showReveal();
     }
     function onBlockTap(wrap) {
       const id = `${wrap.dataset.groupIndex}-${wrap.dataset.blockIndex}`;
@@ -2913,17 +3036,12 @@ html, body {
       tappedSet.add(id);
       globalCount++;
       tapBlock(wrap, globalCount);
-      const total = problems[idx].answer;
-      if (globalCount === total) {
-        showReveal();
-      }
     }
     function showReveal() {
+      const p = problems[idx];
       const reveal = sec.querySelector(".total-reveal");
       const host = reveal.querySelector(".ans-slot-host");
-      host.innerHTML = "";
-      if (state2.slots.length === 2) host.insertAdjacentHTML("beforeend", '<div class="slot inactive" data-index="0"></div>');
-      host.insertAdjacentHTML("beforeend", `<div class="slot active" data-index="${state2.slots.length - 1}"></div>`);
+      host.innerHTML = `<div class="slot active" data-index="0"></div>`;
       reveal.classList.remove("hidden");
       reveal.animate(
         [{ opacity: 0, transform: "translateY(20px) scale(0.9)" }, { opacity: 1, transform: "translateY(0) scale(1)" }],
@@ -2931,38 +3049,39 @@ html, body {
       );
       const tray = sec.querySelector(".digit-tray");
       tray.innerHTML = "";
-      for (let n = 0; n <= 9; n++) {
-        const t = document.createElement("div");
-        t.className = "tile";
-        t.dataset.digit = String(n);
-        t.textContent = String(n);
-        tray.appendChild(t);
-      }
-      syncTrayDim();
-      setupDrag();
-    }
-    function syncTrayDim() {
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        tile.classList.remove("dim", "hint-dim", "hint-target");
-      });
-      if (state2.slots.length === 2 && state2.activeIndex === 0) {
-        const expected = state2.expected[state2.activeIndex];
-        sec.querySelectorAll(".tile").forEach((tile) => {
-          if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
-        });
-      }
-    }
-    function applyHint() {
-      const expected = state2.expected[state2.activeIndex];
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        if (parseInt(tile.dataset.digit, 10) === expected) {
-          tile.classList.remove("dim");
-          tile.classList.add("hint-target");
+      tray.classList.remove("two-row");
+      if (p.answer >= 10) {
+        const values = compoundOptions(p.answer);
+        const buildTile = (n) => {
+          const t = document.createElement("div");
+          t.className = "tile compound mult-option";
+          t.dataset.value = String(n);
+          t.textContent = String(n);
+          return t;
+        };
+        if (values.length > 11) {
+          tray.classList.add("two-row");
+          const half = Math.ceil(values.length / 2);
+          const row1 = document.createElement("div");
+          row1.className = "tile-row";
+          const row2 = document.createElement("div");
+          row2.className = "tile-row";
+          values.forEach((n, i) => (i < half ? row1 : row2).appendChild(buildTile(n)));
+          tray.appendChild(row1);
+          tray.appendChild(row2);
         } else {
-          tile.classList.add("hint-dim");
+          values.forEach((n) => tray.appendChild(buildTile(n)));
         }
-      });
-      sfx.hintHmm();
+      } else {
+        for (let n = 0; n <= 9; n++) {
+          const t = document.createElement("div");
+          t.className = "tile";
+          t.dataset.value = String(n);
+          t.textContent = String(n);
+          tray.appendChild(t);
+        }
+      }
+      setupDrag();
     }
     function setupDrag() {
       dragMgr = createDragManager({
@@ -2979,46 +3098,32 @@ html, body {
         },
         async onDrop(payload, target, sourceEl, origin, parentInfo) {
           if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
-          const next = dropDigit(state2, payload.digit, parseInt(target.id, 10));
-          if (!next.lastDropCorrect) {
+          const correct = problems[idx].answer;
+          if (payload.value !== correct) {
             totalWrong++;
-            state2 = next;
             trayWrongOnCurrentSlot++;
             await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
-            if (trayWrongOnCurrentSlot >= 2) applyHint();
             return;
           }
-          state2 = next;
           await tileSnapIn(sourceEl, target.el);
-          if (isComplete(state2)) {
-            idx++;
-            renderProgressDots();
-            if (idx >= problems.length) {
-              router2.go("complete", { world, level, wrongCount: totalWrong });
-              return;
-            }
-            sfx.transition();
-            setTimeout(renderProblem, 500);
-          } else {
-            sec.querySelectorAll(".slot").forEach((el) => {
-              const i = parseInt(el.dataset.index, 10);
-              el.classList.remove("active", "inactive");
-              if (i === state2.activeIndex) el.classList.add("active");
-              else if (!el.classList.contains("filled")) el.classList.add("inactive");
-            });
-            trayWrongOnCurrentSlot = 0;
-            syncTrayDim();
+          sfx.correctYay();
+          idx++;
+          renderProgressDots();
+          if (idx >= problems.length) {
+            router2.go("complete", { world, level, wrongCount: totalWrong });
+            return;
           }
-          renderTrayListeners();
+          sfx.transition();
+          setTimeout(renderProblem, 500);
         }
       });
       renderTrayListeners();
     }
     function renderTrayListeners() {
       sec.querySelectorAll(".tile").forEach((tile) => {
-        tile.onpointerdown = (e) => dragMgr.start(e, tile, { digit: parseInt(tile.dataset.digit, 10) });
+        tile.onpointerdown = (e) => dragMgr.start(e, tile, { value: parseInt(tile.dataset.value, 10) });
       });
     }
     stage2.appendChild(sec);
@@ -3026,16 +3131,22 @@ html, body {
   }
 
   // src/screens/mult-drag.js
+  function compoundOptions2(correct) {
+    const max = Math.max(20, correct);
+    const tiles = [];
+    for (let n = 10; n <= max; n++) tiles.push(n);
+    return tiles;
+  }
   function mount6(stage2, ctx2, router2) {
     const { world, level } = ctx2;
     stage2.dataset.world = "mult";
     const problems = getProblems(world, level);
     let idx = 0;
     let totalWrong = 0;
-    let state2 = null;
     let dragMgr = null;
     let trayWrongOnCurrentSlot = 0;
     const groupContents = [];
+    let groupRowFade = null;
     const sec = document.createElement("section");
     sec.className = "screen active";
     sec.id = "screen-mult-drag";
@@ -3089,7 +3200,6 @@ html, body {
     function renderProblem() {
       trayWrongOnCurrentSlot = 0;
       const p = problems[idx];
-      state2 = createAnswerState(p.answer);
       groupContents.length = 0;
       multProblem.textContent = "";
       const chipA = document.createElement("div");
@@ -3112,6 +3222,10 @@ html, body {
       multProblem.appendChild(chipB);
       multProblem.appendChild(symEq);
       multProblem.appendChild(chipQ);
+      if (groupRowFade) {
+        groupRowFade.cancel();
+        groupRowFade = null;
+      }
       groupRow.textContent = "";
       for (let g = 0; g < p.a; g++) {
         const tray = document.createElement("div");
@@ -3130,157 +3244,149 @@ html, body {
         groupContents.push({ filled: 0, needed: p.b });
       }
       blockPile.textContent = "";
-      const extra = 3;
-      for (let i = 0; i < p.a * p.b + extra; i++) {
+      const pileCount = 6;
+      for (let i = 0; i < pileCount; i++) {
         const wrap = document.createElement("div");
         wrap.className = "block-host idle-wobble";
         wrap.style.transform = `rotate(${(Math.random() - 0.5) * 16}deg)`;
         wrap.insertAdjacentHTML("beforeend", mango());
-        wrap.onpointerdown = (e) => dragMgr.start(e, wrap, { kind: "block" });
+        wrap.addEventListener("pointerup", () => onPileTap(wrap));
         blockPile.appendChild(wrap);
       }
-      ansHost.classList.add("hidden");
-      digitTray.classList.add("hidden");
+      setupAnswerArea();
       dragMgr = createDragManager({
         getTargets() {
-          return Array.from(sec.querySelectorAll(".group-tray")).map((el) => ({
-            el,
-            rect: el.getBoundingClientRect(),
-            active: groupContents[parseInt(el.dataset.idx, 10)].filled < groupContents[parseInt(el.dataset.idx, 10)].needed,
-            id: el.dataset.idx
-          })).concat(Array.from(sec.querySelectorAll(".slot")).map((el) => ({
+          return Array.from(sec.querySelectorAll(".slot")).map((el) => ({
             el,
             rect: el.getBoundingClientRect(),
             active: el.classList.contains("active"),
             id: "slot-" + el.dataset.index
-          })));
+          }));
         },
         onPickup(_p, el) {
-          sfx.tilePickup();
-          el.classList.add("dragging");
+          tilePickup(el);
         },
         async onDrop(payload, target, sourceEl, origin, parentInfo) {
-          if (payload.kind === "block") {
-            if (!target || !target.id || String(target.id).startsWith("slot-")) {
-              sourceEl.classList.remove("dragging");
-              return tileBounceBack(sourceEl, origin, parentInfo);
-            }
-            const gIdx = parseInt(target.id, 10);
-            const gc = groupContents[gIdx];
-            if (gc.filled >= gc.needed) {
-              sourceEl.classList.remove("dragging");
-              return tileBounceBack(sourceEl, origin, parentInfo);
-            }
-            const tray = target.el;
-            const ghosts = tray.querySelectorAll(".ghost");
-            const slot = ghosts[gc.filled];
-            sourceEl.classList.remove("dragging", "idle-wobble");
-            sourceEl.classList.add("in-group");
-            sourceEl.style.position = "absolute";
-            sourceEl.style.left = `${slot.offsetLeft}px`;
-            sourceEl.style.top = `${slot.offsetTop}px`;
-            tray.appendChild(sourceEl);
-            gc.filled++;
-            tray.querySelector(".count-chip").textContent = `${gc.filled} / ${gc.needed}`;
-            sfx.tilePickup();
-            if (gc.filled === gc.needed) {
-              tray.classList.add("full");
-              tray.querySelector(".count-chip").textContent = `\u2605 ${gc.needed}`;
-              sfx.trayFull();
-            }
-            if (groupContents.every((g) => g.filled === g.needed)) {
-              setTimeout(showAnswerPhase, 800);
-            }
-          } else if (payload.kind === "digit") {
-            if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin, parentInfo);
-            const slotIndex = parseInt(String(target.id).replace("slot-", ""), 10);
-            const next = dropDigit(state2, payload.digit, slotIndex);
-            if (!next.lastDropCorrect) {
-              totalWrong++;
-              state2 = next;
-              trayWrongOnCurrentSlot++;
-              await tileBounceBack(sourceEl, origin, parentInfo);
-              target.el.classList.add("flash-no");
-              setTimeout(() => target.el.classList.remove("flash-no"), 200);
-              if (trayWrongOnCurrentSlot >= 2) applyHint();
-              return;
-            }
-            state2 = next;
-            await tileSnapIn(sourceEl, target.el);
-            if (isComplete(state2)) {
-              idx++;
-              renderProgressDots();
-              if (idx >= problems.length) {
-                router2.go("complete", { world, level, wrongCount: totalWrong });
-              } else {
-                sfx.transition();
-                setTimeout(renderProblem, 500);
-              }
-            } else {
-              sec.querySelectorAll(".slot").forEach((el) => {
-                const i = parseInt(el.dataset.index, 10);
-                el.classList.remove("active", "inactive");
-                if (i === state2.activeIndex) el.classList.add("active");
-                else if (!el.classList.contains("filled")) el.classList.add("inactive");
-              });
-              trayWrongOnCurrentSlot = 0;
-              syncTrayDim();
-            }
+          if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin, parentInfo);
+          const correct = problems[idx].answer;
+          if (payload.value !== correct) {
+            totalWrong++;
+            trayWrongOnCurrentSlot++;
+            await tileBounceBack(sourceEl, origin, parentInfo);
+            target.el.classList.add("flash-no");
+            setTimeout(() => target.el.classList.remove("flash-no"), 200);
+            return;
+          }
+          await tileSnapIn(sourceEl, target.el);
+          sfx.correctYay();
+          idx++;
+          renderProgressDots();
+          if (idx >= problems.length) {
+            router2.go("complete", { world, level, wrongCount: totalWrong });
+          } else {
+            sfx.transition();
+            setTimeout(renderProblem, 500);
           }
         }
       });
     }
-    function syncTrayDim() {
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        tile.classList.remove("dim", "hint-dim", "hint-target");
-      });
-      if (state2.slots.length === 2 && state2.activeIndex === 0) {
-        const expected = state2.expected[state2.activeIndex];
-        sec.querySelectorAll(".tile").forEach((tile) => {
-          if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
-        });
+    function onPileTap(srcMango) {
+      const gIdx = groupContents.findIndex((g) => g.filled < g.needed);
+      if (gIdx === -1) return;
+      const gc = groupContents[gIdx];
+      const slotIdx = gc.filled;
+      gc.filled++;
+      const tray = groupRow.querySelector(`.group-tray[data-idx="${gIdx}"]`);
+      const ghosts = tray.querySelectorAll(".ghost");
+      const slot = ghosts[slotIdx];
+      const chip = tray.querySelector(".count-chip");
+      const isLast = gc.filled === gc.needed;
+      chip.textContent = isLast ? `\u2605 ${gc.needed}` : `${gc.filled} / ${gc.needed}`;
+      if (isLast) {
+        tray.classList.add("full");
+        sfx.trayFull();
+      }
+      const srcRect = srcMango.getBoundingClientRect();
+      const slotRect = slot.getBoundingClientRect();
+      const stage3 = document.getElementById("stage");
+      const stageRect = stage3.getBoundingClientRect();
+      const scale = stageRect.width / 1280;
+      const clone = document.createElement("div");
+      clone.className = "block-host";
+      clone.insertAdjacentHTML("beforeend", mango());
+      clone.style.position = "absolute";
+      clone.style.left = `${(srcRect.left - stageRect.left) / scale}px`;
+      clone.style.top = `${(srcRect.top - stageRect.top) / scale}px`;
+      stage3.appendChild(clone);
+      sfx.tilePickup();
+      const dx = (slotRect.left - srcRect.left) / scale;
+      const dy = (slotRect.top - srcRect.top) / scale;
+      clone.animate(
+        [{ transform: "translate(0,0) scale(1.05)" }, { transform: `translate(${dx}px, ${dy}px) scale(1)` }],
+        { duration: 380, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
+      ).onfinish = () => {
+        clone.remove();
+        const planted = document.createElement("div");
+        planted.className = "block-host in-group";
+        planted.insertAdjacentHTML("beforeend", mango());
+        planted.style.position = "absolute";
+        planted.style.left = `${slot.offsetLeft}px`;
+        planted.style.top = `${slot.offsetTop}px`;
+        tray.appendChild(planted);
+        if (groupContents.every((g) => g.filled === g.needed)) {
+          setTimeout(showAnswerPhase, 600);
+        }
+      };
+    }
+    function setupAnswerArea() {
+      const p = problems[idx];
+      ansSlotHost.textContent = "";
+      const slot = document.createElement("div");
+      slot.className = "slot active";
+      slot.dataset.index = "0";
+      ansSlotHost.appendChild(slot);
+      ansHost.classList.remove("hidden");
+      digitTray.classList.remove("hidden", "two-row");
+      digitTray.textContent = "";
+      if (p.answer >= 10) {
+        const values = compoundOptions2(p.answer);
+        const buildTile = (n) => {
+          const t = document.createElement("div");
+          t.className = "tile compound mult-option";
+          t.dataset.value = String(n);
+          t.textContent = String(n);
+          t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", value: n });
+          return t;
+        };
+        if (values.length > 11) {
+          digitTray.classList.add("two-row");
+          const half = Math.ceil(values.length / 2);
+          const row1 = document.createElement("div");
+          row1.className = "tile-row";
+          const row2 = document.createElement("div");
+          row2.className = "tile-row";
+          values.forEach((n, i) => (i < half ? row1 : row2).appendChild(buildTile(n)));
+          digitTray.appendChild(row1);
+          digitTray.appendChild(row2);
+        } else {
+          values.forEach((n) => digitTray.appendChild(buildTile(n)));
+        }
+      } else {
+        for (let n = 0; n <= 9; n++) {
+          const t = document.createElement("div");
+          t.className = "tile";
+          t.dataset.value = String(n);
+          t.textContent = String(n);
+          t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", value: n });
+          digitTray.appendChild(t);
+        }
       }
     }
-    function applyHint() {
-      const expected = state2.expected[state2.activeIndex];
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        if (parseInt(tile.dataset.digit, 10) === expected) {
-          tile.classList.remove("dim");
-          tile.classList.add("hint-target");
-        } else {
-          tile.classList.add("hint-dim");
-        }
-      });
-      sfx.hintHmm();
-    }
     function showAnswerPhase() {
-      groupRow.animate(
+      groupRowFade = groupRow.animate(
         [{ opacity: 1 }, { opacity: 0.4 }],
         { duration: 400, fill: "forwards" }
       );
-      ansSlotHost.textContent = "";
-      if (state2.slots.length === 2) {
-        const slot0 = document.createElement("div");
-        slot0.className = "slot inactive";
-        slot0.dataset.index = "0";
-        ansSlotHost.appendChild(slot0);
-      }
-      const slotLast = document.createElement("div");
-      slotLast.className = "slot active";
-      slotLast.dataset.index = String(state2.slots.length - 1);
-      ansSlotHost.appendChild(slotLast);
-      ansHost.classList.remove("hidden");
-      digitTray.classList.remove("hidden");
-      digitTray.textContent = "";
-      for (let n = 0; n <= 9; n++) {
-        const t = document.createElement("div");
-        t.className = "tile";
-        t.dataset.digit = String(n);
-        t.textContent = String(n);
-        t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", digit: n });
-        digitTray.appendChild(t);
-      }
-      syncTrayDim();
     }
     stage2.appendChild(sec);
     return () => sec.remove();
@@ -3388,15 +3494,22 @@ html, body {
       const candidate = answer + (Math.floor(Math.random() * 7) - 3);
       if (candidate > 0 && candidate !== answer) options.add(candidate);
     }
+    let wrongCount = 0;
     [...options].sort(() => Math.random() - 0.5).forEach((n) => {
       const b2 = document.createElement("button");
       b2.className = "btn ghost";
       b2.textContent = String(n);
       b2.addEventListener("pointerup", () => {
-        if (n === answer) showSettings();
-        else {
-          err.classList.remove("hidden");
-          b2.classList.add("disabled");
+        if (n === answer) {
+          showSettings();
+          return;
+        }
+        err.classList.remove("hidden");
+        b2.classList.add("disabled");
+        wrongCount++;
+        if (wrongCount >= 2) {
+          localStorage.setItem("bm.parentLockUntil", String(Date.now() + 5e3));
+          router2.go("splash");
         }
       });
       btnHost.appendChild(b2);
@@ -3415,6 +3528,16 @@ html, body {
         setEnabled(!isEnabled());
         soundBtn.textContent = `SOUND: ${isEnabled() ? "ON" : "OFF"}`;
       });
+      const unlockBtn = document.createElement("button");
+      unlockBtn.className = "btn";
+      const unlocked = localStorage.getItem("bm.unlockAll") === "1";
+      unlockBtn.textContent = unlocked ? "LOCK BACK" : "UNLOCK ALL LEVELS";
+      unlockBtn.addEventListener("pointerup", () => {
+        const nowOn = localStorage.getItem("bm.unlockAll") !== "1";
+        if (nowOn) localStorage.setItem("bm.unlockAll", "1");
+        else localStorage.removeItem("bm.unlockAll");
+        unlockBtn.textContent = nowOn ? "LOCK BACK" : "UNLOCK ALL LEVELS";
+      });
       const resetBtn = document.createElement("button");
       resetBtn.className = "btn ghost";
       resetBtn.textContent = "RESET PROGRESS";
@@ -3422,7 +3545,7 @@ html, body {
         if (confirm("Reset all progress? This cannot be undone.")) {
           for (let i = localStorage.length - 1; i >= 0; i--) {
             const k = localStorage.key(i);
-            if (k && k.startsWith("bm.stars.")) localStorage.removeItem(k);
+            if (k && (k.startsWith("bm.stars.") || k === "bm.unlockAll")) localStorage.removeItem(k);
           }
           router2.go("splash");
         }
@@ -3431,7 +3554,7 @@ html, body {
       closeBtn.className = "btn ghost";
       closeBtn.textContent = "CLOSE";
       closeBtn.addEventListener("pointerup", () => router2.go("splash"));
-      c2.append(h, soundBtn, resetBtn, closeBtn);
+      c2.append(h, soundBtn, unlockBtn, resetBtn, closeBtn);
       sec.appendChild(c2);
     }
     stage2.appendChild(sec);
