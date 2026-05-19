@@ -131,6 +131,14 @@ html, body {
   50% { transform: rotate(-5deg); }
   75% { transform: rotate(3deg); }
 }
+@keyframes slotCorrectFlash {
+  0%   { box-shadow: 0 0 0 0 var(--success); }
+  50%  { box-shadow: 0 0 0 12px rgba(74, 214, 109, 0.6); }
+  100% { box-shadow: 0 0 0 20px rgba(74, 214, 109, 0); }
+}
+.slot.filled.just-filled {
+  animation: slotCorrectFlash 0.5s var(--ease-pop);
+}
 
 .block-host {
   width: 96px; height: 96px;
@@ -402,7 +410,14 @@ html, body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 32px;
 }
-.home-btn.small { width: 56px; height: 56px; padding: 0; }
+.home-btn.small {
+  position: static;   /* opt out of absolute positioning from base .home-btn */
+  top: auto;
+  left: auto;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+}
 .home-btn.small svg { width: 100%; height: 100%; }
 .progress-dots { display: flex; gap: 8px; }
 .dot { width: 16px; height: 16px; border-radius: 50%; background: var(--bg-card); border: 3px solid var(--ink); }
@@ -426,10 +441,11 @@ html, body {
 .worksheet .row.ans { gap: 16px; justify-content: flex-end; }
 .carry-slot.hidden { display: none; }
 
-/* Compound tiles (10-18): wider to fit two digits */
+/* Compound tiles (10-18): same box as single digits, smaller font to fit 2 chars */
 .tile.compound {
-  width: 140px;
-  font-size: 52px;
+  width: 96px;
+  height: 96px;
+  font-size: 56px;
 }
 
 /* Two-row tray when compound tiles are present */
@@ -998,6 +1014,11 @@ html, body {
       tone({ freq: 520, type: "triangle", dur: 0.08, gain: 0.22 });
       setTimeout(() => tone({ freq: 1318, type: "sine", dur: 0.2, gain: 0.18 }), 50);
     },
+    correctDing: () => {
+      const notes = [523, 659, 784];
+      notes.forEach((f, i) => setTimeout(() => tone({ freq: f, type: "sine", dur: 0.18, gain: 0.28 }), i * 60));
+      setTimeout(() => tone({ freq: 1568, type: "sine", dur: 0.4, gain: 0.18, decay: 0.4 }), 120);
+    },
     tileDropWrong: () => tone({ freq: 180, freqEnd: 90, type: "triangle", dur: 0.25, gain: 0.22, lp: 800 }),
     slotFill: () => tone({ freq: 1568, type: "sine", dur: 0.12, gain: 0.2 }),
     carryWhoosh: () => {
@@ -1302,10 +1323,11 @@ html, body {
         targetEl.classList.remove("active");
         targetEl.classList.add("filled");
         targetEl.textContent = el.textContent;
+        targetEl.classList.add("just-filled");
+        setTimeout(() => targetEl.classList.remove("just-filled"), 600);
         resolve();
       };
-      sfx.tileDropCorrect();
-      setTimeout(() => sfx.slotFill(), 200);
+      sfx.correctDing();
     });
   }
   function flyCarry(carrySlotEl, fromEl) {
