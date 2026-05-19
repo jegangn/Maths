@@ -582,8 +582,14 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
   return new Promise((resolve) => {
     sfx.borrowWhoosh();
 
-    // Phase A (0 - 900ms): the diagonal strike "draws" across the original
-    // tens digit, and the smaller new tens digit floats in above it.
+    // Phase A (0 - 1300ms): the strike line is DRAWN across the original tens
+    // digit while the smaller new tens digit is WRITTEN IN above it — both at
+    // exactly the same pace, with a gentle smooth ease that feels like a
+    // teacher's pen, not a bouncy pop. They progress together so the kid
+    // perceives them as one related action.
+    const PHASE_A_MS = 1300;
+    const SMOOTH = "cubic-bezier(0.45, 0.05, 0.25, 1)";
+
     const SVG_NS = "http://www.w3.org/2000/svg";
     const strike = document.createElement("div");
     strike.className = "strike";
@@ -609,15 +615,15 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
 
     newTens.style.left = `${tensTopEl.offsetLeft}px`;
     newTens.style.top  = `${tensTopEl.offsetTop - 70}px`;
+    // Gentle fade + grow — no overshoot, matching the strike's pace.
     newTens.animate(
-      [{ opacity: 0, transform: "translateY(20px) scale(0.7)" },
-       { opacity: 1, transform: "translateY(0) scale(1)" }],
-      { duration: 600, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
+      [{ opacity: 0, transform: "scale(0.4)" },
+       { opacity: 1, transform: "scale(1)" }],
+      { duration: PHASE_A_MS, easing: SMOOTH, fill: "forwards" }
     );
 
-    // Phase B (1500 - 2900ms): a "10" chip drops slowly from the tens column
-    // down to the ones column. Long pause before the drop so the kid has time
-    // to register the strike + new tens digit first.
+    // Phase B (1700 - 3000ms): brief held pause, then the "10" chip fades
+    // in at the tens column and drifts smoothly down to the ones column.
     setTimeout(() => {
       const chip = document.createElement("div");
       chip.className = "borrow-chip";
@@ -635,31 +641,34 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
 
       chip.animate(
         [
-          { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(1)" },
-          { left: `${(sx+ex)/2 - 30}px`, top: `${(sy+ey)/2 - 30}px`, transform: "scale(1.15)", offset: 0.6 },
-          { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)" },
+          { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(0.7)", opacity: 0 },
+          { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(1)", opacity: 1, offset: 0.18 },
+          { left: `${(sx+ex)/2 - 30}px`, top: `${(sy+ey)/2 - 30}px`, transform: "scale(1.1)", opacity: 1, offset: 0.6 },
+          { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
         ],
-        { duration: 1400, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" }
+        { duration: 1500, easing: SMOOTH, fill: "forwards" }
       ).onfinish = () => {
-        // Phase C: ones digit morphs from old value to new (e.g. 2 → 12)
+        // Phase C (3200 - 4300ms): the ones digit gradually transforms from
+        // "2" into "12". Old digit shrinks and fades smoothly; new digit
+        // grows in smoothly. No overshoots — calm, fluid, readable.
         onesTopEl.animate(
           [{ opacity: 1, transform: "scale(1)" },
-           { opacity: 0, transform: "scale(0.7)" }],
-          { duration: 350, fill: "forwards" }
+           { opacity: 0, transform: "scale(0.4)" }],
+          { duration: 500, easing: SMOOTH, fill: "forwards" }
         ).onfinish = () => {
           onesTopEl.textContent = String(newOnesValue);
           onesTopEl.animate(
-            [{ opacity: 0, transform: "scale(0.7)" },
-             { opacity: 1, transform: "scale(1.15)", offset: 0.6 },
+            [{ opacity: 0, transform: "scale(0.4)" },
              { opacity: 1, transform: "scale(1)" }],
-            { duration: 450, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
+            { duration: 600, easing: SMOOTH, fill: "forwards" }
           ).onfinish = () => {
             chip.remove();
-            setTimeout(resolve, 250); // brief settle before drag is enabled
+            // Final settle so the kid sees the regrouped state clearly
+            setTimeout(resolve, 400);
           };
         };
       };
-    }, 1500);
+    }, 1700);
   });
 }
 
