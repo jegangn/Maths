@@ -68,11 +68,59 @@ export function tileSnapIn(el, targetEl) {
       targetEl.classList.add("filled");
       targetEl.textContent = el.textContent;
       targetEl.classList.add("just-filled");
-      setTimeout(() => targetEl.classList.remove("just-filled"), 600);
+      setTimeout(() => targetEl.classList.remove("just-filled"), 700);
+      correctBurst(targetEl);
+      const mascot = document.querySelector(".corner-mascot svg");
+      if (mascot) mascotQuickHop(mascot);
       resolve();
     };
     sfx.correctDing();
   });
+}
+
+// Mini sparkle burst from a slot when a correct answer lands
+export function correctBurst(slotEl) {
+  const stage = document.getElementById("stage");
+  if (!stage) return;
+  const stageRect = stage.getBoundingClientRect();
+  const slotRect = slotEl.getBoundingClientRect();
+  const scale = stageRect.width / 1280;
+  const cx = (slotRect.left + slotRect.width / 2 - stageRect.left) / scale;
+  const cy = (slotRect.top + slotRect.height / 2 - stageRect.top) / scale;
+
+  const colors = ["#FFC83A", "#FFF1A8", "#4AD66D", "#FF7A40"];
+  const N = 14;
+  for (let i = 0; i < N; i++) {
+    const p = document.createElement("div");
+    p.className = "spark-particle";
+    p.style.left = `${cx}px`;
+    p.style.top = `${cy}px`;
+    p.style.background = colors[i % colors.length];
+    stage.appendChild(p);
+    const angle = (Math.PI * 2 * i) / N + (Math.random() - 0.5) * 0.4;
+    const dist = 90 + Math.random() * 50;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist - 20;
+    p.animate(
+      [
+        { transform: "translate(-50%, -50%) scale(0.6)", opacity: 1 },
+        { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5}px)) scale(1.2)`, opacity: 1, offset: 0.4 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.4)`, opacity: 0 },
+      ],
+      { duration: 700 + Math.random() * 200, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
+    ).onfinish = () => p.remove();
+  }
+}
+
+export function mascotQuickHop(svgRoot) {
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) scale(1)" },
+      { transform: "translateY(-16px) scale(1.06)", offset: 0.4 },
+      { transform: "translateY(0) scale(1)" },
+    ],
+    { duration: 400, easing: "cubic-bezier(0.34,1.6,0.5,1)" }
+  );
 }
 
 // ===== TASK 17: Carry Chip Animation =====
