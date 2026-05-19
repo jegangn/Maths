@@ -73,7 +73,8 @@ html, body {
   border: 4px solid var(--ink);
   box-shadow: var(--sh-2);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
   font-size: 64px; color: var(--ink);
   cursor: grab; user-select: none;
   transition: transform .12s var(--ease-pop), box-shadow .12s var(--ease-pop);
@@ -100,7 +101,8 @@ html, body {
   border: 4px dashed var(--ink-soft);
   background: transparent;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
   font-size: 96px; color: var(--ink);
   position: relative;
 }
@@ -243,7 +245,7 @@ html, body {
   border-radius: var(--r-md);
   background: var(--world-primary);
   border: 3px solid var(--ink);
-  font-family: 'Lilita One', system-ui; font-size: 40px;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif; font-weight: 700; font-size: 40px;
   display: flex; align-items: center; justify-content: center;
   color: var(--ink);
   pointer-events: none;
@@ -255,7 +257,7 @@ html, body {
   border-radius: var(--r-md);
   border: 3px dashed var(--ink-soft);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Lilita One', system-ui; font-size: 40px;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif; font-weight: 700; font-size: 40px;
   color: var(--ink);
   opacity: 0;
   transition: opacity .3s var(--ease-pop);
@@ -274,7 +276,8 @@ html, body {
 .borrow-replacement {
   position: absolute;
   width: 60px; height: 60px;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
   font-size: 56px; color: var(--ink);
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
@@ -325,8 +328,43 @@ html, body {
 }
 @keyframes wingFlap {
   0%,100% { transform: rotate(0); }
-  50% { transform: rotate(-20deg); transform-origin: 50% 90%; }
+  50% { transform: rotate(-20deg); }
 }
+
+/* ===== Expression presets (CSS-only, all mascots) ===== */
+.mascot .eye-state,
+.mascot .mouth-state,
+.mascot .brow-state { display: none; }
+
+.mascot.idle .eye-state.idle,
+.mascot.idle .mouth-state.idle,
+.mascot.idle .brow-state.idle { display: inline; }
+
+.mascot.happy .eye-state.idle,
+.mascot.happy .brow-state.idle { display: inline; }
+.mascot.happy .mouth-state.happy { display: inline; }
+
+.mascot.super-happy .eye-state.super-happy,
+.mascot.super-happy .brow-state.up,
+.mascot.super-happy .mouth-state.super-happy { display: inline; }
+
+.mascot.dizzy .eye-state.dizzy,
+.mascot.dizzy .brow-state.idle,
+.mascot.dizzy .mouth-state.dizzy { display: inline; }
+
+.mascot.surprised .eye-state.surprised,
+.mascot.surprised .brow-state.up,
+.mascot.surprised .mouth-state.surprised { display: inline; }
+
+/* ===== Transform-origins (new 200×200 viewBox geometry) ===== */
+.mascot .head    { transform-origin: 100px 100px; }
+.mascot .tail    { transform-origin: 100px 150px; }
+.mascot .wing-l  { transform-origin:  65px 110px; }
+.mascot .wing-r  { transform-origin: 135px 110px; }
+.mascot .arm-l   { transform-origin:  62px 122px; }
+.mascot .arm-r   { transform-origin: 138px 122px; }
+.mascot .ear-l   { transform-origin:  80px  84px; }
+.mascot .ear-r   { transform-origin: 120px  84px; }
 
 /* ===== TASK 22: Confetti Styles ===== */
 .confetti-particle { position: absolute; pointer-events: none; }
@@ -464,7 +502,8 @@ html, body {
   display: grid; grid-template-rows: auto auto auto 6px auto;
   gap: 16px;
   justify-content: center; align-content: start;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
 }
 .worksheet .row { display: flex; gap: 16px; justify-content: flex-end; }
 .worksheet .row.top { position: relative; }
@@ -523,7 +562,8 @@ html, body {
 .mult-problem {
   position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 16px; align-items: center;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
 }
 .op-chip {
   width: 120px; height: 130px; background: var(--bg-card);
