@@ -55,25 +55,36 @@ export function tileSnapIn(el, targetEl) {
     const dx = target.left + (target.width - start.width)/2 - start.left;
     const dy = target.top  + (target.height - start.height)/2 - start.top;
     el.classList.remove("dragging");
+    // Smooth glide into the slot: longer duration, gentle ease-in-out, no
+    // mid-flight scale dip or bounce-at-the-end. The tile then cross-fades
+    // out as the slot text fades in, so the hand-off feels seamless instead
+    // of snapping/popping.
     el.animate(
       [
-        { transform: `translate(0,0) scale(1.15)` },
-        { transform: `translate(${dx}px,${dy}px) scale(0.96)`, offset: 0.8 },
-        { transform: `translate(${dx}px,${dy}px) scale(1)` },
+        { transform: `translate(0,0) scale(1.08)`, opacity: 1 },
+        { transform: `translate(${dx}px,${dy}px) scale(1)`, opacity: 1, offset: 0.85 },
+        { transform: `translate(${dx}px,${dy}px) scale(1)`, opacity: 0 },
       ],
-      { duration: 220, easing: "cubic-bezier(0.25,0.9,0.3,1.4)" }
-    ).onfinish = () => {
-      el.remove();
+      { duration: 360, easing: "cubic-bezier(0.33, 0, 0.2, 1)", fill: "forwards" }
+    );
+    // Reveal the slot text just before the tile fades out so there is no
+    // visible gap or double-render of the digit. Sparkles + mascot cheer
+    // fire at the SAME moment the slot fills — they accompany the visual
+    // arrival of the answer instead of stuttering in after a delay.
+    setTimeout(() => {
       targetEl.classList.remove("active");
       targetEl.classList.add("filled");
       targetEl.textContent = el.textContent;
       targetEl.classList.add("just-filled");
-      setTimeout(() => targetEl.classList.remove("just-filled"), 700);
       correctBurst(targetEl);
       const mascot = document.querySelector(".corner-mascot svg");
       if (mascot) mascotCheer(mascot);
+    }, 280);
+    setTimeout(() => {
+      el.remove();
+      setTimeout(() => targetEl.classList.remove("just-filled"), 400);
       resolve();
-    };
+    }, 380);
     sfx.correctDing();
   });
 }
@@ -582,12 +593,12 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
   return new Promise((resolve) => {
     sfx.borrowWhoosh();
 
-    // Phase A (0 - 1300ms): the strike line is DRAWN across the original tens
+    // Phase A (0 - 1800ms): the strike line is DRAWN across the original tens
     // digit while the smaller new tens digit is WRITTEN IN above it — both at
     // exactly the same pace, with a gentle smooth ease that feels like a
     // teacher's pen, not a bouncy pop. They progress together so the kid
     // perceives them as one related action.
-    const PHASE_A_MS = 1300;
+    const PHASE_A_MS = 1800;
     const SMOOTH = "cubic-bezier(0.45, 0.05, 0.25, 1)";
 
     const SVG_NS = "http://www.w3.org/2000/svg";
@@ -613,12 +624,12 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
     newTens.textContent = String(newTensDigit);
     tensTopEl.parentElement.appendChild(newTens);
 
-    // Center the 60px-wide new-tens chip horizontally above the (typically
-    // 100px-wide) tens cell so the small "1" sits directly above the struck
-    // "2", not on its left edge.
-    const NEW_TENS_W = 60;
-    newTens.style.left = `${tensTopEl.offsetLeft + (tensTopEl.offsetWidth - NEW_TENS_W) / 2}px`;
-    newTens.style.top  = `${tensTopEl.offsetTop - 70}px`;
+    // Position the new-tens digit at upper-LEFT of the struck digit — same
+    // offsets used for the carry "1" above the ones cell, so the two small
+    // annotations sit in matching positions relative to their respective
+    // cell digits.
+    newTens.style.left = `${tensTopEl.offsetLeft - 20}px`;
+    newTens.style.top  = `${tensTopEl.offsetTop - 25}px`;
     // Gentle fade + grow — no overshoot, matching the strike's pace.
     newTens.animate(
       [{ opacity: 0, transform: "scale(0.4)" },
@@ -626,7 +637,7 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
       { duration: PHASE_A_MS, easing: SMOOTH, fill: "forwards" }
     );
 
-    // Phase B (1600 - 2900ms): brief held pause, then the "10" chip fades
+    // Phase B (2300 - 4000ms): brief held pause, then the "10" chip fades
     // in at the tens column and drifts smoothly to a position just ABOVE
     // the ones cell. (Going ABOVE the cell, not left of it, avoids the
     // tens cell that already sits to the left of the ones cell.)
@@ -658,7 +669,7 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
           { left: `${(sx+ex)/2 - 30}px`, top: `${(sy+ey)/2 - 30}px`, transform: "scale(1.1)", opacity: 1, offset: 0.6 },
           { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
         ],
-        { duration: 1300, easing: SMOOTH, fill: "forwards" }
+        { duration: 1700, easing: SMOOTH, fill: "forwards" }
       ).onfinish = () => {
         // Phase C — explicit "10 + 4 = 14" reveal.
         // A "+" sign fades in between the chip and the ones digit (between
@@ -672,49 +683,57 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
         plus.animate(
           [{ opacity: 0, transform: "scale(0.4)" },
            { opacity: 1, transform: "scale(1)" }],
-          { duration: 350, easing: SMOOTH, fill: "forwards" }
+          { duration: 500, easing: SMOOTH, fill: "forwards" }
         );
 
         // Hold the equation so the child can read it: "10" (chip) + "4" (cell)
         setTimeout(() => {
-          // The "+" fades out and the chip slides DOWN into the ones cell,
-          // shrinking and fading as it merges with the existing digit.
+          // The "+" and the "10" chip fade out together. The original ones
+          // digit (e.g. "3") STAYS in its cell unchanged — we add a small
+          // pencil-style "1" carry mark in the upper-LEFT of the ones cell,
+          // at the same size as the new-tens digit above the struck "3", so
+          // the kid reads the regrouped number as "1" + "3" = "13", which
+          // is exactly how teachers write it on paper.
           plus.animate(
             [{ opacity: 1, transform: "scale(1)" },
              { opacity: 0, transform: "scale(0.5)" }],
-            { duration: 400, easing: SMOOTH, fill: "forwards" }
+            { duration: 500, easing: SMOOTH, fill: "forwards" }
           ).onfinish = () => plus.remove();
 
-          // Chip slides down into the cell while shrinking + fading
-          const targetTop = ones.top + ones.height / 2 - 30;
           chip.animate(
             [
               { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
-              { left: `${ex - 30}px`, top: `${targetTop}px`, transform: "scale(0.5)", opacity: 0 },
+              { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(0.7)", opacity: 0 },
             ],
-            { duration: 500, easing: SMOOTH, fill: "forwards" }
+            { duration: 600, easing: SMOOTH, fill: "forwards" }
           ).onfinish = () => chip.remove();
 
-          // Existing ones digit (e.g. "4") shrinks + fades simultaneously,
-          // then is replaced with the new value ("14") which grows in.
-          onesTopEl.animate(
-            [{ opacity: 1, transform: "scale(1)" },
-             { opacity: 0, transform: "scale(0.6)" }],
-            { duration: 400, easing: SMOOTH, fill: "forwards" }
+          // newOnesValue is e.g. 13 → the tens digit of that (always 1 for
+          // borrow) is what we write as the carry mark.
+          const carryDigit = Math.floor(newOnesValue / 10);
+          const carry = document.createElement("div");
+          carry.className = "borrow-replacement borrow-carry";
+          carry.textContent = String(carryDigit);
+          onesTopEl.parentElement.appendChild(carry);
+          // Same size (60px) as the new-tens digit but positioned tighter:
+          // the carry sits JUST above-LEFT of the ones digit so the eye
+          // reads "1" + "4" together as "14" (the way a kid would mentally
+          // combine them). Vertical placement: carry-bottom ~5px above the
+          // visible top of the cell digit. Horizontal: carry-glyph centre
+          // sits to the left of the cell digit's left edge.
+          carry.style.left = `${onesTopEl.offsetLeft - 20}px`;
+          carry.style.top  = `${onesTopEl.offsetTop - 25}px`;
+          carry.animate(
+            [{ opacity: 0, transform: "scale(0.4)" },
+             { opacity: 1, transform: "scale(1)" }],
+            { duration: 700, easing: SMOOTH, fill: "forwards" }
           ).onfinish = () => {
-            onesTopEl.textContent = String(newOnesValue);
-            onesTopEl.animate(
-              [{ opacity: 0, transform: "scale(0.6)" },
-               { opacity: 1, transform: "scale(1)" }],
-              { duration: 500, easing: SMOOTH, fill: "forwards" }
-            ).onfinish = () => {
-              // Final settle so the kid sees the regrouped state clearly
-              setTimeout(resolve, 350);
-            };
+            // Final settle so the kid sees the regrouped state clearly
+            setTimeout(resolve, 500);
           };
-        }, 1100); // Equation "10 + 4" held for 1100ms so the kid can read it
+        }, 1500); // Equation "10 + 3" held for 1500ms so the kid can read it
       };
-    }, 1600);
+    }, 2300);
   });
 }
 

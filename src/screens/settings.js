@@ -33,13 +33,22 @@ export function mount(stage, state, router) {
     const candidate = answer + (Math.floor(Math.random() * 7) - 3);
     if (candidate > 0 && candidate !== answer) options.add(candidate);
   }
+  let wrongCount = 0;
   [...options].sort(() => Math.random() - 0.5).forEach((n) => {
     const b2 = document.createElement("button");
     b2.className = "btn ghost";
     b2.textContent = String(n);
     b2.addEventListener("pointerup", () => {
-      if (n === answer) showSettings();
-      else { err.classList.remove("hidden"); b2.classList.add("disabled"); }
+      if (n === answer) { showSettings(); return; }
+      err.classList.remove("hidden");
+      b2.classList.add("disabled");
+      wrongCount++;
+      if (wrongCount >= 2) {
+        // Two wrong guesses → lock the parent area for 5 seconds and bounce
+        // the user back to the splash so a kid can't keep brute-forcing.
+        localStorage.setItem("bm.parentLockUntil", String(Date.now() + 5000));
+        router.go("splash");
+      }
     });
     btnHost.appendChild(b2);
   });
@@ -60,6 +69,17 @@ export function mount(stage, state, router) {
       soundBtn.textContent = `SOUND: ${isEnabled() ? "ON" : "OFF"}`;
     });
 
+    const unlockBtn = document.createElement("button");
+    unlockBtn.className = "btn";
+    const unlocked = localStorage.getItem("bm.unlockAll") === "1";
+    unlockBtn.textContent = unlocked ? "LOCK BACK" : "UNLOCK ALL LEVELS";
+    unlockBtn.addEventListener("pointerup", () => {
+      const nowOn = localStorage.getItem("bm.unlockAll") !== "1";
+      if (nowOn) localStorage.setItem("bm.unlockAll", "1");
+      else localStorage.removeItem("bm.unlockAll");
+      unlockBtn.textContent = nowOn ? "LOCK BACK" : "UNLOCK ALL LEVELS";
+    });
+
     const resetBtn = document.createElement("button");
     resetBtn.className = "btn ghost";
     resetBtn.textContent = "RESET PROGRESS";
@@ -67,7 +87,7 @@ export function mount(stage, state, router) {
       if (confirm("Reset all progress? This cannot be undone.")) {
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const k = localStorage.key(i);
-          if (k && k.startsWith("bm.stars.")) localStorage.removeItem(k);
+          if (k && (k.startsWith("bm.stars.") || k === "bm.unlockAll")) localStorage.removeItem(k);
         }
         router.go("splash");
       }
@@ -78,7 +98,7 @@ export function mount(stage, state, router) {
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("pointerup", () => router.go("splash"));
 
-    c2.append(h, soundBtn, resetBtn, closeBtn);
+    c2.append(h, soundBtn, unlockBtn, resetBtn, closeBtn);
     sec.appendChild(c2);
   }
 

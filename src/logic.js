@@ -130,7 +130,7 @@ export function starsFor(wrongCount) {
 export const KEY_PREFIX = "bm.stars";
 
 export function loadProgress(storage = globalThis.localStorage) {
-  const out = { add: {}, sub: {}, mult: {} };
+  const out = { add: {}, sub: {}, mult: {}, unlockAll: false };
   if (!storage) return out;
   for (const w of ["add", "sub", "mult"]) {
     for (let l = 1; l <= 6; l++) {
@@ -138,6 +138,7 @@ export function loadProgress(storage = globalThis.localStorage) {
       if (v) out[w][l] = parseInt(v, 10);
     }
   }
+  out.unlockAll = storage.getItem("bm.unlockAll") === "1";
   return out;
 }
 
@@ -149,6 +150,7 @@ export function recordStars(storage, world, level, stars) {
 }
 
 export function isLevelUnlocked(progress, world, level) {
+  if (progress.unlockAll) return true;
   if (level === 1) return true;
   return (progress[world][level - 1] || 0) > 0;
 }

@@ -1,8 +1,15 @@
-import { getProblems, createAnswerState, dropDigit, isComplete } from "../logic.js";
+import { getProblems } from "../logic.js";
 import { createDragManager } from "../drag.js";
 import { tilePickup, tileBounceBack, tileSnapIn } from "../animate.js";
 import { home, pip, mango } from "../svg.js";
 import { sfx } from "../audio.js";
+
+function compoundOptions(correct) {
+  const max = Math.max(20, correct);
+  const tiles = [];
+  for (let n = 10; n <= max; n++) tiles.push(n);
+  return tiles;
+}
 
 export function mount(stage, ctx, router) {
   const { world, level } = ctx;
@@ -10,10 +17,10 @@ export function mount(stage, ctx, router) {
   const problems = getProblems(world, level);
   let idx = 0;
   let totalWrong = 0;
-  let state = null;
   let dragMgr = null;
   let trayWrongOnCurrentSlot = 0;
   const groupContents = [];
+  let groupRowFade = null;
 
   const sec = document.createElement("section");
   sec.className = "screen active";
@@ -79,7 +86,6 @@ export function mount(stage, ctx, router) {
   function renderProblem() {
     trayWrongOnCurrentSlot = 0;
     const p = problems[idx];
-    state = createAnswerState(p.answer);
     groupContents.length = 0;
 
     multProblem.textContent = "";
@@ -104,6 +110,7 @@ export function mount(stage, ctx, router) {
     multProblem.appendChild(symEq);
     multProblem.appendChild(chipQ);
 
+    if (groupRowFade) { groupRowFade.cancel(); groupRowFade = null; }
     groupRow.textContent = "";
     for (let g = 0; g < p.a; g++) {
       const tray = document.createElement("div");
@@ -123,157 +130,169 @@ export function mount(stage, ctx, router) {
     }
 
     blockPile.textContent = "";
-    const extra = 3;
-    for (let i = 0; i < p.a * p.b + extra; i++) {
+    // A small fixed cluster of pile mangoes — tapping any of them flies a
+    // copy into the next empty group slot. The pile itself never shrinks,
+    // so 6 visible mangoes is enough for counting practice without the
+    // crowded/overlapping look we had with p.a*p.b+3 mangoes.
+    const pileCount = 6;
+    for (let i = 0; i < pileCount; i++) {
       const wrap = document.createElement("div");
       wrap.className = "block-host idle-wobble";
       wrap.style.transform = `rotate(${(Math.random()-0.5)*16}deg)`;
       wrap.insertAdjacentHTML("beforeend", mango());
-      wrap.onpointerdown = (e) => dragMgr.start(e, wrap, { kind: "block" });
+      wrap.addEventListener("pointerup", () => onPileTap(wrap));
       blockPile.appendChild(wrap);
     }
 
-    ansHost.classList.add("hidden");
-    digitTray.classList.add("hidden");
+    // Show the answer panel + digit tray immediately so the kid can drag the
+    // answer right away if they already know it. Filling group trays with
+    // blocks is still available for counting practice but no longer gates
+    // the answer reveal.
+    setupAnswerArea();
 
     dragMgr = createDragManager({
       getTargets() {
-        return Array.from(sec.querySelectorAll(".group-tray")).map((el) => ({
-          el, rect: el.getBoundingClientRect(),
-          active: groupContents[parseInt(el.dataset.idx, 10)].filled < groupContents[parseInt(el.dataset.idx, 10)].needed,
-          id: el.dataset.idx,
-        })).concat(Array.from(sec.querySelectorAll(".slot")).map((el) => ({
+        return Array.from(sec.querySelectorAll(".slot")).map((el) => ({
           el, rect: el.getBoundingClientRect(),
           active: el.classList.contains("active"),
           id: "slot-" + el.dataset.index,
-        })));
+        }));
       },
-      onPickup(_p, el) { sfx.tilePickup(); el.classList.add("dragging"); },
+      onPickup(_p, el) { tilePickup(el); },
       async onDrop(payload, target, sourceEl, origin, parentInfo) {
-        if (payload.kind === "block") {
-          if (!target || !target.id || String(target.id).startsWith("slot-")) {
-            sourceEl.classList.remove("dragging");
-            return tileBounceBack(sourceEl, origin, parentInfo);
-          }
-          const gIdx = parseInt(target.id, 10);
-          const gc = groupContents[gIdx];
-          if (gc.filled >= gc.needed) {
-            sourceEl.classList.remove("dragging");
-            return tileBounceBack(sourceEl, origin, parentInfo);
-          }
-          const tray = target.el;
-          const ghosts = tray.querySelectorAll(".ghost");
-          const slot = ghosts[gc.filled];
-          sourceEl.classList.remove("dragging", "idle-wobble");
-          sourceEl.classList.add("in-group");
-          sourceEl.style.position = "absolute";
-          sourceEl.style.left = `${slot.offsetLeft}px`;
-          sourceEl.style.top = `${slot.offsetTop}px`;
-          tray.appendChild(sourceEl);
-          gc.filled++;
-          tray.querySelector(".count-chip").textContent = `${gc.filled} / ${gc.needed}`;
-          sfx.tilePickup();
-          if (gc.filled === gc.needed) {
-            tray.classList.add("full");
-            tray.querySelector(".count-chip").textContent = `★ ${gc.needed}`;
-            sfx.trayFull();
-          }
-          if (groupContents.every((g) => g.filled === g.needed)) {
-            setTimeout(showAnswerPhase, 800);
-          }
-        } else if (payload.kind === "digit") {
-          if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin, parentInfo);
-          const slotIndex = parseInt(String(target.id).replace("slot-", ""), 10);
-          const next = dropDigit(state, payload.digit, slotIndex);
-          if (!next.lastDropCorrect) {
-            totalWrong++; state = next;
-            trayWrongOnCurrentSlot++;
-            await tileBounceBack(sourceEl, origin, parentInfo);
-            target.el.classList.add("flash-no");
-            setTimeout(() => target.el.classList.remove("flash-no"), 200);
-            if (trayWrongOnCurrentSlot >= 2) applyHint();
-            return;
-          }
-          state = next;
-          await tileSnapIn(sourceEl, target.el);
-          if (isComplete(state)) {
-            idx++; renderProgressDots();
-            if (idx >= problems.length) {
-              router.go("complete", { world, level, wrongCount: totalWrong });
-            } else {
-              sfx.transition();
-              setTimeout(renderProblem, 500);
-            }
-          } else {
-            sec.querySelectorAll(".slot").forEach((el) => {
-              const i = parseInt(el.dataset.index, 10);
-              el.classList.remove("active", "inactive");
-              if (i === state.activeIndex) el.classList.add("active");
-              else if (!el.classList.contains("filled")) el.classList.add("inactive");
-            });
-            trayWrongOnCurrentSlot = 0;
-            syncTrayDim();
-          }
+        if (!target || !String(target.id || "").startsWith("slot-")) return tileBounceBack(sourceEl, origin, parentInfo);
+        const correct = problems[idx].answer;
+        if (payload.value !== correct) {
+          totalWrong++;
+          trayWrongOnCurrentSlot++;
+          await tileBounceBack(sourceEl, origin, parentInfo);
+          target.el.classList.add("flash-no");
+          setTimeout(() => target.el.classList.remove("flash-no"), 200);
+          return;
+        }
+        await tileSnapIn(sourceEl, target.el);
+        sfx.correctYay();
+        idx++; renderProgressDots();
+        if (idx >= problems.length) {
+          router.go("complete", { world, level, wrongCount: totalWrong });
+        } else {
+          sfx.transition();
+          setTimeout(renderProblem, 500);
         }
       },
     });
   }
 
-  function syncTrayDim() {
-    sec.querySelectorAll(".tile").forEach((tile) => {
-      tile.classList.remove("dim", "hint-dim", "hint-target");
-    });
-    // Only dim when working on the tens column (ones already filled)
-    if (state.slots.length === 2 && state.activeIndex === 0) {
-      const expected = state.expected[state.activeIndex];
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
-      });
+  // Tapping a pile mango flies a copy into the next empty group slot.
+  // The original mango stays in the pile, so the pile never shrinks.
+  function onPileTap(srcMango) {
+    const gIdx = groupContents.findIndex((g) => g.filled < g.needed);
+    if (gIdx === -1) return; // all groups already filled
+    const gc = groupContents[gIdx];
+    // Reserve the slot index and bump the counter SYNCHRONOUSLY so quick
+    // back-to-back taps don't race to fill the same slot (which produced
+    // "5/4" overflow counts).
+    const slotIdx = gc.filled;
+    gc.filled++;
+    const tray = groupRow.querySelector(`.group-tray[data-idx="${gIdx}"]`);
+    const ghosts = tray.querySelectorAll(".ghost");
+    const slot = ghosts[slotIdx];
+    const chip = tray.querySelector(".count-chip");
+    const isLast = gc.filled === gc.needed;
+    chip.textContent = isLast ? `★ ${gc.needed}` : `${gc.filled} / ${gc.needed}`;
+    if (isLast) {
+      tray.classList.add("full");
+      sfx.trayFull();
+    }
+
+    const srcRect = srcMango.getBoundingClientRect();
+    const slotRect = slot.getBoundingClientRect();
+    const stage = document.getElementById("stage");
+    const stageRect = stage.getBoundingClientRect();
+    const scale = stageRect.width / 1280;
+
+    const clone = document.createElement("div");
+    clone.className = "block-host";
+    clone.insertAdjacentHTML("beforeend", mango());
+    clone.style.position = "absolute";
+    clone.style.left = `${(srcRect.left - stageRect.left) / scale}px`;
+    clone.style.top = `${(srcRect.top - stageRect.top) / scale}px`;
+    stage.appendChild(clone);
+    sfx.tilePickup();
+    const dx = (slotRect.left - srcRect.left) / scale;
+    const dy = (slotRect.top - srcRect.top) / scale;
+    clone.animate(
+      [{ transform: "translate(0,0) scale(1.05)" }, { transform: `translate(${dx}px, ${dy}px) scale(1)` }],
+      { duration: 380, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
+    ).onfinish = () => {
+      clone.remove();
+      const planted = document.createElement("div");
+      planted.className = "block-host in-group";
+      planted.insertAdjacentHTML("beforeend", mango());
+      planted.style.position = "absolute";
+      planted.style.left = `${slot.offsetLeft}px`;
+      planted.style.top = `${slot.offsetTop}px`;
+      tray.appendChild(planted);
+      if (groupContents.every((g) => g.filled === g.needed)) {
+        setTimeout(showAnswerPhase, 600);
+      }
+    };
+  }
+
+  // Build the answer slot + digit tray. Called at the start of every
+  // problem. Single slot whether the answer is one digit or two — the kid
+  // drags one tile (digit for <10, compound for ≥10).
+  function setupAnswerArea() {
+    const p = problems[idx];
+    ansSlotHost.textContent = "";
+    const slot = document.createElement("div");
+    slot.className = "slot active";
+    slot.dataset.index = "0";
+    ansSlotHost.appendChild(slot);
+    ansHost.classList.remove("hidden");
+
+    digitTray.classList.remove("hidden", "two-row");
+    digitTray.textContent = "";
+    if (p.answer >= 10) {
+      const values = compoundOptions(p.answer);
+      const buildTile = (n) => {
+        const t = document.createElement("div");
+        t.className = "tile compound mult-option";
+        t.dataset.value = String(n);
+        t.textContent = String(n);
+        t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", value: n });
+        return t;
+      };
+      if (values.length > 11) {
+        digitTray.classList.add("two-row");
+        const half = Math.ceil(values.length / 2);
+        const row1 = document.createElement("div"); row1.className = "tile-row";
+        const row2 = document.createElement("div"); row2.className = "tile-row";
+        values.forEach((n, i) => (i < half ? row1 : row2).appendChild(buildTile(n)));
+        digitTray.appendChild(row1); digitTray.appendChild(row2);
+      } else {
+        values.forEach((n) => digitTray.appendChild(buildTile(n)));
+      }
+    } else {
+      for (let n = 0; n <= 9; n++) {
+        const t = document.createElement("div");
+        t.className = "tile";
+        t.dataset.value = String(n);
+        t.textContent = String(n);
+        t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", value: n });
+        digitTray.appendChild(t);
+      }
     }
   }
 
-  function applyHint() {
-    const expected = state.expected[state.activeIndex];
-    sec.querySelectorAll(".tile").forEach((tile) => {
-      if (parseInt(tile.dataset.digit, 10) === expected) {
-        tile.classList.remove("dim");
-        tile.classList.add("hint-target");
-      } else {
-        tile.classList.add("hint-dim");
-      }
-    });
-    sfx.hintHmm();
-  }
-
+  // Fade the group row when all groups have been filled — a visual cue
+  // that the counting step is done. The answer slots / tiles are already
+  // visible (created in setupAnswerArea at problem start).
   function showAnswerPhase() {
-    groupRow.animate(
+    groupRowFade = groupRow.animate(
       [{ opacity: 1 }, { opacity: 0.4 }],
       { duration: 400, fill: "forwards" }
     );
-    ansSlotHost.textContent = "";
-    if (state.slots.length === 2) {
-      const slot0 = document.createElement("div");
-      slot0.className = "slot inactive";
-      slot0.dataset.index = "0";
-      ansSlotHost.appendChild(slot0);
-    }
-    const slotLast = document.createElement("div");
-    slotLast.className = "slot active";
-    slotLast.dataset.index = String(state.slots.length - 1);
-    ansSlotHost.appendChild(slotLast);
-    ansHost.classList.remove("hidden");
-
-    digitTray.classList.remove("hidden");
-    digitTray.textContent = "";
-    for (let n = 0; n <= 9; n++) {
-      const t = document.createElement("div");
-      t.className = "tile";
-      t.dataset.digit = String(n);
-      t.textContent = String(n);
-      t.onpointerdown = (e) => dragMgr.start(e, t, { kind: "digit", digit: n });
-      digitTray.appendChild(t);
-    }
-    syncTrayDim();
   }
 
   stage.appendChild(sec);

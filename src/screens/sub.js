@@ -154,6 +154,7 @@ export function mount(stage, ctx, router) {
           setupDrag();
           attachTileListeners();
         } else {
+          sfx.correctYay();
           await advanceProblem();
         }
       },

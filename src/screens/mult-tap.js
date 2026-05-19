@@ -1,8 +1,18 @@
-import { getProblems, createAnswerState, dropDigit, isComplete } from "../logic.js";
+import { getProblems } from "../logic.js";
 import { createDragManager } from "../drag.js";
 import { tilePickup, tileBounceBack, tileSnapIn, tapBlock, blockFlyIn } from "../animate.js";
 import { home, pip, lilypad, firefly } from "../svg.js";
 import { sfx } from "../audio.js";
+
+// Build a sequential 10..max compound-tile range so the kid sees a clear
+// counting ladder. Range goes from 10 up to at least 20, extending if the
+// correct answer is higher (so the answer is always in range).
+function compoundOptions(correct) {
+  const max = Math.max(20, correct);
+  const tiles = [];
+  for (let n = 10; n <= max; n++) tiles.push(n);
+  return tiles;
+}
 
 export function mount(stage, ctx, router) {
   const { world, level } = ctx;
@@ -10,7 +20,6 @@ export function mount(stage, ctx, router) {
   const problems = getProblems(world, level);
   let idx = 0;
   let totalWrong = 0;
-  let state = null;
   let dragMgr = null;
   let globalCount = 0;
   let tappedSet = new Set();
@@ -51,7 +60,6 @@ export function mount(stage, ctx, router) {
   function renderProblem() {
     trayWrongOnCurrentSlot = 0;
     const p = problems[idx];
-    state = createAnswerState(p.answer);
     globalCount = 0;
     tappedSet.clear();
 
@@ -73,6 +81,7 @@ export function mount(stage, ctx, router) {
       pad.insertAdjacentHTML("beforeend", lilypad());
       const blocks = document.createElement("div");
       blocks.className = "block-grid";
+      blocks.dataset.count = String(p.b);
       for (let i = 0; i < p.b; i++) {
         const wrap = document.createElement("div");
         wrap.className = "block-host untapped";
@@ -88,9 +97,10 @@ export function mount(stage, ctx, router) {
     }
     blockFlyIn(blockEls);
 
-    const reveal = sec.querySelector(".total-reveal");
-    reveal.classList.add("hidden");
-    sec.querySelector(".digit-tray").innerHTML = "";
+    // Show the answer panel + digit tray immediately so the kid can drag the
+    // answer right away if they already know it. Tapping the bees is still
+    // available for counting practice but is no longer required to reveal.
+    showReveal();
   }
 
   function onBlockTap(wrap) {
@@ -99,19 +109,15 @@ export function mount(stage, ctx, router) {
     tappedSet.add(id);
     globalCount++;
     tapBlock(wrap, globalCount);
-
-    const total = problems[idx].answer;
-    if (globalCount === total) {
-      showReveal();
-    }
   }
 
   function showReveal() {
+    const p = problems[idx];
     const reveal = sec.querySelector(".total-reveal");
     const host = reveal.querySelector(".ans-slot-host");
-    host.innerHTML = "";
-    if (state.slots.length === 2) host.insertAdjacentHTML("beforeend", '<div class="slot inactive" data-index="0"></div>');
-    host.insertAdjacentHTML("beforeend", `<div class="slot active" data-index="${state.slots.length - 1}"></div>`);
+    // Single answer slot — whether the answer is one digit or two, the
+    // kid drags a single tile (digit tile for <10, compound tile for ≥10).
+    host.innerHTML = `<div class="slot active" data-index="0"></div>`;
     reveal.classList.remove("hidden");
     reveal.animate(
       [{ opacity: 0, transform: "translateY(20px) scale(0.9)" }, { opacity: 1, transform: "translateY(0) scale(1)" }],
@@ -120,41 +126,38 @@ export function mount(stage, ctx, router) {
 
     const tray = sec.querySelector(".digit-tray");
     tray.innerHTML = "";
-    for (let n = 0; n <= 9; n++) {
-      const t = document.createElement("div");
-      t.className = "tile";
-      t.dataset.digit = String(n);
-      t.textContent = String(n);
-      tray.appendChild(t);
-    }
-    syncTrayDim();
-    setupDrag();
-  }
-
-  function syncTrayDim() {
-    sec.querySelectorAll(".tile").forEach((tile) => {
-      tile.classList.remove("dim", "hint-dim", "hint-target");
-    });
-    // Only dim when working on the tens column (ones already filled)
-    if (state.slots.length === 2 && state.activeIndex === 0) {
-      const expected = state.expected[state.activeIndex];
-      sec.querySelectorAll(".tile").forEach((tile) => {
-        if (parseInt(tile.dataset.digit, 10) !== expected) tile.classList.add("dim");
-      });
-    }
-  }
-
-  function applyHint() {
-    const expected = state.expected[state.activeIndex];
-    sec.querySelectorAll(".tile").forEach((tile) => {
-      if (parseInt(tile.dataset.digit, 10) === expected) {
-        tile.classList.remove("dim");
-        tile.classList.add("hint-target");
+    tray.classList.remove("two-row");
+    if (p.answer >= 10) {
+      const values = compoundOptions(p.answer);
+      const buildTile = (n) => {
+        const t = document.createElement("div");
+        t.className = "tile compound mult-option";
+        t.dataset.value = String(n);
+        t.textContent = String(n);
+        return t;
+      };
+      // Up to 11 tiles (range 10–20) sit comfortably in one row. Beyond that
+      // (e.g. 5×5=25 needs 10–25 = 16 tiles) split into two rows.
+      if (values.length > 11) {
+        tray.classList.add("two-row");
+        const half = Math.ceil(values.length / 2);
+        const row1 = document.createElement("div"); row1.className = "tile-row";
+        const row2 = document.createElement("div"); row2.className = "tile-row";
+        values.forEach((n, i) => (i < half ? row1 : row2).appendChild(buildTile(n)));
+        tray.appendChild(row1); tray.appendChild(row2);
       } else {
-        tile.classList.add("hint-dim");
+        values.forEach((n) => tray.appendChild(buildTile(n)));
       }
-    });
-    sfx.hintHmm();
+    } else {
+      for (let n = 0; n <= 9; n++) {
+        const t = document.createElement("div");
+        t.className = "tile";
+        t.dataset.value = String(n);
+        t.textContent = String(n);
+        tray.appendChild(t);
+      }
+    }
+    setupDrag();
   }
 
   function setupDrag() {
@@ -169,38 +172,25 @@ export function mount(stage, ctx, router) {
       onPickup(payload, el) { tilePickup(el); },
       async onDrop(payload, target, sourceEl, origin, parentInfo) {
         if (!target) return tileBounceBack(sourceEl, origin, parentInfo);
-        const next = dropDigit(state, payload.digit, parseInt(target.id, 10));
-        if (!next.lastDropCorrect) {
-          totalWrong++; state = next;
+        const correct = problems[idx].answer;
+        if (payload.value !== correct) {
+          totalWrong++;
           trayWrongOnCurrentSlot++;
           await tileBounceBack(sourceEl, origin, parentInfo);
           target.el.classList.add("flash-no");
           setTimeout(() => target.el.classList.remove("flash-no"), 200);
-          if (trayWrongOnCurrentSlot >= 2) applyHint();
           return;
         }
-        state = next;
         await tileSnapIn(sourceEl, target.el);
-        if (isComplete(state)) {
-          idx++;
-          renderProgressDots();
-          if (idx >= problems.length) {
-            router.go("complete", { world, level, wrongCount: totalWrong });
-            return;
-          }
-          sfx.transition();
-          setTimeout(renderProblem, 500);
-        } else {
-          sec.querySelectorAll(".slot").forEach((el) => {
-            const i = parseInt(el.dataset.index, 10);
-            el.classList.remove("active", "inactive");
-            if (i === state.activeIndex) el.classList.add("active");
-            else if (!el.classList.contains("filled")) el.classList.add("inactive");
-          });
-          trayWrongOnCurrentSlot = 0;
-          syncTrayDim();
+        sfx.correctYay();
+        idx++;
+        renderProgressDots();
+        if (idx >= problems.length) {
+          router.go("complete", { world, level, wrongCount: totalWrong });
+          return;
         }
-        renderTrayListeners();
+        sfx.transition();
+        setTimeout(renderProblem, 500);
       },
     });
     renderTrayListeners();
@@ -208,7 +198,7 @@ export function mount(stage, ctx, router) {
 
   function renderTrayListeners() {
     sec.querySelectorAll(".tile").forEach((tile) => {
-      tile.onpointerdown = (e) => dragMgr.start(e, tile, { digit: parseInt(tile.dataset.digit, 10) });
+      tile.onpointerdown = (e) => dragMgr.start(e, tile, { value: parseInt(tile.dataset.value, 10) });
     });
   }
 

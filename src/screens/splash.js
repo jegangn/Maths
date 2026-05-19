@@ -8,6 +8,10 @@ export function mount(stage, state, router) {
 
   const cogWrap = document.createElement("div");
   cogWrap.className = "cog-corner";
+  const cogLabel = document.createElement("span");
+  cogLabel.className = "cog-label display";
+  cogLabel.textContent = "PARENTS";
+  cogWrap.appendChild(cogLabel);
   cogWrap.insertAdjacentHTML("beforeend", cog());
   sec.appendChild(cogWrap);
 
@@ -26,7 +30,42 @@ export function mount(stage, state, router) {
   btn.textContent = "TAP TO PLAY ▶";
   sec.appendChild(btn);
 
+  // Parent-gate lock-out: if a previous gate attempt failed twice, the
+  // splash is locked for 5 seconds — block all interaction and show a
+  // countdown message so the parent (and not the kid) knows to wait.
+  const lockUntil = parseInt(localStorage.getItem("bm.parentLockUntil") || "0", 10);
+  const lockRemaining = Math.max(0, lockUntil - Date.now());
+  let lockBanner = null;
+  let lockTimer = null;
+  if (lockRemaining > 0) {
+    lockBanner = document.createElement("div");
+    lockBanner.className = "parent-lock-banner display";
+    // Block any pointer/click reaching the underlying splash so the parent
+    // can't accidentally start the game or re-open the gate while locked.
+    const swallow = (e) => { e.stopPropagation(); e.preventDefault(); };
+    lockBanner.addEventListener("pointerdown", swallow);
+    lockBanner.addEventListener("pointerup", swallow);
+    lockBanner.addEventListener("click", swallow);
+    sec.appendChild(lockBanner);
+    const tick = () => {
+      const left = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1000));
+      if (left <= 0) {
+        localStorage.removeItem("bm.parentLockUntil");
+        lockBanner.remove();
+        lockBanner = null;
+        clearInterval(lockTimer);
+      } else {
+        lockBanner.textContent = `PARENTS: PLEASE WAIT ${left}s`;
+      }
+    };
+    tick();
+    lockTimer = setInterval(tick, 250);
+  }
+
+  function isLocked() { return lockBanner !== null; }
+
   function go() {
+    if (isLocked()) return;
     unlockAudio();
     sfx.transition();
     router.go("map");
@@ -37,13 +76,14 @@ export function mount(stage, state, router) {
     if (!e.target.closest("button")) go();
   });
 
-  let holdTimer = null;
-  cogWrap.addEventListener("pointerdown", () => {
-    holdTimer = setTimeout(() => router.go("settings"), 1500);
+  cogWrap.addEventListener("pointerup", () => {
+    if (isLocked()) return;
+    router.go("settings");
   });
-  cogWrap.addEventListener("pointerup", () => clearTimeout(holdTimer));
-  cogWrap.addEventListener("pointerleave", () => clearTimeout(holdTimer));
 
   stage.appendChild(sec);
-  return () => sec.remove();
+  return () => {
+    if (lockTimer) clearInterval(lockTimer);
+    sec.remove();
+  };
 }

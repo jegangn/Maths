@@ -72,6 +72,15 @@ export const sfx = {
     // Sparkle layer: high-pitched G6 with slow decay
     setTimeout(() => tone({ freq: 1568, type: "sine", dur: 0.4, gain: 0.18, decay: 0.4 }), 120);
   },
+  // Longer, more festive ding for completing a whole multiplication problem.
+  // Ascending C-major arpeggio + a top-octave bell shimmer.
+  correctYay: () => {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((f, i) => setTimeout(() =>
+      tone({ freq: f, type: "triangle", dur: 0.22, gain: 0.26 }), i * 80));
+    setTimeout(() => tone({ freq: 1568, type: "sine", dur: 0.5, gain: 0.2, decay: 0.5 }), 320);
+    setTimeout(() => tone({ freq: 2093, type: "sine", dur: 0.5, gain: 0.16, decay: 0.5 }), 400);
+  },
   tileDropWrong:    () => tone({ freq: 180, freqEnd: 90, type: "triangle", dur: 0.25, gain: 0.22, lp: 800 }),
   slotFill:         () => tone({ freq: 1568, type: "sine", dur: 0.12, gain: 0.2 }),
   carryWhoosh:     () => { noise({ dur: 0.5, gain: 0.15, bpFreq: 300, bpEnd: 800 });
