@@ -622,8 +622,10 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
       { duration: PHASE_A_MS, easing: SMOOTH, fill: "forwards" }
     );
 
-    // Phase B (1700 - 3000ms): brief held pause, then the "10" chip fades
-    // in at the tens column and drifts smoothly down to the ones column.
+    // Phase B (1600 - 2900ms): brief held pause, then the "10" chip fades
+    // in at the tens column and drifts smoothly to a position just ABOVE
+    // the ones cell. (Going ABOVE the cell, not left of it, avoids the
+    // tens cell that already sits to the left of the ones cell.)
     setTimeout(() => {
       const chip = document.createElement("div");
       chip.className = "borrow-chip";
@@ -634,8 +636,11 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
       const ones = onesTopEl.getBoundingClientRect();
       const sx = tens.left + tens.width/2;
       const sy = tens.top + tens.height/2;
-      const ex = ones.left + ones.width/2;
-      const ey = ones.top + ones.height/2;
+      // Chip's final CENTER: horizontally aligned with the ones cell, 80px
+      // ABOVE its top edge. That leaves a 50px gap between the chip's
+      // bottom and the cell's top, into which the "+" sign tucks neatly.
+      const ex = ones.left + ones.width / 2;
+      const ey = ones.top - 80;
       chip.style.left = `${sx - 30}px`;
       chip.style.top  = `${sy - 30}px`;
 
@@ -646,29 +651,63 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
           { left: `${(sx+ex)/2 - 30}px`, top: `${(sy+ey)/2 - 30}px`, transform: "scale(1.1)", opacity: 1, offset: 0.6 },
           { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
         ],
-        { duration: 1500, easing: SMOOTH, fill: "forwards" }
+        { duration: 1300, easing: SMOOTH, fill: "forwards" }
       ).onfinish = () => {
-        // Phase C (3200 - 4300ms): the ones digit gradually transforms from
-        // "2" into "12". Old digit shrinks and fades smoothly; new digit
-        // grows in smoothly. No overshoots — calm, fluid, readable.
-        onesTopEl.animate(
-          [{ opacity: 1, transform: "scale(1)" },
-           { opacity: 0, transform: "scale(0.4)" }],
-          { duration: 500, easing: SMOOTH, fill: "forwards" }
-        ).onfinish = () => {
-          onesTopEl.textContent = String(newOnesValue);
+        // Phase C — explicit "10 + 4 = 14" reveal.
+        // A "+" sign fades in between the chip and the ones digit (between
+        // chip's bottom and the cell's top — vertically stacked equation).
+        const plus = document.createElement("div");
+        plus.className = "borrow-plus";
+        plus.textContent = "+";
+        document.body.appendChild(plus);
+        plus.style.left = `${ex - 18}px`;
+        plus.style.top  = `${ones.top - 44}px`;
+        plus.animate(
+          [{ opacity: 0, transform: "scale(0.4)" },
+           { opacity: 1, transform: "scale(1)" }],
+          { duration: 350, easing: SMOOTH, fill: "forwards" }
+        );
+
+        // Hold the equation so the child can read it: "10" (chip) + "4" (cell)
+        setTimeout(() => {
+          // The "+" fades out and the chip slides DOWN into the ones cell,
+          // shrinking and fading as it merges with the existing digit.
+          plus.animate(
+            [{ opacity: 1, transform: "scale(1)" },
+             { opacity: 0, transform: "scale(0.5)" }],
+            { duration: 400, easing: SMOOTH, fill: "forwards" }
+          ).onfinish = () => plus.remove();
+
+          // Chip slides down into the cell while shrinking + fading
+          const targetTop = ones.top + ones.height / 2 - 30;
+          chip.animate(
+            [
+              { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 },
+              { left: `${ex - 30}px`, top: `${targetTop}px`, transform: "scale(0.5)", opacity: 0 },
+            ],
+            { duration: 500, easing: SMOOTH, fill: "forwards" }
+          ).onfinish = () => chip.remove();
+
+          // Existing ones digit (e.g. "4") shrinks + fades simultaneously,
+          // then is replaced with the new value ("14") which grows in.
           onesTopEl.animate(
-            [{ opacity: 0, transform: "scale(0.4)" },
-             { opacity: 1, transform: "scale(1)" }],
-            { duration: 600, easing: SMOOTH, fill: "forwards" }
+            [{ opacity: 1, transform: "scale(1)" },
+             { opacity: 0, transform: "scale(0.6)" }],
+            { duration: 400, easing: SMOOTH, fill: "forwards" }
           ).onfinish = () => {
-            chip.remove();
-            // Final settle so the kid sees the regrouped state clearly
-            setTimeout(resolve, 400);
+            onesTopEl.textContent = String(newOnesValue);
+            onesTopEl.animate(
+              [{ opacity: 0, transform: "scale(0.6)" },
+               { opacity: 1, transform: "scale(1)" }],
+              { duration: 500, easing: SMOOTH, fill: "forwards" }
+            ).onfinish = () => {
+              // Final settle so the kid sees the regrouped state clearly
+              setTimeout(resolve, 350);
+            };
           };
-        };
+        }, 1100); // Equation "10 + 4" held for 1100ms so the kid can read it
       };
-    }, 1700);
+    }, 1600);
   });
 }
 
