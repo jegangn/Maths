@@ -613,7 +613,11 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
     newTens.textContent = String(newTensDigit);
     tensTopEl.parentElement.appendChild(newTens);
 
-    newTens.style.left = `${tensTopEl.offsetLeft}px`;
+    // Center the 60px-wide new-tens chip horizontally above the (typically
+    // 100px-wide) tens cell so the small "1" sits directly above the struck
+    // "2", not on its left edge.
+    const NEW_TENS_W = 60;
+    newTens.style.left = `${tensTopEl.offsetLeft + (tensTopEl.offsetWidth - NEW_TENS_W) / 2}px`;
     newTens.style.top  = `${tensTopEl.offsetTop - 70}px`;
     // Gentle fade + grow — no overshoot, matching the strike's pace.
     newTens.animate(

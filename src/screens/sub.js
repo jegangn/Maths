@@ -34,6 +34,10 @@ export function mount(stage, ctx, router) {
 
   renderProgressDots();
   renderTray();
+  // IMPORTANT: append the section to the stage BEFORE running renderProblem.
+  // animateBorrow reads offsetLeft/offsetWidth on the worksheet cells, which
+  // both return 0 if the section isn't yet attached to the DOM.
+  stage.appendChild(sec);
   renderProblem().then(setupDrag);
 
   function renderProgressDots() {
@@ -196,6 +200,5 @@ export function mount(stage, ctx, router) {
     }, 500);
   }
 
-  stage.appendChild(sec);
   return () => sec.remove();
 }

@@ -47,6 +47,16 @@ test('borrow: 10 + 4 equation is briefly visible before ones digit becomes 14', 
   const onesCenterX = onesBox.x + onesBox.width / 2;
   expect(Math.abs(chipCenterX - onesCenterX)).toBeLessThan(40);
 
+  // The new tens "1" (.borrow-replacement) should be centered above the tens cell
+  const newTens = page.locator('.borrow-replacement');
+  await expect(newTens).toBeVisible();
+  const newTensBox = await newTens.boundingBox();
+  const tensCell = page.locator('.worksheet .row.top .cell:nth-child(1)');
+  const tensBox = await tensCell.boundingBox();
+  const newTensCenterX = newTensBox.x + newTensBox.width / 2;
+  const tensCenterX = tensBox.x + tensBox.width / 2;
+  expect(Math.abs(newTensCenterX - tensCenterX)).toBeLessThan(8);
+
   await page.screenshot({ path: 'test-results/borrow-equation.png' });
 });
 
