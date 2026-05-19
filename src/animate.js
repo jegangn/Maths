@@ -582,8 +582,24 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
   return new Promise((resolve) => {
     sfx.borrowWhoosh();
 
+    // Phase A (0 - 900ms): the diagonal strike "draws" across the original
+    // tens digit, and the smaller new tens digit floats in above it.
+    const SVG_NS = "http://www.w3.org/2000/svg";
     const strike = document.createElement("div");
     strike.className = "strike";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 100 120");
+    svg.setAttribute("preserveAspectRatio", "none");
+    const line = document.createElementNS(SVG_NS, "line");
+    line.setAttribute("x1", "14");
+    line.setAttribute("y1", "100");
+    line.setAttribute("x2", "86");
+    line.setAttribute("y2", "20");
+    line.setAttribute("stroke", "#FF7A40");
+    line.setAttribute("stroke-width", "7");
+    line.setAttribute("stroke-linecap", "round");
+    svg.appendChild(line);
+    strike.appendChild(svg);
     tensTopEl.appendChild(strike);
 
     const newTens = document.createElement("div");
@@ -593,9 +609,15 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
 
     newTens.style.left = `${tensTopEl.offsetLeft}px`;
     newTens.style.top  = `${tensTopEl.offsetTop - 70}px`;
-    newTens.animate([{ opacity: 0, transform: "translateY(20px)" }, { opacity: 1, transform: "translateY(0)" }],
-      { duration: 200, easing: "ease-out", fill: "forwards" });
+    newTens.animate(
+      [{ opacity: 0, transform: "translateY(20px) scale(0.7)" },
+       { opacity: 1, transform: "translateY(0) scale(1)" }],
+      { duration: 600, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
+    );
 
+    // Phase B (1500 - 2900ms): a "10" chip drops slowly from the tens column
+    // down to the ones column. Long pause before the drop so the kid has time
+    // to register the strike + new tens digit first.
     setTimeout(() => {
       const chip = document.createElement("div");
       chip.className = "borrow-chip";
@@ -614,22 +636,30 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
       chip.animate(
         [
           { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(1)" },
-          { left: `${(sx+ex)/2 - 30}px`, top: `${(sy+ey)/2 - 30}px`, transform: "scale(1.1)", offset: 0.6 },
+          { left: `${(sx+ex)/2 - 30}px`, top: `${(sy+ey)/2 - 30}px`, transform: "scale(1.15)", offset: 0.6 },
           { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)" },
         ],
-        { duration: 600, easing: "cubic-bezier(0.4,0,0.6,1)", fill: "forwards" }
+        { duration: 1400, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" }
       ).onfinish = () => {
-        onesTopEl.animate([{ opacity: 1 }, { opacity: 0 }],
-          { duration: 150, fill: "forwards" }).onfinish = () => {
-            onesTopEl.textContent = String(newOnesValue);
-            onesTopEl.animate([{ opacity: 0 }, { opacity: 1 }],
-              { duration: 150, fill: "forwards" }).onfinish = () => {
-                chip.remove();
-                resolve();
-              };
+        // Phase C: ones digit morphs from old value to new (e.g. 2 → 12)
+        onesTopEl.animate(
+          [{ opacity: 1, transform: "scale(1)" },
+           { opacity: 0, transform: "scale(0.7)" }],
+          { duration: 350, fill: "forwards" }
+        ).onfinish = () => {
+          onesTopEl.textContent = String(newOnesValue);
+          onesTopEl.animate(
+            [{ opacity: 0, transform: "scale(0.7)" },
+             { opacity: 1, transform: "scale(1.15)", offset: 0.6 },
+             { opacity: 1, transform: "scale(1)" }],
+            { duration: 450, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
+          ).onfinish = () => {
+            chip.remove();
+            setTimeout(resolve, 250); // brief settle before drag is enabled
           };
+        };
       };
-    }, 300);
+    }, 1500);
   });
 }
 
