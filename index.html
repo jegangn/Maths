@@ -223,12 +223,20 @@ html, body {
   font-family: 'Lilita One', system-ui; font-size: 36px;
   cursor: pointer; user-select: none;
   box-shadow: var(--sh-3);
-  transition: transform .08s var(--ease-pop), box-shadow .08s var(--ease-pop), filter .15s;
+  transition: transform .08s var(--ease-pop), box-shadow .08s var(--ease-pop);
   padding: 0 32px;
+  /* Always crisp — no browser focus ring, tap highlight, or hover fade can
+     mute these. The only allowed "off" state is the explicit .disabled. */
+  outline: none;
+  opacity: 1;
+  filter: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .btn:active { transform: translateY(6px); box-shadow: var(--sh-pressed); }
-.btn:focus, .btn:focus-visible { outline: none; }
-button { outline: none; }
+.btn:focus, .btn:focus-visible, .btn:hover { outline: none; opacity: 1; filter: none; }
+button { outline: none; -webkit-tap-highlight-color: transparent; }
 .btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
 .btn.ghost  { background: var(--bg-card); }
 .btn.success{ background: var(--success); color: #fff; }
