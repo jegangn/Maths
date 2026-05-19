@@ -64,6 +64,14 @@ export const sfx = {
   tilePickup:       () => tone({ freq: 200, type: "triangle", dur: 0.06, gain: 0.18 }),
   tileDropCorrect: () => { tone({ freq: 520, type: "triangle", dur: 0.08, gain: 0.22 });
                             setTimeout(() => tone({ freq: 1318, type: "sine", dur: 0.2, gain: 0.18 }), 50); },
+  correctDing: () => {
+    // Bright 3-note ascending arpeggio C5-E5-G5
+    const notes = [523, 659, 784];
+    notes.forEach((f, i) => setTimeout(() =>
+      tone({ freq: f, type: "sine", dur: 0.18, gain: 0.28 }), i * 60));
+    // Sparkle layer: high-pitched G6 with slow decay
+    setTimeout(() => tone({ freq: 1568, type: "sine", dur: 0.4, gain: 0.18, decay: 0.4 }), 120);
+  },
   tileDropWrong:    () => tone({ freq: 180, freqEnd: 90, type: "triangle", dur: 0.25, gain: 0.22, lp: 800 }),
   slotFill:         () => tone({ freq: 1568, type: "sine", dur: 0.12, gain: 0.2 }),
   carryWhoosh:     () => { noise({ dur: 0.5, gain: 0.15, bpFreq: 300, bpEnd: 800 });

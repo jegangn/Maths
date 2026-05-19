@@ -119,6 +119,14 @@ html, body {
   50% { transform: rotate(-5deg); }
   75% { transform: rotate(3deg); }
 }
+@keyframes slotCorrectFlash {
+  0%   { box-shadow: 0 0 0 0 var(--success); }
+  50%  { box-shadow: 0 0 0 12px rgba(74, 214, 109, 0.6); }
+  100% { box-shadow: 0 0 0 20px rgba(74, 214, 109, 0); }
+}
+.slot.filled.just-filled {
+  animation: slotCorrectFlash 0.5s var(--ease-pop);
+}
 
 .block-host {
   width: 96px; height: 96px;
@@ -390,7 +398,14 @@ html, body {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 32px;
 }
-.home-btn.small { width: 56px; height: 56px; padding: 0; }
+.home-btn.small {
+  position: static;   /* opt out of absolute positioning from base .home-btn */
+  top: auto;
+  left: auto;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+}
 .home-btn.small svg { width: 100%; height: 100%; }
 .progress-dots { display: flex; gap: 8px; }
 .dot { width: 16px; height: 16px; border-radius: 50%; background: var(--bg-card); border: 3px solid var(--ink); }
@@ -414,10 +429,11 @@ html, body {
 .worksheet .row.ans { gap: 16px; justify-content: flex-end; }
 .carry-slot.hidden { display: none; }
 
-/* Compound tiles (10-18): wider to fit two digits */
+/* Compound tiles (10-18): same box as single digits, smaller font to fit 2 chars */
 .tile.compound {
-  width: 140px;
-  font-size: 52px;
+  width: 96px;
+  height: 96px;
+  font-size: 56px;
 }
 
 /* Two-row tray when compound tiles are present */

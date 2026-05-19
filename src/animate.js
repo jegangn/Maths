@@ -67,10 +67,11 @@ export function tileSnapIn(el, targetEl) {
       targetEl.classList.remove("active");
       targetEl.classList.add("filled");
       targetEl.textContent = el.textContent;
+      targetEl.classList.add("just-filled");
+      setTimeout(() => targetEl.classList.remove("just-filled"), 600);
       resolve();
     };
-    sfx.tileDropCorrect();
-    setTimeout(() => sfx.slotFill(), 200);
+    sfx.correctDing();
   });
 }
 
