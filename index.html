@@ -2183,7 +2183,7 @@ html, body {
         const sx = tens.left + tens.width / 2;
         const sy = tens.top + tens.height / 2;
         const ex = ones.left + ones.width / 2;
-        const ey = ones.top - 80;
+        const ey = ones.top - 56;
         chip.style.left = `${sx - 30}px`;
         chip.style.top = `${sy - 30}px`;
         chip.animate(
@@ -2200,7 +2200,7 @@ html, body {
           plus.textContent = "+";
           document.body.appendChild(plus);
           plus.style.left = `${ex - 18}px`;
-          plus.style.top = `${ones.top - 44}px`;
+          plus.style.top = `${ones.top - 18}px`;
           plus.animate(
             [
               { opacity: 0, transform: "scale(0.4)" },
