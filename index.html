@@ -287,7 +287,7 @@ html, body {
 .strike line {
   stroke-dasharray: 120;
   stroke-dashoffset: 120;
-  animation: strikeDraw .8s cubic-bezier(0.45, 0.05, 0.25, 1) forwards;
+  animation: strikeDraw 1.3s cubic-bezier(0.45, 0.05, 0.25, 1) forwards;
 }
 @keyframes strikeDraw { to { stroke-dashoffset: 0; } }
 .borrow-replacement {
@@ -2126,6 +2126,8 @@ html, body {
   function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue }) {
     return new Promise((resolve) => {
       sfx.borrowWhoosh();
+      const PHASE_A_MS = 1300;
+      const SMOOTH = "cubic-bezier(0.45, 0.05, 0.25, 1)";
       const SVG_NS = "http://www.w3.org/2000/svg";
       const strike = document.createElement("div");
       strike.className = "strike";
@@ -2151,10 +2153,10 @@ html, body {
       newTens.style.top = `${tensTopEl.offsetTop - 70}px`;
       newTens.animate(
         [
-          { opacity: 0, transform: "translateY(20px) scale(0.7)" },
-          { opacity: 1, transform: "translateY(0) scale(1)" }
+          { opacity: 0, transform: "scale(0.4)" },
+          { opacity: 1, transform: "scale(1)" }
         ],
-        { duration: 600, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
+        { duration: PHASE_A_MS, easing: SMOOTH, fill: "forwards" }
       );
       setTimeout(() => {
         const chip = document.createElement("div");
@@ -2171,34 +2173,34 @@ html, body {
         chip.style.top = `${sy - 30}px`;
         chip.animate(
           [
-            { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(1)" },
-            { left: `${(sx + ex) / 2 - 30}px`, top: `${(sy + ey) / 2 - 30}px`, transform: "scale(1.15)", offset: 0.6 },
-            { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)" }
+            { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(0.7)", opacity: 0 },
+            { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(1)", opacity: 1, offset: 0.18 },
+            { left: `${(sx + ex) / 2 - 30}px`, top: `${(sy + ey) / 2 - 30}px`, transform: "scale(1.1)", opacity: 1, offset: 0.6 },
+            { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)", opacity: 1 }
           ],
-          { duration: 1400, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" }
+          { duration: 1500, easing: SMOOTH, fill: "forwards" }
         ).onfinish = () => {
           onesTopEl.animate(
             [
               { opacity: 1, transform: "scale(1)" },
-              { opacity: 0, transform: "scale(0.7)" }
+              { opacity: 0, transform: "scale(0.4)" }
             ],
-            { duration: 350, fill: "forwards" }
+            { duration: 500, easing: SMOOTH, fill: "forwards" }
           ).onfinish = () => {
             onesTopEl.textContent = String(newOnesValue);
             onesTopEl.animate(
               [
-                { opacity: 0, transform: "scale(0.7)" },
-                { opacity: 1, transform: "scale(1.15)", offset: 0.6 },
+                { opacity: 0, transform: "scale(0.4)" },
                 { opacity: 1, transform: "scale(1)" }
               ],
-              { duration: 450, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
+              { duration: 600, easing: SMOOTH, fill: "forwards" }
             ).onfinish = () => {
               chip.remove();
-              setTimeout(resolve, 250);
+              setTimeout(resolve, 400);
             };
           };
         };
-      }, 1500);
+      }, 1700);
     });
   }
   function tapBlock(blockEl, count) {
