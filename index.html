@@ -171,6 +171,19 @@ html, body {
   transform: translate(-50%, -50%);
 }
 
+.mascot-sparkle {
+  position: absolute;
+  width: 28px; height: 28px;
+  pointer-events: none;
+  z-index: 350;
+  background: var(--star);
+  /* CSS-only 4-point star using clip-path */
+  clip-path: polygon(50% 0%, 60% 38%, 100% 50%, 60% 62%, 50% 100%, 40% 62%, 0% 50%, 40% 38%);
+  filter: drop-shadow(0 0 8px var(--star-glow));
+}
+.mascot-sparkle:nth-child(3n) { background: var(--world-primary); }
+.mascot-sparkle:nth-child(3n+1) { background: var(--success); }
+
 .block-host {
   width: 96px; height: 96px;
   display: inline-block;
@@ -1366,7 +1379,7 @@ html, body {
         setTimeout(() => targetEl.classList.remove("just-filled"), 700);
         correctBurst(targetEl);
         const mascot = document.querySelector(".corner-mascot svg");
-        if (mascot) mascotQuickHop(mascot);
+        if (mascot) mascotCheer(mascot);
         resolve();
       };
       sfx.correctDing();
@@ -1403,15 +1416,102 @@ html, body {
       ).onfinish = () => p.remove();
     }
   }
-  function mascotQuickHop(svgRoot) {
+  function mascotCheer(svgRoot) {
+    const DUR = 800;
     svgRoot.animate(
       [
-        { transform: "translateY(0) scale(1)" },
-        { transform: "translateY(-16px) scale(1.06)", offset: 0.4 },
-        { transform: "translateY(0) scale(1)" }
+        { transform: "translateY(0) scale(1, 1)" },
+        { transform: "translateY(10px) scale(1.15, 0.82)", offset: 0.18 },
+        { transform: "translateY(-46px) scale(0.94, 1.12)", offset: 0.5 },
+        { transform: "translateY(-12px) scale(1.02, 0.98)", offset: 0.72 },
+        { transform: "translateY(0) scale(1.12, 0.88)", offset: 0.88 },
+        { transform: "translateY(0) scale(1, 1)" }
       ],
-      { duration: 400, easing: "cubic-bezier(0.34,1.6,0.5,1)" }
+      { duration: DUR, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)" }
     );
+    const lefts = svgRoot.querySelectorAll(".wing-l, .arm-l, .ear-l");
+    lefts.forEach((el) => {
+      el.style.transformOrigin = "70% 70%";
+      el.animate(
+        [
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(45deg)", offset: 0.3 },
+          { transform: "rotate(-20deg)", offset: 0.6 },
+          { transform: "rotate(35deg)", offset: 0.8 },
+          { transform: "rotate(0deg)" }
+        ],
+        { duration: DUR, easing: "ease-in-out" }
+      );
+    });
+    const rights = svgRoot.querySelectorAll(".wing-r, .arm-r, .ear-r");
+    rights.forEach((el) => {
+      el.style.transformOrigin = "30% 70%";
+      el.animate(
+        [
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(-45deg)", offset: 0.3 },
+          { transform: "rotate(20deg)", offset: 0.6 },
+          { transform: "rotate(-35deg)", offset: 0.8 },
+          { transform: "rotate(0deg)" }
+        ],
+        { duration: DUR, easing: "ease-in-out" }
+      );
+    });
+    const head = svgRoot.querySelector(".head");
+    if (head) {
+      head.style.transformOrigin = "50% 80%";
+      head.animate(
+        [
+          { transform: "rotate(0deg) translateY(0)" },
+          { transform: "rotate(-10deg) translateY(-4px)", offset: 0.3 },
+          { transform: "rotate(10deg) translateY(-4px)", offset: 0.7 },
+          { transform: "rotate(0deg) translateY(0)" }
+        ],
+        { duration: DUR, easing: "ease-in-out" }
+      );
+    }
+    const tail = svgRoot.querySelector(".tail");
+    if (tail) {
+      tail.style.transformOrigin = "30% 50%";
+      tail.animate(
+        [
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(20deg)", offset: 0.3 },
+          { transform: "rotate(-20deg)", offset: 0.6 },
+          { transform: "rotate(15deg)", offset: 0.85 },
+          { transform: "rotate(0deg)" }
+        ],
+        { duration: DUR, easing: "ease-in-out" }
+      );
+    }
+    spawnMascotSparkles(svgRoot);
+  }
+  function spawnMascotSparkles(svgRoot) {
+    const parent = svgRoot.parentElement;
+    if (!parent) return;
+    const cs = getComputedStyle(parent);
+    if (cs.position === "static") parent.style.position = "relative";
+    const N = 12;
+    for (let i = 0; i < N; i++) {
+      const s = document.createElement("div");
+      s.className = "mascot-sparkle";
+      parent.appendChild(s);
+      const angle = -Math.PI + Math.PI * i / (N - 1) + (Math.random() - 0.5) * 0.18;
+      const dist = 110 + Math.random() * 50;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist;
+      s.style.left = "50%";
+      s.style.top = "50%";
+      const rot = (Math.random() * 360 + 180) * (i % 2 === 0 ? 1 : -1);
+      s.animate(
+        [
+          { transform: "translate(-50%, -50%) scale(0) rotate(0deg)", opacity: 0 },
+          { transform: `translate(calc(-50% + ${dx * 0.6}px), calc(-50% + ${dy * 0.6}px)) scale(1.4) rotate(${rot * 0.5}deg)`, opacity: 1, offset: 0.35 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + 40}px)) scale(0.7) rotate(${rot}deg)`, opacity: 0 }
+        ],
+        { duration: 950 + Math.random() * 250, easing: "cubic-bezier(0.4,0,0.6,1)", fill: "forwards" }
+      ).onfinish = () => s.remove();
+    }
   }
   function flyCarry(carrySlotEl, fromEl) {
     return new Promise((resolve) => {
