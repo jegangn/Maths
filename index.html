@@ -281,10 +281,15 @@ html, body {
 .strike {
   position: absolute; inset: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom right, transparent 47%, var(--gentle-no) 48%, var(--gentle-no) 52%, transparent 53%);
-  animation: strikeDraw .25s var(--ease-soft) forwards;
+  z-index: 6;
 }
-@keyframes strikeDraw { from { opacity: 0; } to { opacity: 1; } }
+.strike svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.strike line {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: strikeDraw .8s cubic-bezier(0.45, 0.05, 0.25, 1) forwards;
+}
+@keyframes strikeDraw { to { stroke-dashoffset: 0; } }
 .borrow-replacement {
   position: absolute;
   width: 60px; height: 60px;
@@ -520,7 +525,7 @@ html, body {
 .worksheet .row { display: flex; gap: 16px; justify-content: flex-end; }
 .worksheet .row.top { position: relative; }
 .worksheet .row.bot .op { font-size: 96px; line-height: 120px; width: 60px; text-align: center; }
-.worksheet .cell { width: 100px; height: 120px; font-size: 96px; line-height: 120px; text-align: center; }
+.worksheet .cell { width: 100px; height: 120px; font-size: 96px; line-height: 120px; text-align: center; position: relative; }
 .worksheet .cell.empty { opacity: 0; }
 .worksheet .line { background: var(--ink); height: 6px; border-radius: 3px; margin: 0 0 0 76px; max-width: 232px; }
 .worksheet .row.ans { gap: 16px; justify-content: flex-end; }
@@ -2121,8 +2126,22 @@ html, body {
   function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue }) {
     return new Promise((resolve) => {
       sfx.borrowWhoosh();
+      const SVG_NS = "http://www.w3.org/2000/svg";
       const strike = document.createElement("div");
       strike.className = "strike";
+      const svg = document.createElementNS(SVG_NS, "svg");
+      svg.setAttribute("viewBox", "0 0 100 120");
+      svg.setAttribute("preserveAspectRatio", "none");
+      const line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("x1", "14");
+      line.setAttribute("y1", "100");
+      line.setAttribute("x2", "86");
+      line.setAttribute("y2", "20");
+      line.setAttribute("stroke", "#FF7A40");
+      line.setAttribute("stroke-width", "7");
+      line.setAttribute("stroke-linecap", "round");
+      svg.appendChild(line);
+      strike.appendChild(svg);
       tensTopEl.appendChild(strike);
       const newTens = document.createElement("div");
       newTens.className = "borrow-replacement";
@@ -2131,8 +2150,11 @@ html, body {
       newTens.style.left = `${tensTopEl.offsetLeft}px`;
       newTens.style.top = `${tensTopEl.offsetTop - 70}px`;
       newTens.animate(
-        [{ opacity: 0, transform: "translateY(20px)" }, { opacity: 1, transform: "translateY(0)" }],
-        { duration: 200, easing: "ease-out", fill: "forwards" }
+        [
+          { opacity: 0, transform: "translateY(20px) scale(0.7)" },
+          { opacity: 1, transform: "translateY(0) scale(1)" }
+        ],
+        { duration: 600, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
       );
       setTimeout(() => {
         const chip = document.createElement("div");
@@ -2150,26 +2172,33 @@ html, body {
         chip.animate(
           [
             { left: `${sx - 30}px`, top: `${sy - 30}px`, transform: "scale(1)" },
-            { left: `${(sx + ex) / 2 - 30}px`, top: `${(sy + ey) / 2 - 30}px`, transform: "scale(1.1)", offset: 0.6 },
+            { left: `${(sx + ex) / 2 - 30}px`, top: `${(sy + ey) / 2 - 30}px`, transform: "scale(1.15)", offset: 0.6 },
             { left: `${ex - 30}px`, top: `${ey - 30}px`, transform: "scale(1)" }
           ],
-          { duration: 600, easing: "cubic-bezier(0.4,0,0.6,1)", fill: "forwards" }
+          { duration: 1400, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" }
         ).onfinish = () => {
           onesTopEl.animate(
-            [{ opacity: 1 }, { opacity: 0 }],
-            { duration: 150, fill: "forwards" }
+            [
+              { opacity: 1, transform: "scale(1)" },
+              { opacity: 0, transform: "scale(0.7)" }
+            ],
+            { duration: 350, fill: "forwards" }
           ).onfinish = () => {
             onesTopEl.textContent = String(newOnesValue);
             onesTopEl.animate(
-              [{ opacity: 0 }, { opacity: 1 }],
-              { duration: 150, fill: "forwards" }
+              [
+                { opacity: 0, transform: "scale(0.7)" },
+                { opacity: 1, transform: "scale(1.15)", offset: 0.6 },
+                { opacity: 1, transform: "scale(1)" }
+              ],
+              { duration: 450, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)", fill: "forwards" }
             ).onfinish = () => {
               chip.remove();
-              resolve();
+              setTimeout(resolve, 250);
             };
           };
         };
-      }, 300);
+      }, 1500);
     });
   }
   function tapBlock(blockEl, count) {
