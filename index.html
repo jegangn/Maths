@@ -2164,7 +2164,8 @@ html, body {
       newTens.className = "borrow-replacement";
       newTens.textContent = String(newTensDigit);
       tensTopEl.parentElement.appendChild(newTens);
-      newTens.style.left = `${tensTopEl.offsetLeft}px`;
+      const NEW_TENS_W = 60;
+      newTens.style.left = `${tensTopEl.offsetLeft + (tensTopEl.offsetWidth - NEW_TENS_W) / 2}px`;
       newTens.style.top = `${tensTopEl.offsetTop - 70}px`;
       newTens.animate(
         [
@@ -2666,6 +2667,7 @@ html, body {
     sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", mo("idle"));
     renderProgressDots();
     renderTray();
+    stage2.appendChild(sec);
     renderProblem().then(setupDrag);
     function renderProgressDots() {
       const d = sec.querySelector(".progress-dots");
@@ -2818,7 +2820,6 @@ html, body {
         });
       }, 500);
     }
-    stage2.appendChild(sec);
     return () => sec.remove();
   }
 
