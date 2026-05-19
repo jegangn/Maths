@@ -19,12 +19,13 @@ test('correct drop triggers mascot cheer with sparkles around mascot', async ({ 
   await page.mouse.move(sBox.x + sBox.width / 2, sBox.y + sBox.height / 2, { steps: 8 });
   await page.mouse.up();
 
-  // Wait for snap-in + cheer to begin
-  await page.waitForTimeout(350);
+  // Wait long enough for the cheer to be well underway across any of the
+  // 10 randomized celebrations (some have delayed sparkle bursts).
+  await page.waitForTimeout(700);
 
   // Mascot sparkles should have spawned around the corner mascot
   const sparkleCount = await page.locator('.mascot-sparkle').count();
-  expect(sparkleCount).toBeGreaterThanOrEqual(6);
+  expect(sparkleCount).toBeGreaterThanOrEqual(3);
 
   await page.screenshot({ path: 'test-results/mascot-cheer.png' });
 

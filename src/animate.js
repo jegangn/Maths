@@ -123,122 +123,411 @@ export function mascotQuickHop(svgRoot) {
   );
 }
 
-// Full cheer animation: anticipation -> jump -> squash, plus flapping
-// appendages (wings/arms/ears) and sparkles around the mascot.
-export function mascotCheer(svgRoot) {
-  const DUR = 800;
-  // Body: anticipation crouch -> jump high -> land squash -> settle
+// ===== Mascot celebration — 10 distinct animations, randomized per drop =====
+//
+// Each celebration choreographs body + appendages + sparkles in a different
+// way so the kid sees a varied reaction stream. `mascotCheer` is the public
+// entry — it picks one celebration uniformly at random while excluding the
+// previous one so the same dance never plays twice in a row.
+
+// Spawn sparkles around the mascot. Single helper, parameterised for the
+// pattern each celebration wants.
+function spawnSparkles(svgRoot, opts = {}) {
+  const parent = svgRoot?.parentElement; // .corner-mascot
+  if (!parent) return;
+  const cs = getComputedStyle(parent);
+  if (cs.position === "static") parent.style.position = "relative";
+
+  const {
+    count = 10,
+    angleStart = -Math.PI,
+    angleEnd = 0,
+    distMin = 100,
+    distRange = 50,
+    duration = 900,
+    durationRange = 250,
+    gravity = 40,
+    sizeScale = 1,
+    color = null,
+    delay = 0,
+    delayStagger = 0,
+    spread = 0.18,
+  } = opts;
+
+  for (let i = 0; i < count; i++) {
+    const t = count === 1 ? 0.5 : i / (count - 1);
+    const angle = angleStart + (angleEnd - angleStart) * t + (Math.random() - 0.5) * spread;
+    const dist = distMin + Math.random() * distRange;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    const rot = (180 + Math.random() * 360) * (i % 2 === 0 ? 1 : -1);
+    const dur = duration + Math.random() * durationRange;
+
+    const spawn = () => {
+      const s = document.createElement("div");
+      s.className = "mascot-sparkle";
+      if (color) s.style.background = color;
+      if (sizeScale !== 1) {
+        const px = Math.round(28 * sizeScale);
+        s.style.width = `${px}px`;
+        s.style.height = `${px}px`;
+      }
+      s.style.left = "50%";
+      s.style.top = "50%";
+      parent.appendChild(s);
+      s.animate(
+        [
+          { transform: "translate(-50%, -50%) scale(0) rotate(0deg)", opacity: 0 },
+          { transform: `translate(calc(-50% + ${dx * 0.55}px), calc(-50% + ${dy * 0.55}px)) scale(1.4) rotate(${rot * 0.5}deg)`, opacity: 1, offset: 0.35 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + gravity}px)) scale(0.6) rotate(${rot}deg)`, opacity: 0 },
+        ],
+        { duration: dur, easing: "cubic-bezier(0.4,0,0.6,1)", fill: "forwards" }
+      ).onfinish = () => s.remove();
+    };
+
+    const startDelay = delay + i * delayStagger;
+    if (startDelay > 0) setTimeout(spawn, startDelay);
+    else spawn();
+  }
+}
+
+// Common helpers for selecting body parts
+function flapLefts(svgRoot, frames, duration, easing = "ease-in-out") {
+  svgRoot.querySelectorAll(".wing-l, .arm-l, .ear-l").forEach((el) => {
+    el.style.transformOrigin = "70% 70%";
+    el.animate(frames, { duration, easing });
+  });
+}
+function flapRights(svgRoot, frames, duration, easing = "ease-in-out") {
+  svgRoot.querySelectorAll(".wing-r, .arm-r, .ear-r").forEach((el) => {
+    el.style.transformOrigin = "30% 70%";
+    el.animate(frames, { duration, easing });
+  });
+}
+function animatePart(svgRoot, selector, frames, duration, options = {}) {
+  const el = svgRoot.querySelector(selector);
+  if (!el) return;
+  if (options.origin) el.style.transformOrigin = options.origin;
+  el.animate(frames, { duration, easing: options.easing || "ease-in-out" });
+}
+
+// 1. BIG JUMP — anticipation crouch, high jump, land squash, settle
+function cBigJump(svgRoot) {
+  const D = 800;
   svgRoot.animate(
     [
       { transform: "translateY(0) scale(1, 1)" },
       { transform: "translateY(10px) scale(1.15, 0.82)", offset: 0.18 },
-      { transform: "translateY(-46px) scale(0.94, 1.12)", offset: 0.5 },
+      { transform: "translateY(-50px) scale(0.94, 1.12)", offset: 0.5 },
       { transform: "translateY(-12px) scale(1.02, 0.98)", offset: 0.72 },
       { transform: "translateY(0) scale(1.12, 0.88)", offset: 0.88 },
       { transform: "translateY(0) scale(1, 1)" },
     ],
-    { duration: DUR, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)" }
+    { duration: D, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)" }
   );
-
-  // Flap the LEFT side appendage (wing/arm/ear) — sweep outward
-  const lefts = svgRoot.querySelectorAll(".wing-l, .arm-l, .ear-l");
-  lefts.forEach((el) => {
-    el.style.transformOrigin = "70% 70%";
-    el.animate(
-      [
-        { transform: "rotate(0deg)" },
-        { transform: "rotate(45deg)", offset: 0.3 },
-        { transform: "rotate(-20deg)", offset: 0.6 },
-        { transform: "rotate(35deg)", offset: 0.8 },
-        { transform: "rotate(0deg)" },
-      ],
-      { duration: DUR, easing: "ease-in-out" }
-    );
-  });
-
-  // Flap the RIGHT side appendage — mirror motion
-  const rights = svgRoot.querySelectorAll(".wing-r, .arm-r, .ear-r");
-  rights.forEach((el) => {
-    el.style.transformOrigin = "30% 70%";
-    el.animate(
-      [
-        { transform: "rotate(0deg)" },
-        { transform: "rotate(-45deg)", offset: 0.3 },
-        { transform: "rotate(20deg)", offset: 0.6 },
-        { transform: "rotate(-35deg)", offset: 0.8 },
-        { transform: "rotate(0deg)" },
-      ],
-      { duration: DUR, easing: "ease-in-out" }
-    );
-  });
-
-  // Head tilt (toucan / sloth / mouse all have .head)
-  const head = svgRoot.querySelector(".head");
-  if (head) {
-    head.style.transformOrigin = "50% 80%";
-    head.animate(
-      [
-        { transform: "rotate(0deg) translateY(0)" },
-        { transform: "rotate(-10deg) translateY(-4px)", offset: 0.3 },
-        { transform: "rotate(10deg) translateY(-4px)", offset: 0.7 },
-        { transform: "rotate(0deg) translateY(0)" },
-      ],
-      { duration: DUR, easing: "ease-in-out" }
-    );
-  }
-
-  // Tail wag (Banji has .tail, Pip has .tail)
-  const tail = svgRoot.querySelector(".tail");
-  if (tail) {
-    tail.style.transformOrigin = "30% 50%";
-    tail.animate(
-      [
-        { transform: "rotate(0deg)" },
-        { transform: "rotate(20deg)", offset: 0.3 },
-        { transform: "rotate(-20deg)", offset: 0.6 },
-        { transform: "rotate(15deg)", offset: 0.85 },
-        { transform: "rotate(0deg)" },
-      ],
-      { duration: DUR, easing: "ease-in-out" }
-    );
-  }
-
-  spawnMascotSparkles(svgRoot);
+  flapLefts(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(45deg)", offset: 0.3 },
+    { transform: "rotate(-20deg)", offset: 0.6 },
+    { transform: "rotate(35deg)", offset: 0.8 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  flapRights(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(-45deg)", offset: 0.3 },
+    { transform: "rotate(20deg)", offset: 0.6 },
+    { transform: "rotate(-35deg)", offset: 0.8 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  animatePart(svgRoot, ".head", [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(-10deg)", offset: 0.3 },
+    { transform: "rotate(10deg)", offset: 0.7 },
+    { transform: "rotate(0deg)" },
+  ], D, { origin: "50% 80%" });
+  spawnSparkles(svgRoot, { count: 12, angleStart: -Math.PI, angleEnd: 0, distMin: 110, distRange: 50 });
 }
 
-function spawnMascotSparkles(svgRoot) {
-  const parent = svgRoot.parentElement; // .corner-mascot
-  if (!parent) return;
-  // Make parent positioned so absolute children anchor to it
-  const cs = getComputedStyle(parent);
-  if (cs.position === "static") parent.style.position = "relative";
+// 2. SPIN 360 — body rotates a full turn while lifting and settling, sparkle spiral
+function cSpin360(svgRoot) {
+  const D = 850;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) rotate(0deg) scale(1)" },
+      { transform: "translateY(-8px) rotate(0deg) scale(1.08, 0.92)", offset: 0.12 },
+      { transform: "translateY(-26px) rotate(180deg) scale(1)", offset: 0.5 },
+      { transform: "translateY(-8px) rotate(360deg) scale(1.08, 0.92)", offset: 0.85 },
+      { transform: "translateY(0) rotate(360deg) scale(1)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.5, 0, 0.4, 1)" }
+  );
+  // Spiral sparkles: 14 stars, staggered, sweeping full circle
+  spawnSparkles(svgRoot, {
+    count: 14, angleStart: -Math.PI, angleEnd: Math.PI,
+    distMin: 90, distRange: 30, gravity: 20,
+    delayStagger: 35, duration: 800, durationRange: 200,
+  });
+}
 
-  const N = 12;
-  for (let i = 0; i < N; i++) {
-    const s = document.createElement("div");
-    s.className = "mascot-sparkle";
-    parent.appendChild(s);
+// 3. WIGGLE DANCE — side-to-side body shake with tail wag and head bob
+function cWiggleDance(svgRoot) {
+  const D = 800;
+  svgRoot.animate(
+    [
+      { transform: "translateX(0) rotate(0deg)" },
+      { transform: "translateX(18px) rotate(8deg)", offset: 0.18 },
+      { transform: "translateX(-18px) rotate(-8deg)", offset: 0.4 },
+      { transform: "translateX(18px) rotate(8deg)", offset: 0.62 },
+      { transform: "translateX(-12px) rotate(-6deg)", offset: 0.82 },
+      { transform: "translateX(0) rotate(0deg)" },
+    ],
+    { duration: D, easing: "ease-in-out" }
+  );
+  animatePart(svgRoot, ".tail", [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(35deg)", offset: 0.18 },
+    { transform: "rotate(-35deg)", offset: 0.4 },
+    { transform: "rotate(35deg)", offset: 0.62 },
+    { transform: "rotate(-25deg)", offset: 0.82 },
+    { transform: "rotate(0deg)" },
+  ], D, { origin: "30% 50%" });
+  animatePart(svgRoot, ".head", [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(-12deg)", offset: 0.18 },
+    { transform: "rotate(12deg)", offset: 0.4 },
+    { transform: "rotate(-12deg)", offset: 0.62 },
+    { transform: "rotate(8deg)", offset: 0.82 },
+    { transform: "rotate(0deg)" },
+  ], D, { origin: "50% 80%" });
+  // Alternating side bursts
+  spawnSparkles(svgRoot, { count: 5, angleStart: -Math.PI * 0.9, angleEnd: -Math.PI * 0.6, distMin: 100, distRange: 30, delay: 100 });
+  spawnSparkles(svgRoot, { count: 5, angleStart: -Math.PI * 0.4, angleEnd: -Math.PI * 0.1, distMin: 100, distRange: 30, delay: 350 });
+}
 
-    // Spray sparkles in the upper hemisphere: from -PI (left) to 0 (right),
-    // arching over the top of the mascot. They fly up and outward, then drift
-    // down with gravity at the end.
-    const angle = -Math.PI + (Math.PI * i) / (N - 1) + (Math.random() - 0.5) * 0.18;
-    const dist = 110 + Math.random() * 50;
-    const dx = Math.cos(angle) * dist;
-    const dy = Math.sin(angle) * dist;  // negative because angle is in upper half
-    s.style.left = "50%";
-    s.style.top = "50%";
+// 4. BACKFLIP — body rotates -360deg in an arc, sparkle trail
+function cBackflip(svgRoot) {
+  const D = 900;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) rotate(0deg)" },
+      { transform: "translateY(5px) rotate(0deg) scale(1.1, 0.85)", offset: 0.1 },
+      { transform: "translateY(-55px) rotate(-180deg) scale(1)", offset: 0.5 },
+      { transform: "translateY(0) rotate(-360deg) scale(1.08, 0.92)", offset: 0.88 },
+      { transform: "translateY(0) rotate(-360deg) scale(1)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.4, 0.3, 0.4, 1)" }
+  );
+  // Sparkle trail follows the arc — 10 stars spawned over 500ms
+  spawnSparkles(svgRoot, {
+    count: 10, angleStart: -Math.PI * 0.9, angleEnd: -Math.PI * 0.1,
+    distMin: 70, distRange: 40, gravity: 60,
+    delayStagger: 50, duration: 700, durationRange: 150,
+  });
+}
 
-    const rot = (Math.random() * 360 + 180) * (i % 2 === 0 ? 1 : -1);
-    s.animate(
-      [
-        { transform: "translate(-50%, -50%) scale(0) rotate(0deg)", opacity: 0 },
-        { transform: `translate(calc(-50% + ${dx * 0.6}px), calc(-50% + ${dy * 0.6}px)) scale(1.4) rotate(${rot * 0.5}deg)`, opacity: 1, offset: 0.35 },
-        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + 40}px)) scale(0.7) rotate(${rot}deg)`, opacity: 0 },
-      ],
-      { duration: 950 + Math.random() * 250, easing: "cubic-bezier(0.4,0,0.6,1)", fill: "forwards" }
-    ).onfinish = () => s.remove();
+// 5. TRIPLE BOUNCE — three increasing jumps, sparkles released per bounce
+function cTripleBounce(svgRoot) {
+  const D = 900;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) scale(1)" },
+      { transform: "translateY(-15px) scale(1.04, 0.96)", offset: 0.12 },
+      { transform: "translateY(0) scale(1.06, 0.92)", offset: 0.22 },
+      { transform: "translateY(-30px) scale(1.04, 0.96)", offset: 0.38 },
+      { transform: "translateY(0) scale(1.08, 0.9)", offset: 0.5 },
+      { transform: "translateY(-55px) scale(1.02, 1.08)", offset: 0.7 },
+      { transform: "translateY(0) scale(1.15, 0.85)", offset: 0.88 },
+      { transform: "translateY(0) scale(1)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.5, 0, 0.5, 1)" }
+  );
+  // 3 small bursts, increasing in size, at each bounce peak
+  spawnSparkles(svgRoot, { count: 3, angleStart: -Math.PI * 0.8, angleEnd: -Math.PI * 0.2, distMin: 70, distRange: 20, delay: 100, sizeScale: 0.8 });
+  spawnSparkles(svgRoot, { count: 5, angleStart: -Math.PI * 0.85, angleEnd: -Math.PI * 0.15, distMin: 90, distRange: 30, delay: 320, sizeScale: 0.9 });
+  spawnSparkles(svgRoot, { count: 8, angleStart: -Math.PI, angleEnd: 0, distMin: 110, distRange: 40, delay: 600, sizeScale: 1.1 });
+}
+
+// 6. YES-NOD — head nods rapidly, body bobs in sync
+function cYesNod(svgRoot) {
+  const D = 750;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0)" },
+      { transform: "translateY(-6px)", offset: 0.2 },
+      { transform: "translateY(0)", offset: 0.35 },
+      { transform: "translateY(-8px)", offset: 0.55 },
+      { transform: "translateY(0)", offset: 0.7 },
+      { transform: "translateY(-6px)", offset: 0.85 },
+      { transform: "translateY(0)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.5, 0.1, 0.5, 1)" }
+  );
+  animatePart(svgRoot, ".head", [
+    { transform: "rotate(0deg) translateY(0)" },
+    { transform: "rotate(-15deg) translateY(-3px)", offset: 0.15 },
+    { transform: "rotate(0deg) translateY(0)", offset: 0.3 },
+    { transform: "rotate(-15deg) translateY(-3px)", offset: 0.5 },
+    { transform: "rotate(0deg) translateY(0)", offset: 0.65 },
+    { transform: "rotate(-15deg) translateY(-3px)", offset: 0.85 },
+    { transform: "rotate(0deg) translateY(0)" },
+  ], D, { origin: "50% 90%" });
+  spawnSparkles(svgRoot, { count: 8, angleStart: -Math.PI, angleEnd: 0, distMin: 90, distRange: 30, sizeScale: 0.85 });
+}
+
+// 7. FIST PUMP — jump up while wings slam DOWN ("YES!"), hold, release
+function cFistPump(svgRoot) {
+  const D = 800;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) scale(1)" },
+      { transform: "translateY(5px) scale(1.1, 0.85)", offset: 0.12 },
+      { transform: "translateY(-28px) scale(1)", offset: 0.32 },
+      { transform: "translateY(-28px) scale(1)", offset: 0.62 },
+      { transform: "translateY(0) scale(1.1, 0.9)", offset: 0.85 },
+      { transform: "translateY(0) scale(1)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.4, 0, 0.4, 1)" }
+  );
+  // Wings/arms slam DOWN to a 'yes!' position, hold, release
+  flapLefts(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(-60deg)", offset: 0.3 },
+    { transform: "rotate(-55deg)", offset: 0.62 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  flapRights(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(60deg)", offset: 0.3 },
+    { transform: "rotate(55deg)", offset: 0.62 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  // Two bursts: at peak (top) and at the fist-down moment (sides)
+  spawnSparkles(svgRoot, { count: 6, angleStart: -Math.PI * 0.75, angleEnd: -Math.PI * 0.25, distMin: 100, distRange: 30, delay: 250 });
+  spawnSparkles(svgRoot, { count: 4, angleStart: -Math.PI, angleEnd: -Math.PI * 0.85, distMin: 80, distRange: 30, delay: 350, sizeScale: 0.85 });
+  spawnSparkles(svgRoot, { count: 4, angleStart: -Math.PI * 0.15, angleEnd: 0, distMin: 80, distRange: 30, delay: 350, sizeScale: 0.85 });
+}
+
+// 8. SHIMMY TWIST — body twists back and forth, appendages opposite
+function cShimmyTwist(svgRoot) {
+  const D = 850;
+  svgRoot.animate(
+    [
+      { transform: "rotate(0deg) translateY(0)" },
+      { transform: "rotate(25deg) translateY(-6px)", offset: 0.2 },
+      { transform: "rotate(-25deg) translateY(-6px)", offset: 0.4 },
+      { transform: "rotate(25deg) translateY(-6px)", offset: 0.6 },
+      { transform: "rotate(-18deg) translateY(-3px)", offset: 0.8 },
+      { transform: "rotate(0deg) translateY(0)" },
+    ],
+    { duration: D, easing: "ease-in-out" }
+  );
+  // Appendages counter-rotate
+  flapLefts(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(-20deg)", offset: 0.2 },
+    { transform: "rotate(30deg)", offset: 0.4 },
+    { transform: "rotate(-20deg)", offset: 0.6 },
+    { transform: "rotate(15deg)", offset: 0.8 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  flapRights(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(20deg)", offset: 0.2 },
+    { transform: "rotate(-30deg)", offset: 0.4 },
+    { transform: "rotate(20deg)", offset: 0.6 },
+    { transform: "rotate(-15deg)", offset: 0.8 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  // Alternating left/right bursts following the twist
+  spawnSparkles(svgRoot, { count: 4, angleStart: -Math.PI * 0.95, angleEnd: -Math.PI * 0.7, distMin: 100, distRange: 25, delay: 150 });
+  spawnSparkles(svgRoot, { count: 4, angleStart: -Math.PI * 0.3, angleEnd: -Math.PI * 0.05, distMin: 100, distRange: 25, delay: 320 });
+  spawnSparkles(svgRoot, { count: 4, angleStart: -Math.PI * 0.95, angleEnd: -Math.PI * 0.7, distMin: 100, distRange: 25, delay: 500 });
+}
+
+// 9. STAR POSE — jump up, arms stretch wide, hold, big ring sparkle around mascot
+function cStarPose(svgRoot) {
+  const D = 850;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) scale(1)" },
+      { transform: "translateY(8px) scale(1.1, 0.82)", offset: 0.15 },
+      { transform: "translateY(-40px) scale(1, 1.08)", offset: 0.4 },
+      { transform: "translateY(-40px) scale(1, 1.08)", offset: 0.7 },
+      { transform: "translateY(0) scale(1.1, 0.9)", offset: 0.9 },
+      { transform: "translateY(0) scale(1)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.4, 0, 0.4, 1)" }
+  );
+  // Arms stretch WIDE and hold
+  flapLefts(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(80deg)", offset: 0.4 },
+    { transform: "rotate(75deg)", offset: 0.7 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  flapRights(svgRoot, [
+    { transform: "rotate(0deg)" },
+    { transform: "rotate(-80deg)", offset: 0.4 },
+    { transform: "rotate(-75deg)", offset: 0.7 },
+    { transform: "rotate(0deg)" },
+  ], D);
+  // Big ring around mascot, fired at the peak
+  spawnSparkles(svgRoot, {
+    count: 14, angleStart: -Math.PI, angleEnd: Math.PI,
+    distMin: 130, distRange: 30, gravity: 25,
+    delay: 320, duration: 800, sizeScale: 1.1,
+  });
+}
+
+// 10. POGO BOUNCE — huge stretch up, hard pancake landing, big sparkle puff
+function cPogoBounce(svgRoot) {
+  const D = 850;
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) scale(1)" },
+      { transform: "translateY(2px) scale(1.1, 0.85)", offset: 0.08 },
+      { transform: "translateY(-70px) scale(0.85, 1.4)", offset: 0.3 },
+      { transform: "translateY(-40px) scale(1, 1.1)", offset: 0.45 },
+      { transform: "translateY(0) scale(1.3, 0.55)", offset: 0.6 },
+      { transform: "translateY(-15px) scale(1, 1.1)", offset: 0.78 },
+      { transform: "translateY(0) scale(1.06, 0.94)", offset: 0.92 },
+      { transform: "translateY(0) scale(1)" },
+    ],
+    { duration: D, easing: "cubic-bezier(0.5, 0, 0.5, 1)" }
+  );
+  // BIG sparkle puff at the pancake moment
+  spawnSparkles(svgRoot, {
+    count: 16, angleStart: -Math.PI, angleEnd: 0,
+    distMin: 130, distRange: 50, gravity: 30,
+    delay: 480, duration: 900, sizeScale: 1.15,
+  });
+  // Small upward puff at the launch
+  spawnSparkles(svgRoot, {
+    count: 5, angleStart: -Math.PI * 0.7, angleEnd: -Math.PI * 0.3,
+    distMin: 70, distRange: 20, gravity: 60,
+    delay: 80, duration: 600, sizeScale: 0.7,
+  });
+}
+
+const CELEBRATIONS = [
+  cBigJump, cSpin360, cWiggleDance, cBackflip, cTripleBounce,
+  cYesNod, cFistPump, cShimmyTwist, cStarPose, cPogoBounce,
+];
+
+let lastCelebrationIdx = -1;
+
+// Public entry — picks one celebration at random, never the same as last time.
+export function mascotCheer(svgRoot) {
+  if (!svgRoot || CELEBRATIONS.length === 0) return;
+  let i;
+  if (CELEBRATIONS.length === 1) {
+    i = 0;
+  } else {
+    do { i = Math.floor(Math.random() * CELEBRATIONS.length); }
+    while (i === lastCelebrationIdx);
   }
+  lastCelebrationIdx = i;
+  CELEBRATIONS[i](svgRoot);
 }
 
 // ===== TASK 17: Carry Chip Animation =====
