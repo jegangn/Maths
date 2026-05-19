@@ -215,6 +215,8 @@ html, body {
   padding: 0 32px;
 }
 .btn:active { transform: translateY(6px); box-shadow: var(--sh-pressed); }
+.btn:focus, .btn:focus-visible { outline: none; }
+button { outline: none; }
 .btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
 .btn.ghost  { background: var(--bg-card); }
 .btn.success{ background: var(--success); color: #fff; }
