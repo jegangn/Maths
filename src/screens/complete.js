@@ -42,22 +42,32 @@ export function mount(stage, ctx, router) {
   const nextBtn = document.createElement("button");
   nextBtn.className = "btn success";
   nextBtn.dataset.act = "next";
-  nextBtn.textContent = "▶ NEXT";
-  if (level >= 6) nextBtn.classList.add("disabled");
-
-  const mapBtn = document.createElement("button");
-  mapBtn.className = "btn ghost";
-  mapBtn.dataset.act = "map";
-  mapBtn.textContent = "🏠 MAP";
+  // On the last level NEXT becomes a return-to-map shortcut so the kid
+  // isn't stuck looking at a disabled button.
+  const isLastLevel = level >= 6;
+  nextBtn.textContent = isLastLevel ? "▶ MAP" : "▶ NEXT";
 
   buttons.appendChild(againBtn);
   buttons.appendChild(nextBtn);
-  buttons.appendChild(mapBtn);
+  // On the last level the NEXT button already returns to the map, so the
+  // explicit MAP button is redundant. Show it only when there's a next
+  // level to play.
+  if (!isLastLevel) {
+    const mapBtn = document.createElement("button");
+    mapBtn.className = "btn ghost";
+    mapBtn.dataset.act = "map";
+    mapBtn.textContent = "🏠 MAP";
+    buttons.appendChild(mapBtn);
+  }
 
   buttons.addEventListener("pointerup", (e) => {
     const act = e.target.closest("[data-act]")?.dataset.act;
     if (act === "again") { sfx.transition(); router.go("level", { world, level }); }
-    else if (act === "next" && level < 6) { sfx.transition(); router.go("level", { world, level: level + 1 }); }
+    else if (act === "next") {
+      sfx.transition();
+      if (isLastLevel) router.go("map");
+      else router.go("level", { world, level: level + 1 });
+    }
     else if (act === "map")  { sfx.transition(); router.go("map"); }
   });
   sec.appendChild(buttons);

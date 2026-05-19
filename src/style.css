@@ -225,7 +225,7 @@ html, body {
 
 .star-meter { display: inline-flex; gap: 8px; align-items: center; }
 .star-meter .star { width: 32px; height: 32px; }
-.star-meter.big .star { width: 160px; height: 160px; }
+.star-meter.big .star { width: 110px; height: 110px; }
 .star-meter .star.empty path { opacity: .25; }
 .star-meter .star.earned {
   filter: drop-shadow(0 0 12px var(--star-glow));
@@ -753,22 +753,22 @@ html, body {
 /* ===== TASK 30: Complete Screen ===== */
 #screen-complete { background: var(--world-sky); }
 .complete-title {
-  position: absolute; top: 80px; left: 50%; transform: translateX(-50%);
-  font-size: 96px; text-shadow: 0 4px 0 var(--world-primary);
+  position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+  font-size: 80px; text-shadow: 0 4px 0 var(--world-primary);
   margin: 0;
 }
 #screen-complete .star-meter.big {
-  position: absolute; top: 200px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 48px;
+  position: absolute; top: 170px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 32px;
 }
 .complete-mascot {
-  position: absolute; top: 380px; left: 50%; transform: translateX(-50%);
-  width: 320px; height: 320px;
+  position: absolute; top: 310px; left: 50%; transform: translateX(-50%);
+  width: 220px; height: 220px;
 }
 .complete-mascot svg { width: 100%; height: 100%; }
 .complete-buttons {
-  position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 24px;
+  position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 28px;
 }
 .confetti-host { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 
