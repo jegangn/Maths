@@ -132,12 +132,43 @@ html, body {
   75% { transform: rotate(3deg); }
 }
 @keyframes slotCorrectFlash {
-  0%   { box-shadow: 0 0 0 0 var(--success); }
-  50%  { box-shadow: 0 0 0 12px rgba(74, 214, 109, 0.6); }
-  100% { box-shadow: 0 0 0 20px rgba(74, 214, 109, 0); }
+  0%   { box-shadow: 0 0 0 0 var(--success), 0 0 0 0 var(--star-glow);
+         border-color: var(--success-deep); }
+  40%  { box-shadow: 0 0 0 18px rgba(74, 214, 109, 0.55), 0 0 28px 12px rgba(255, 241, 168, 0.8);
+         border-color: var(--success-deep); }
+  100% { box-shadow: 0 0 0 32px rgba(74, 214, 109, 0), 0 0 36px 18px rgba(255, 241, 168, 0);
+         border-color: var(--ink); }
+}
+@keyframes slotDigitPunch {
+  0%   { transform: scale(0.6); }
+  55%  { transform: scale(1.35); }
+  100% { transform: scale(1); }
 }
 .slot.filled.just-filled {
-  animation: slotCorrectFlash 0.5s var(--ease-pop);
+  animation: slotCorrectFlash 0.7s var(--ease-pop);
+}
+.slot.filled.just-filled {
+  /* Punch-in the digit text */
+  display: inline-flex;
+}
+.slot.filled.just-filled::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+.slot.just-filled {
+  animation: slotCorrectFlash 0.7s var(--ease-pop), slotDigitPunch 0.4s var(--ease-pop);
+}
+
+/* Sparkle particles spawned by correctBurst() */
+.spark-particle {
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 400;
+  box-shadow: 0 0 8px currentColor;
+  transform: translate(-50%, -50%);
 }
 
 .block-host {
@@ -1326,11 +1357,55 @@ html, body {
         targetEl.classList.add("filled");
         targetEl.textContent = el.textContent;
         targetEl.classList.add("just-filled");
-        setTimeout(() => targetEl.classList.remove("just-filled"), 600);
+        setTimeout(() => targetEl.classList.remove("just-filled"), 700);
+        correctBurst(targetEl);
+        const mascot = document.querySelector(".corner-mascot svg");
+        if (mascot) mascotQuickHop(mascot);
         resolve();
       };
       sfx.correctDing();
     });
+  }
+  function correctBurst(slotEl) {
+    const stage2 = document.getElementById("stage");
+    if (!stage2) return;
+    const stageRect = stage2.getBoundingClientRect();
+    const slotRect = slotEl.getBoundingClientRect();
+    const scale = stageRect.width / 1280;
+    const cx = (slotRect.left + slotRect.width / 2 - stageRect.left) / scale;
+    const cy = (slotRect.top + slotRect.height / 2 - stageRect.top) / scale;
+    const colors = ["#FFC83A", "#FFF1A8", "#4AD66D", "#FF7A40"];
+    const N = 14;
+    for (let i = 0; i < N; i++) {
+      const p = document.createElement("div");
+      p.className = "spark-particle";
+      p.style.left = `${cx}px`;
+      p.style.top = `${cy}px`;
+      p.style.background = colors[i % colors.length];
+      stage2.appendChild(p);
+      const angle = Math.PI * 2 * i / N + (Math.random() - 0.5) * 0.4;
+      const dist = 90 + Math.random() * 50;
+      const dx = Math.cos(angle) * dist;
+      const dy = Math.sin(angle) * dist - 20;
+      p.animate(
+        [
+          { transform: "translate(-50%, -50%) scale(0.6)", opacity: 1 },
+          { transform: `translate(calc(-50% + ${dx * 0.5}px), calc(-50% + ${dy * 0.5}px)) scale(1.2)`, opacity: 1, offset: 0.4 },
+          { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0.4)`, opacity: 0 }
+        ],
+        { duration: 700 + Math.random() * 200, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
+      ).onfinish = () => p.remove();
+    }
+  }
+  function mascotQuickHop(svgRoot) {
+    svgRoot.animate(
+      [
+        { transform: "translateY(0) scale(1)" },
+        { transform: "translateY(-16px) scale(1.06)", offset: 0.4 },
+        { transform: "translateY(0) scale(1)" }
+      ],
+      { duration: 400, easing: "cubic-bezier(0.34,1.6,0.5,1)" }
+    );
   }
   function flyCarry(carrySlotEl, fromEl) {
     return new Promise((resolve) => {
