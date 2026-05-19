@@ -533,10 +533,10 @@ html, body {
 .op-chip.q { border-style: dashed; background: transparent; animation: slotPulse 1.8s var(--ease-soft) infinite; }
 .op-sym { font-size: 80px; color: var(--ink); }
 .firefly-area {
-  position: absolute; top: 270px; left: 80px; width: 1120px; height: 280px;
+  position: absolute; top: 260px; left: 80px; width: 1120px; height: 230px;
   display: flex; gap: 80px; justify-content: center; align-items: center;
 }
-.lily-group { position: relative; width: 320px; height: 280px; }
+.lily-group { position: relative; width: 320px; height: 230px; }
 .lily-group svg.lilypad { position: absolute; inset: 0; }
 .block-grid {
   position: absolute; inset: 0;
@@ -544,14 +544,20 @@ html, body {
   place-items: center; gap: 12px; padding: 40px;
 }
 .total-reveal {
-  position: absolute; top: 580px; left: 50%; transform: translateX(-50%);
-  width: 380px; height: 110px;
+  position: absolute; top: 520px; left: 50%; transform: translateX(-50%);
+  width: 380px; height: 120px;
   background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
   display: flex; align-items: center; justify-content: center; gap: 16px;
   box-shadow: var(--sh-2);
+  padding: 0 24px;
 }
 .total-reveal.hidden { display: none; }
-.total-reveal .display { font-size: 36px; }
+.total-reveal .display { font-size: 32px; }
+.total-reveal .slot {
+  width: 72px; height: 88px;
+  font-size: 56px;
+  border-radius: var(--r-md);
+}
 .ans-slot-host { display: flex; gap: 8px; }
 
 /* ===== TASK 29: Multiplication Drag-Groups Level Screen ===== */
