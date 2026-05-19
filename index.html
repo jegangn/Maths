@@ -8,7 +8,7 @@
   <title>Jhanav's Math Adventure</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
 :root {
   --bg-paper: #FFF3DC;
@@ -85,7 +85,8 @@ html, body {
   border: 4px solid var(--ink);
   box-shadow: var(--sh-2);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
   font-size: 64px; color: var(--ink);
   cursor: grab; user-select: none;
   transition: transform .12s var(--ease-pop), box-shadow .12s var(--ease-pop);
@@ -112,7 +113,8 @@ html, body {
   border: 4px dashed var(--ink-soft);
   background: transparent;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
   font-size: 96px; color: var(--ink);
   position: relative;
 }
@@ -255,7 +257,7 @@ html, body {
   border-radius: var(--r-md);
   background: var(--world-primary);
   border: 3px solid var(--ink);
-  font-family: 'Lilita One', system-ui; font-size: 40px;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif; font-weight: 700; font-size: 40px;
   display: flex; align-items: center; justify-content: center;
   color: var(--ink);
   pointer-events: none;
@@ -267,7 +269,7 @@ html, body {
   border-radius: var(--r-md);
   border: 3px dashed var(--ink-soft);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Lilita One', system-ui; font-size: 40px;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif; font-weight: 700; font-size: 40px;
   color: var(--ink);
   opacity: 0;
   transition: opacity .3s var(--ease-pop);
@@ -286,7 +288,8 @@ html, body {
 .borrow-replacement {
   position: absolute;
   width: 60px; height: 60px;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
   font-size: 56px; color: var(--ink);
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
@@ -337,8 +340,43 @@ html, body {
 }
 @keyframes wingFlap {
   0%,100% { transform: rotate(0); }
-  50% { transform: rotate(-20deg); transform-origin: 50% 90%; }
+  50% { transform: rotate(-20deg); }
 }
+
+/* ===== Expression presets (CSS-only, all mascots) ===== */
+.mascot .eye-state,
+.mascot .mouth-state,
+.mascot .brow-state { display: none; }
+
+.mascot.idle .eye-state.idle,
+.mascot.idle .mouth-state.idle,
+.mascot.idle .brow-state.idle { display: inline; }
+
+.mascot.happy .eye-state.idle,
+.mascot.happy .brow-state.idle { display: inline; }
+.mascot.happy .mouth-state.happy { display: inline; }
+
+.mascot.super-happy .eye-state.super-happy,
+.mascot.super-happy .brow-state.up,
+.mascot.super-happy .mouth-state.super-happy { display: inline; }
+
+.mascot.dizzy .eye-state.dizzy,
+.mascot.dizzy .brow-state.idle,
+.mascot.dizzy .mouth-state.dizzy { display: inline; }
+
+.mascot.surprised .eye-state.surprised,
+.mascot.surprised .brow-state.up,
+.mascot.surprised .mouth-state.surprised { display: inline; }
+
+/* ===== Transform-origins (new 200×200 viewBox geometry) ===== */
+.mascot .head    { transform-origin: 100px 100px; }
+.mascot .tail    { transform-origin: 100px 150px; }
+.mascot .wing-l  { transform-origin:  65px 110px; }
+.mascot .wing-r  { transform-origin: 135px 110px; }
+.mascot .arm-l   { transform-origin:  62px 122px; }
+.mascot .arm-r   { transform-origin: 138px 122px; }
+.mascot .ear-l   { transform-origin:  80px  84px; }
+.mascot .ear-r   { transform-origin: 120px  84px; }
 
 /* ===== TASK 22: Confetti Styles ===== */
 .confetti-particle { position: absolute; pointer-events: none; }
@@ -476,7 +514,8 @@ html, body {
   display: grid; grid-template-rows: auto auto auto 6px auto;
   gap: 16px;
   justify-content: center; align-content: start;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
 }
 .worksheet .row { display: flex; gap: 16px; justify-content: flex-end; }
 .worksheet .row.top { position: relative; }
@@ -535,7 +574,8 @@ html, body {
 .mult-problem {
   position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 16px; align-items: center;
-  font-family: 'Lilita One', system-ui;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700;
 }
 .op-chip {
   width: 120px; height: 130px; background: var(--bg-card);
@@ -844,91 +884,312 @@ html, body {
   }
 
   // src/svg.js
-  var banji = (state2 = "idle") => `
-<svg viewBox="0 0 540 540" xmlns="http://www.w3.org/2000/svg" class="mascot banji ${state2}">
-  <defs>
-    <linearGradient id="beak-g" x1="0" x2="1">
-      <stop offset="0" stop-color="#FFC83A"/>
-      <stop offset=".5" stop-color="#FF7A40"/>
-      <stop offset="1" stop-color="#FF3E6B"/>
-    </linearGradient>
-  </defs>
-  <g class="tail">
-    <path d="M380,320 q60,40 30,100 q-40,10 -70,-20 z" fill="#1F1A12" stroke="#000" stroke-width="3"/>
-  </g>
-  <g class="body">
-    <ellipse cx="270" cy="320" rx="150" ry="160" fill="#2A1B0A" stroke="#000" stroke-width="4"/>
-    <ellipse cx="240" cy="370" rx="90" ry="80" fill="#FFFAF0"/>
-  </g>
-  <g class="wing-l">
-    <path d="M170,300 q-50,30 -30,90 q60,10 90,-40 z" fill="#1F1A12" stroke="#000" stroke-width="3"/>
-  </g>
-  <g class="wing-r">
-    <path d="M370,300 q50,30 30,90 q-60,10 -90,-40 z" fill="#1F1A12" stroke="#000" stroke-width="3"/>
-  </g>
-  <g class="bandana">
-    <path d="M180,200 q90,-30 180,0 l-10,30 q-80,-25 -160,0 z" fill="#E03E3E"/>
-    <circle cx="200" cy="215" r="6" fill="#FFFAF0"/>
-    <circle cx="270" cy="205" r="6" fill="#FFFAF0"/>
-    <circle cx="340" cy="215" r="6" fill="#FFFAF0"/>
-  </g>
-  <g class="head">
-    <circle cx="270" cy="180" r="105" fill="#2A1B0A" stroke="#000" stroke-width="4"/>
-    <g class="eye-l">
-      <circle cx="235" cy="160" r="20" fill="#FFFAF0"/>
-      <circle cx="240" cy="162" r="10" fill="#2A1B0A"/>
-      <circle cx="243" cy="158" r="4" fill="#FFFAF0"/>
-    </g>
-    <g class="eye-r">
-      <circle cx="310" cy="160" r="20" fill="#FFFAF0"/>
-      <circle cx="315" cy="162" r="10" fill="#2A1B0A"/>
-      <circle cx="318" cy="158" r="4" fill="#FFFAF0"/>
-    </g>
-  </g>
-  <g class="beak">
-    <path d="M255,195 q60,5 110,40 q-30,30 -90,30 q-30,0 -30,-30 z" fill="url(#beak-g)" stroke="#7A2A04" stroke-width="3"/>
-    <path d="M260,225 q40,5 90,15" stroke="#7A2A04" stroke-width="2" fill="none"/>
-  </g>
+  var banji = (state2 = "idle") => `<svg class="mascot banji ${state2}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Banji the canary">
+<g class="tail">
+<path d="M78 150 Q 64 168 56 184 Q 78 180 100 174 Q 122 180 144 184 Q 136 168 122 150 Z" fill="#FFD445" stroke="#4A3522" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M88 168 L 86 180 M 100 170 L 100 182 M 112 168 L 114 180" stroke="#4A3522" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path d="M78 152 Q 80 162 86 168" stroke="#E5A722" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path d="M122 152 Q 120 162 114 168" stroke="#E5A722" stroke-width="2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="leg-l">
+<path d="M88 162 L 84 178" stroke="#FF8A3D" stroke-width="5.5" stroke-linecap="round"/>
+<path d="M84 178 L 78 184 M 84 178 L 84 186 M 84 178 L 90 184" stroke="#FF8A3D" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+<path d="M84 178 L 78 184 M 84 178 L 84 186 M 84 178 L 90 184" stroke="#4A3522" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="leg-r">
+<path d="M112 162 L 116 178" stroke="#FF8A3D" stroke-width="5.5" stroke-linecap="round"/>
+<path d="M116 178 L 110 184 M 116 178 L 116 186 M 116 178 L 122 184" stroke="#FF8A3D" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+<path d="M116 178 L 110 184 M 116 178 L 116 186 M 116 178 L 122 184" stroke="#4A3522" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="body">
+<ellipse cx="100" cy="128" rx="46" ry="40" fill="#FFD445" stroke="#4A3522" stroke-width="4"/>
+<ellipse cx="100" cy="138" rx="28" ry="22" fill="#FFE383"/>
+<ellipse cx="84" cy="118" rx="6" ry="4" fill="#FFE89B" opacity="0.7"/>
+</g>
+<g class="wing-l">
+<path d="M68 108 Q 40 118 38 148 Q 54 156 70 138 Q 76 122 72 108 Z" fill="#FF8A3D" stroke="#4A3522" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M48 130 L 60 134 M 52 142 L 64 144" stroke="#4A3522" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</g>
+<g class="wing-r">
+<path d="M132 108 Q 160 118 162 148 Q 146 156 130 138 Q 124 122 128 108 Z" fill="#FF8A3D" stroke="#4A3522" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M152 130 L 140 134 M 148 142 L 136 144" stroke="#4A3522" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</g>
+<g class="head">
+<circle cx="100" cy="72" r="36" fill="#FFD445" stroke="#4A3522" stroke-width="4"/>
+<ellipse cx="74" cy="84" rx="6" ry="4" fill="#FF9FAE" opacity="0.75"/>
+<ellipse cx="126" cy="84" rx="6" ry="4" fill="#FF9FAE" opacity="0.75"/>
+<g class="brow-l">
+<g class="brow-state idle"><path d="M76 56 Q 84 53 92 56" stroke="#4A3522" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="brow-state up"><path d="M76 50 Q 84 46 92 50" stroke="#4A3522" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</g>
+<g class="brow-r">
+<g class="brow-state idle"><path d="M108 56 Q 116 53 124 56" stroke="#4A3522" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="brow-state up"><path d="M108 50 Q 116 46 124 50" stroke="#4A3522" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</g>
+<g class="eye-l">
+<g class="eye-state idle">
+<ellipse cx="86" cy="70" rx="7" ry="9" fill="#FFFFFF" stroke="#4A3522" stroke-width="2.5"/>
+<circle cx="87" cy="72" r="4.2" fill="#2A1F18"/>
+<circle cx="89" cy="69" r="1.6" fill="#FFFFFF"/>
+</g>
+<g class="eye-state super-happy"><path d="M79 71 Q 86 64 93 71" stroke="#4A3522" stroke-width="3.5" stroke-linecap="round" fill="none"/></g>
+<g class="eye-state dizzy">
+<circle cx="86" cy="70" r="8" fill="#FFFFFF" stroke="#4A3522" stroke-width="2.5"/>
+<path d="M86 70 m -5 0 a 5 5 0 1 0 10 0 a 3 3 0 1 0 -6 0 a 1.5 1.5 0 1 0 3 0" stroke="#4A3522" stroke-width="1.8" fill="none"/>
+</g>
+<g class="eye-state surprised">
+<circle cx="86" cy="70" r="9" fill="#FFFFFF" stroke="#4A3522" stroke-width="2.5"/>
+<circle cx="86" cy="70" r="5" fill="#2A1F18"/>
+<circle cx="88" cy="68" r="1.8" fill="#FFFFFF"/>
+</g>
+</g>
+<g class="eye-r">
+<g class="eye-state idle">
+<ellipse cx="114" cy="70" rx="7" ry="9" fill="#FFFFFF" stroke="#4A3522" stroke-width="2.5"/>
+<circle cx="115" cy="72" r="4.2" fill="#2A1F18"/>
+<circle cx="117" cy="69" r="1.6" fill="#FFFFFF"/>
+</g>
+<g class="eye-state super-happy"><path d="M107 71 Q 114 64 121 71" stroke="#4A3522" stroke-width="3.5" stroke-linecap="round" fill="none"/></g>
+<g class="eye-state dizzy">
+<circle cx="114" cy="70" r="8" fill="#FFFFFF" stroke="#4A3522" stroke-width="2.5"/>
+<path d="M114 70 m -5 0 a 5 5 0 1 0 10 0 a 3 3 0 1 0 -6 0 a 1.5 1.5 0 1 0 3 0" stroke="#4A3522" stroke-width="1.8" fill="none"/>
+</g>
+<g class="eye-state surprised">
+<circle cx="114" cy="70" r="9" fill="#FFFFFF" stroke="#4A3522" stroke-width="2.5"/>
+<circle cx="114" cy="70" r="5" fill="#2A1F18"/>
+<circle cx="116" cy="68" r="1.8" fill="#FFFFFF"/>
+</g>
+</g>
+<g class="mouth">
+<g class="mouth-state idle">
+<path d="M91 86 L 100 92 L 109 86 Z" fill="#FF8A3D" stroke="#4A3522" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M91 86 L 109 86" stroke="#4A3522" stroke-width="1.5" stroke-linecap="round"/>
+</g>
+<g class="mouth-state happy"><path d="M91 86 Q 100 96 109 86 Q 105 92 100 92 Q 95 92 91 86 Z" fill="#FF8A3D" stroke="#4A3522" stroke-width="2.5" stroke-linejoin="round"/></g>
+<g class="mouth-state super-happy">
+<path d="M88 84 Q 100 102 112 84 Q 108 96 100 96 Q 92 96 88 84 Z" fill="#FF8A3D" stroke="#4A3522" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M93 91 Q 100 94 107 91" stroke="#FFB780" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</g>
+<g class="mouth-state dizzy"><path d="M91 90 Q 95 86 100 90 Q 105 94 109 90" stroke="#4A3522" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state surprised"><ellipse cx="100" cy="90" rx="4" ry="5" fill="#FF8A3D" stroke="#4A3522" stroke-width="2.5"/></g>
+</g>
+<g class="hat">
+<path d="M62 52 Q 60 28 100 26 Q 140 28 138 52 Q 132 56 100 56 Q 68 56 62 52 Z" fill="#FF8A3D" stroke="#4A3522" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M66 40 Q 100 36 134 40" stroke="#F7E9C0" stroke-width="6" stroke-linecap="round" fill="none"/>
+<path d="M66 40 Q 100 36 134 40" stroke="#4A3522" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.4"/>
+<path d="M62 52 Q 100 56 138 52" stroke="#4A3522" stroke-width="1.8" fill="none"/>
+<circle cx="100" cy="20" r="9" fill="#F7E9C0" stroke="#4A3522" stroke-width="3"/>
+<circle cx="97" cy="18" r="1.4" fill="#4A3522" opacity="0.35"/>
+<circle cx="102" cy="22" r="1.4" fill="#4A3522" opacity="0.35"/>
+<circle cx="100" cy="18" r="1.4" fill="#4A3522" opacity="0.35"/>
+<path d="M100 26 L 100 30" stroke="#4A3522" stroke-width="2" stroke-linecap="round"/>
+</g>
+</g>
 </svg>`;
-  var mo = (state2 = "idle") => `
-<svg viewBox="0 0 360 480" xmlns="http://www.w3.org/2000/svg" class="mascot mo ${state2}">
-  <g class="branch"><rect x="40" y="40" width="280" height="22" rx="11" fill="#5C3A1A"/></g>
-  <g class="arm-l"><path d="M120,60 q-25,80 0,150" stroke="#8A6A4A" stroke-width="22" stroke-linecap="round" fill="none"/></g>
-  <g class="arm-r"><path d="M240,60 q25,80 0,150" stroke="#8A6A4A" stroke-width="22" stroke-linecap="round" fill="none"/></g>
-  <g class="body">
-    <ellipse cx="180" cy="280" rx="100" ry="120" fill="#A38762"/>
-    <ellipse cx="180" cy="290" rx="70" ry="90" fill="#D3B98C"/>
-  </g>
-  <g class="head">
-    <circle cx="180" cy="200" r="78" fill="#A38762"/>
-    <ellipse cx="180" cy="210" rx="62" ry="48" fill="#E6D4AC"/>
-    <ellipse cx="155" cy="195" rx="22" ry="14" fill="#5C3A1A"/>
-    <ellipse cx="205" cy="195" rx="22" ry="14" fill="#5C3A1A"/>
-    <circle cx="155" cy="195" r="6" fill="#2A1B0A"/>
-    <circle cx="205" cy="195" r="6" fill="#2A1B0A"/>
-    <ellipse cx="180" cy="225" rx="10" ry="6" fill="#2A1B0A"/>
-    <path d="M165,240 q15,12 30,0" stroke="#2A1B0A" stroke-width="3" fill="none"/>
-  </g>
+  var mo = (state2 = "idle") => `<svg class="mascot mo ${state2}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Mo the axolotl">
+<g class="tail">
+<path d="M148 122 Q 184 116 192 138 Q 184 162 148 152 Q 144 138 148 122 Z" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="4" stroke-linejoin="round"/>
+<path d="M156 130 Q 174 138 172 148" stroke="#3A2A3B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<ellipse cx="172" cy="138" rx="5" ry="8" fill="#FBEFE9" opacity="0.85"/>
+</g>
+<g class="leg-l">
+<ellipse cx="74" cy="166" rx="10" ry="7" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="3.5"/>
+<path d="M68 170 L 64 174 M 74 172 L 74 176 M 80 170 L 84 174" stroke="#3A2A3B" stroke-width="2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="leg-r">
+<ellipse cx="120" cy="166" rx="10" ry="7" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="3.5"/>
+<path d="M114 170 L 110 174 M 120 172 L 120 176 M 126 170 L 130 174" stroke="#3A2A3B" stroke-width="2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="body">
+<ellipse cx="100" cy="132" rx="50" ry="36" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="4"/>
+<ellipse cx="100" cy="144" rx="34" ry="22" fill="#FBEFE9"/>
+<ellipse cx="72" cy="118" rx="4" ry="6" fill="#5FB8B8" opacity="0.55"/>
+<ellipse cx="124" cy="120" rx="3.5" ry="5" fill="#5FB8B8" opacity="0.55"/>
+<ellipse cx="92" cy="112" rx="2.5" ry="3.5" fill="#5FB8B8" opacity="0.4"/>
+</g>
+<g class="arm-l">
+<path d="M62 120 Q 46 134 44 158 Q 54 162 60 156 Q 70 144 76 132 Z" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M44 160 L 40 165 M 50 162 L 48 168 M 54 162 L 56 168" stroke="#3A2A3B" stroke-width="2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="arm-r">
+<path d="M138 120 Q 154 134 156 158 Q 146 162 140 156 Q 130 144 124 132 Z" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M156 160 L 160 165 M 150 162 L 152 168 M 146 162 L 144 168" stroke="#3A2A3B" stroke-width="2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="head">
+<g class="gill-l">
+<path d="M68 60 Q 48 50 32 38 Q 44 40 58 54 Q 64 58 68 60 Z" fill="#FF7A8E" stroke="#3A2A3B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M62 76 Q 38 76 22 72 Q 36 86 56 82 Q 62 80 62 76 Z" fill="#FF7A8E" stroke="#3A2A3B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M66 90 Q 46 100 34 116 Q 52 110 60 98 Q 66 94 66 90 Z" fill="#FF7A8E" stroke="#3A2A3B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M48 46 Q 52 50 54 56" stroke="#FFA3B0" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M40 76 Q 48 76 54 78" stroke="#FFA3B0" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M50 100 Q 54 98 58 96" stroke="#FFA3B0" stroke-width="2" fill="none" stroke-linecap="round"/>
+</g>
+<g class="gill-r">
+<path d="M132 60 Q 152 50 168 38 Q 156 40 142 54 Q 136 58 132 60 Z" fill="#FF7A8E" stroke="#3A2A3B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M138 76 Q 162 76 178 72 Q 164 86 144 82 Q 138 80 138 76 Z" fill="#FF7A8E" stroke="#3A2A3B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M134 90 Q 154 100 166 116 Q 148 110 140 98 Q 134 94 134 90 Z" fill="#FF7A8E" stroke="#3A2A3B" stroke-width="3" stroke-linejoin="round"/>
+<path d="M152 46 Q 148 50 146 56" stroke="#FFA3B0" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M160 76 Q 152 76 146 78" stroke="#FFA3B0" stroke-width="2" fill="none" stroke-linecap="round"/>
+<path d="M150 100 Q 146 98 142 96" stroke="#FFA3B0" stroke-width="2" fill="none" stroke-linecap="round"/>
+</g>
+<ellipse cx="100" cy="76" rx="42" ry="36" fill="#F4D6CC" stroke="#3A2A3B" stroke-width="4"/>
+<ellipse cx="100" cy="58" rx="20" ry="6" fill="#FBEFE9" opacity="0.6"/>
+<ellipse cx="70" cy="88" rx="7" ry="5" fill="#FFAFBA" opacity="0.65"/>
+<ellipse cx="130" cy="88" rx="7" ry="5" fill="#FFAFBA" opacity="0.65"/>
+<g class="brow-l">
+<g class="brow-state idle"><path d="M76 58 Q 84 55 92 58" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="brow-state up"><path d="M76 52 Q 84 47 92 52" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</g>
+<g class="brow-r">
+<g class="brow-state idle"><path d="M108 58 Q 116 55 124 58" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="brow-state up"><path d="M108 52 Q 116 47 124 52" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</g>
+<g class="eye-l">
+<g class="eye-state idle">
+<circle cx="86" cy="72" r="7" fill="#3A2A3B"/>
+<circle cx="88" cy="69" r="2.6" fill="#FFFFFF"/>
+<circle cx="84" cy="74" r="1.1" fill="#FFFFFF"/>
+</g>
+<g class="eye-state super-happy"><path d="M78 74 Q 86 66 94 74" stroke="#3A2A3B" stroke-width="4" stroke-linecap="round" fill="none"/></g>
+<g class="eye-state dizzy">
+<circle cx="86" cy="72" r="7.5" fill="#FFFFFF" stroke="#3A2A3B" stroke-width="2.5"/>
+<path d="M86 72 m -5 0 a 5 5 0 1 0 10 0 a 3 3 0 1 0 -6 0 a 1.5 1.5 0 1 0 3 0" stroke="#3A2A3B" stroke-width="1.8" fill="none"/>
+</g>
+<g class="eye-state surprised">
+<circle cx="86" cy="72" r="9" fill="#FFFFFF" stroke="#3A2A3B" stroke-width="2.5"/>
+<circle cx="86" cy="72" r="5" fill="#3A2A3B"/>
+<circle cx="88" cy="70" r="1.8" fill="#FFFFFF"/>
+</g>
+</g>
+<g class="eye-r">
+<g class="eye-state idle">
+<circle cx="114" cy="72" r="7" fill="#3A2A3B"/>
+<circle cx="116" cy="69" r="2.6" fill="#FFFFFF"/>
+<circle cx="112" cy="74" r="1.1" fill="#FFFFFF"/>
+</g>
+<g class="eye-state super-happy"><path d="M106 74 Q 114 66 122 74" stroke="#3A2A3B" stroke-width="4" stroke-linecap="round" fill="none"/></g>
+<g class="eye-state dizzy">
+<circle cx="114" cy="72" r="7.5" fill="#FFFFFF" stroke="#3A2A3B" stroke-width="2.5"/>
+<path d="M114 72 m -5 0 a 5 5 0 1 0 10 0 a 3 3 0 1 0 -6 0 a 1.5 1.5 0 1 0 3 0" stroke="#3A2A3B" stroke-width="1.8" fill="none"/>
+</g>
+<g class="eye-state surprised">
+<circle cx="114" cy="72" r="9" fill="#FFFFFF" stroke="#3A2A3B" stroke-width="2.5"/>
+<circle cx="114" cy="72" r="5" fill="#3A2A3B"/>
+<circle cx="116" cy="70" r="1.8" fill="#FFFFFF"/>
+</g>
+</g>
+<g class="mouth">
+<g class="mouth-state idle"><path d="M92 92 Q 100 99 108 92" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state happy"><path d="M88 90 Q 100 104 112 90" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state super-happy">
+<path d="M86 88 Q 100 106 114 88 Q 110 102 100 102 Q 90 102 86 88 Z" fill="#3A2A3B" stroke="#3A2A3B" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M92 96 Q 100 98 108 96" stroke="#FF8FA0" stroke-width="2" fill="none" stroke-linecap="round"/>
+</g>
+<g class="mouth-state dizzy"><path d="M91 94 Q 95 90 100 94 Q 105 98 109 94" stroke="#3A2A3B" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state surprised"><ellipse cx="100" cy="94" rx="4" ry="5.5" fill="#3A2A3B"/></g>
+</g>
+</g>
 </svg>`;
-  var pip = (state2 = "idle") => `
-<svg viewBox="0 0 360 360" xmlns="http://www.w3.org/2000/svg" class="mascot pip ${state2}">
-  <g class="tail"><path d="M260,250 q60,30 80,-20" stroke="#C97070" stroke-width="6" fill="none"/></g>
-  <g class="body">
-    <ellipse cx="180" cy="230" rx="110" ry="85" fill="#D9A5A5"/>
-    <ellipse cx="180" cy="245" rx="80" ry="55" fill="#FFE8E8"/>
-    <circle cx="140" cy="200" r="14" fill="#C97070"/>
-    <circle cx="220" cy="240" r="10" fill="#C97070"/>
-    <circle cx="170" cy="280" r="8" fill="#C97070"/>
-  </g>
-  <g class="ear-l"><circle cx="130" cy="120" r="40" fill="#D9A5A5"/><circle cx="130" cy="125" r="22" fill="#FFCCCC"/></g>
-  <g class="ear-r"><circle cx="230" cy="120" r="40" fill="#D9A5A5"/><circle cx="230" cy="125" r="22" fill="#FFCCCC"/></g>
-  <g class="head">
-    <circle cx="180" cy="165" r="80" fill="#D9A5A5"/>
-    <circle cx="155" cy="160" r="9" fill="#2A1B0A"/>
-    <circle cx="205" cy="160" r="9" fill="#2A1B0A"/>
-    <ellipse cx="180" cy="195" rx="14" ry="9" fill="#C97070"/>
-    <path d="M170,205 q10,8 20,0" stroke="#2A1B0A" stroke-width="3" fill="none"/>
-  </g>
+  var pip = (state2 = "idle") => `<svg class="mascot pip ${state2}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-label="Pip the fennec fox">
+<g class="tail">
+<path d="M130 142 Q 170 130 182 156 Q 178 184 144 174 Q 132 168 126 156 Z" fill="#E89A2A" stroke="#5A3F1E" stroke-width="3.5" stroke-linejoin="round"/>
+<path d="M170 138 Q 184 156 178 178" stroke="#F8E0A8" stroke-width="10" stroke-linecap="round" fill="none"/>
+<path d="M170 138 Q 184 156 178 178" stroke="#5A3F1E" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.5"/>
+<path d="M150 150 Q 162 158 156 172" stroke="#5A3F1E" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+</g>
+<g class="leg-l">
+<ellipse cx="82" cy="174" rx="9" ry="6.5" fill="#E89A2A" stroke="#5A3F1E" stroke-width="3"/>
+<ellipse cx="82" cy="175" rx="5" ry="3.5" fill="#F8E0A8"/>
+</g>
+<g class="leg-r">
+<ellipse cx="118" cy="174" rx="9" ry="6.5" fill="#E89A2A" stroke="#5A3F1E" stroke-width="3"/>
+<ellipse cx="118" cy="175" rx="5" ry="3.5" fill="#F8E0A8"/>
+</g>
+<g class="body">
+<ellipse cx="100" cy="146" rx="38" ry="30" fill="#E89A2A" stroke="#5A3F1E" stroke-width="4"/>
+<ellipse cx="100" cy="154" rx="22" ry="18" fill="#F8E0A8"/>
+<circle cx="84" cy="164" r="6" fill="#E89A2A" stroke="#5A3F1E" stroke-width="3"/>
+<circle cx="116" cy="164" r="6" fill="#E89A2A" stroke="#5A3F1E" stroke-width="3"/>
+<path d="M81 167 L 80 170 M 84 168 L 84 171 M 87 167 L 88 170" stroke="#5A3F1E" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+<path d="M113 167 L 112 170 M 116 168 L 116 171 M 119 167 L 120 170" stroke="#5A3F1E" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+</g>
+<g class="head">
+<g class="ear-l">
+<path d="M82 90 Q 58 64 54 14 Q 70 16 84 56 Q 90 72 86 88 Z" fill="#E89A2A" stroke="#5A3F1E" stroke-width="4" stroke-linejoin="round"/>
+<path d="M82 84 Q 66 58 64 24 Q 74 28 80 56 Q 84 70 82 84 Z" fill="#F8E0A8"/>
+<path d="M70 32 Q 76 50 80 64" stroke="#E89A2A" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+</g>
+<g class="ear-r">
+<path d="M118 90 Q 142 64 146 14 Q 130 16 116 56 Q 110 72 114 88 Z" fill="#E89A2A" stroke="#5A3F1E" stroke-width="4" stroke-linejoin="round"/>
+<path d="M118 84 Q 134 58 136 24 Q 126 28 120 56 Q 116 70 118 84 Z" fill="#F8E0A8"/>
+<path d="M130 32 Q 124 50 120 64" stroke="#E89A2A" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+<g class="accessory">
+<path d="M138 60 L 132 50 M 140 56 L 138 48 M 144 54 L 146 46 M 148 58 L 154 50 M 150 62 L 158 60 M 148 66 L 156 70 M 144 68 L 144 76" stroke="#F8D27A" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="142" cy="60" r="6.5" fill="#F8D27A" stroke="#5A3F1E" stroke-width="2"/>
+<circle cx="142" cy="60" r="3" fill="#E89A2A"/>
+<path d="M142 66 Q 148 78 156 86" stroke="#7AB344" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+</g>
+</g>
+<path d="M68 96 Q 68 64 100 60 Q 132 64 132 96 Q 132 116 116 124 Q 100 130 84 124 Q 68 116 68 96 Z" fill="#E89A2A" stroke="#5A3F1E" stroke-width="4" stroke-linejoin="round"/>
+<path d="M80 96 Q 82 110 92 118 Q 100 124 108 118 Q 118 110 120 96 Q 118 102 100 102 Q 82 102 80 96 Z" fill="#F8E0A8"/>
+<circle cx="78" cy="102" r="3.5" fill="#FF6B6B" opacity="0.7"/>
+<circle cx="122" cy="102" r="3.5" fill="#FF6B6B" opacity="0.7"/>
+<g class="brow-l">
+<g class="brow-state idle"><path d="M80 80 Q 88 77 94 80" stroke="#5A3F1E" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="brow-state up"><path d="M80 74 Q 88 70 94 74" stroke="#5A3F1E" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</g>
+<g class="brow-r">
+<g class="brow-state idle"><path d="M106 80 Q 112 77 120 80" stroke="#5A3F1E" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+<g class="brow-state up"><path d="M106 74 Q 112 70 120 74" stroke="#5A3F1E" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+</g>
+<g class="eye-l">
+<g class="eye-state idle">
+<ellipse cx="86" cy="94" rx="6" ry="8" fill="#2A1F18"/>
+<circle cx="88" cy="91" r="2.2" fill="#FFFFFF"/>
+<circle cx="85" cy="96" r="1" fill="#FFFFFF"/>
+</g>
+<g class="eye-state super-happy"><path d="M78 96 Q 86 88 94 96" stroke="#2A1F18" stroke-width="4" stroke-linecap="round" fill="none"/></g>
+<g class="eye-state dizzy">
+<circle cx="86" cy="94" r="7" fill="#FFFFFF" stroke="#5A3F1E" stroke-width="2.5"/>
+<path d="M86 94 m -5 0 a 5 5 0 1 0 10 0 a 3 3 0 1 0 -6 0 a 1.5 1.5 0 1 0 3 0" stroke="#5A3F1E" stroke-width="1.8" fill="none"/>
+</g>
+<g class="eye-state surprised">
+<ellipse cx="86" cy="94" rx="7" ry="9" fill="#FFFFFF" stroke="#5A3F1E" stroke-width="2.5"/>
+<ellipse cx="86" cy="94" rx="4" ry="5" fill="#2A1F18"/>
+<circle cx="88" cy="92" r="1.5" fill="#FFFFFF"/>
+</g>
+</g>
+<g class="eye-r">
+<g class="eye-state idle">
+<ellipse cx="114" cy="94" rx="6" ry="8" fill="#2A1F18"/>
+<circle cx="116" cy="91" r="2.2" fill="#FFFFFF"/>
+<circle cx="113" cy="96" r="1" fill="#FFFFFF"/>
+</g>
+<g class="eye-state super-happy"><path d="M106 96 Q 114 88 122 96" stroke="#2A1F18" stroke-width="4" stroke-linecap="round" fill="none"/></g>
+<g class="eye-state dizzy">
+<circle cx="114" cy="94" r="7" fill="#FFFFFF" stroke="#5A3F1E" stroke-width="2.5"/>
+<path d="M114 94 m -5 0 a 5 5 0 1 0 10 0 a 3 3 0 1 0 -6 0 a 1.5 1.5 0 1 0 3 0" stroke="#5A3F1E" stroke-width="1.8" fill="none"/>
+</g>
+<g class="eye-state surprised">
+<ellipse cx="114" cy="94" rx="7" ry="9" fill="#FFFFFF" stroke="#5A3F1E" stroke-width="2.5"/>
+<ellipse cx="114" cy="94" rx="4" ry="5" fill="#2A1F18"/>
+<circle cx="116" cy="92" r="1.5" fill="#FFFFFF"/>
+</g>
+</g>
+<ellipse cx="100" cy="110" rx="4.5" ry="3.5" fill="#2A1F18"/>
+<path d="M100 113 L 100 117" stroke="#5A3F1E" stroke-width="2" stroke-linecap="round" fill="none"/>
+<g class="mouth">
+<g class="mouth-state idle"><path d="M94 118 Q 100 121 106 118" stroke="#5A3F1E" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state happy"><path d="M91 118 Q 100 126 109 118" stroke="#5A3F1E" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state super-happy">
+<path d="M88 116 Q 100 132 112 116 Q 108 128 100 128 Q 92 128 88 116 Z" fill="#5A3F1E" stroke="#5A3F1E" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M92 122 Q 100 124 108 122" stroke="#FF6B6B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+<path d="M94 119 L 94 122 M 106 119 L 106 122" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+</g>
+<g class="mouth-state dizzy"><path d="M93 120 Q 96 116 100 120 Q 104 124 107 120" stroke="#5A3F1E" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
+<g class="mouth-state surprised"><ellipse cx="100" cy="121" rx="4" ry="5" fill="#5A3F1E"/></g>
+</g>
+</g>
 </svg>`;
   var mango = (state2 = "default") => `
 <svg viewBox="0 0 96 96" class="block mango ${state2}">
