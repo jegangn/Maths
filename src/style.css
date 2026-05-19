@@ -159,6 +159,19 @@ html, body {
   transform: translate(-50%, -50%);
 }
 
+.mascot-sparkle {
+  position: absolute;
+  width: 28px; height: 28px;
+  pointer-events: none;
+  z-index: 350;
+  background: var(--star);
+  /* CSS-only 4-point star using clip-path */
+  clip-path: polygon(50% 0%, 60% 38%, 100% 50%, 60% 62%, 50% 100%, 40% 62%, 0% 50%, 40% 38%);
+  filter: drop-shadow(0 0 8px var(--star-glow));
+}
+.mascot-sparkle:nth-child(3n) { background: var(--world-primary); }
+.mascot-sparkle:nth-child(3n+1) { background: var(--success); }
+
 .block-host {
   width: 96px; height: 96px;
   display: inline-block;

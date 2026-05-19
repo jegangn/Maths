@@ -71,7 +71,7 @@ export function tileSnapIn(el, targetEl) {
       setTimeout(() => targetEl.classList.remove("just-filled"), 700);
       correctBurst(targetEl);
       const mascot = document.querySelector(".corner-mascot svg");
-      if (mascot) mascotQuickHop(mascot);
+      if (mascot) mascotCheer(mascot);
       resolve();
     };
     sfx.correctDing();
@@ -121,6 +121,124 @@ export function mascotQuickHop(svgRoot) {
     ],
     { duration: 400, easing: "cubic-bezier(0.34,1.6,0.5,1)" }
   );
+}
+
+// Full cheer animation: anticipation -> jump -> squash, plus flapping
+// appendages (wings/arms/ears) and sparkles around the mascot.
+export function mascotCheer(svgRoot) {
+  const DUR = 800;
+  // Body: anticipation crouch -> jump high -> land squash -> settle
+  svgRoot.animate(
+    [
+      { transform: "translateY(0) scale(1, 1)" },
+      { transform: "translateY(10px) scale(1.15, 0.82)", offset: 0.18 },
+      { transform: "translateY(-46px) scale(0.94, 1.12)", offset: 0.5 },
+      { transform: "translateY(-12px) scale(1.02, 0.98)", offset: 0.72 },
+      { transform: "translateY(0) scale(1.12, 0.88)", offset: 0.88 },
+      { transform: "translateY(0) scale(1, 1)" },
+    ],
+    { duration: DUR, easing: "cubic-bezier(0.34, 1.6, 0.5, 1)" }
+  );
+
+  // Flap the LEFT side appendage (wing/arm/ear) — sweep outward
+  const lefts = svgRoot.querySelectorAll(".wing-l, .arm-l, .ear-l");
+  lefts.forEach((el) => {
+    el.style.transformOrigin = "70% 70%";
+    el.animate(
+      [
+        { transform: "rotate(0deg)" },
+        { transform: "rotate(45deg)", offset: 0.3 },
+        { transform: "rotate(-20deg)", offset: 0.6 },
+        { transform: "rotate(35deg)", offset: 0.8 },
+        { transform: "rotate(0deg)" },
+      ],
+      { duration: DUR, easing: "ease-in-out" }
+    );
+  });
+
+  // Flap the RIGHT side appendage — mirror motion
+  const rights = svgRoot.querySelectorAll(".wing-r, .arm-r, .ear-r");
+  rights.forEach((el) => {
+    el.style.transformOrigin = "30% 70%";
+    el.animate(
+      [
+        { transform: "rotate(0deg)" },
+        { transform: "rotate(-45deg)", offset: 0.3 },
+        { transform: "rotate(20deg)", offset: 0.6 },
+        { transform: "rotate(-35deg)", offset: 0.8 },
+        { transform: "rotate(0deg)" },
+      ],
+      { duration: DUR, easing: "ease-in-out" }
+    );
+  });
+
+  // Head tilt (toucan / sloth / mouse all have .head)
+  const head = svgRoot.querySelector(".head");
+  if (head) {
+    head.style.transformOrigin = "50% 80%";
+    head.animate(
+      [
+        { transform: "rotate(0deg) translateY(0)" },
+        { transform: "rotate(-10deg) translateY(-4px)", offset: 0.3 },
+        { transform: "rotate(10deg) translateY(-4px)", offset: 0.7 },
+        { transform: "rotate(0deg) translateY(0)" },
+      ],
+      { duration: DUR, easing: "ease-in-out" }
+    );
+  }
+
+  // Tail wag (Banji has .tail, Pip has .tail)
+  const tail = svgRoot.querySelector(".tail");
+  if (tail) {
+    tail.style.transformOrigin = "30% 50%";
+    tail.animate(
+      [
+        { transform: "rotate(0deg)" },
+        { transform: "rotate(20deg)", offset: 0.3 },
+        { transform: "rotate(-20deg)", offset: 0.6 },
+        { transform: "rotate(15deg)", offset: 0.85 },
+        { transform: "rotate(0deg)" },
+      ],
+      { duration: DUR, easing: "ease-in-out" }
+    );
+  }
+
+  spawnMascotSparkles(svgRoot);
+}
+
+function spawnMascotSparkles(svgRoot) {
+  const parent = svgRoot.parentElement; // .corner-mascot
+  if (!parent) return;
+  // Make parent positioned so absolute children anchor to it
+  const cs = getComputedStyle(parent);
+  if (cs.position === "static") parent.style.position = "relative";
+
+  const N = 12;
+  for (let i = 0; i < N; i++) {
+    const s = document.createElement("div");
+    s.className = "mascot-sparkle";
+    parent.appendChild(s);
+
+    // Spray sparkles in the upper hemisphere: from -PI (left) to 0 (right),
+    // arching over the top of the mascot. They fly up and outward, then drift
+    // down with gravity at the end.
+    const angle = -Math.PI + (Math.PI * i) / (N - 1) + (Math.random() - 0.5) * 0.18;
+    const dist = 110 + Math.random() * 50;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;  // negative because angle is in upper half
+    s.style.left = "50%";
+    s.style.top = "50%";
+
+    const rot = (Math.random() * 360 + 180) * (i % 2 === 0 ? 1 : -1);
+    s.animate(
+      [
+        { transform: "translate(-50%, -50%) scale(0) rotate(0deg)", opacity: 0 },
+        { transform: `translate(calc(-50% + ${dx * 0.6}px), calc(-50% + ${dy * 0.6}px)) scale(1.4) rotate(${rot * 0.5}deg)`, opacity: 1, offset: 0.35 },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy + 40}px)) scale(0.7) rotate(${rot}deg)`, opacity: 0 },
+      ],
+      { duration: 950 + Math.random() * 250, easing: "cubic-bezier(0.4,0,0.6,1)", fill: "forwards" }
+    ).onfinish = () => s.remove();
+  }
 }
 
 // ===== TASK 17: Carry Chip Animation =====
