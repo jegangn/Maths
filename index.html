@@ -218,25 +218,41 @@ html, body {
   gap: 12px;
   min-width: 280px; height: 110px;
   border-radius: var(--r-pill);
-  border: 4px solid var(--ink);
+  border-width: 4px !important;
+  border-style: solid !important;
+  border-color: var(--ink) !important;
   background: var(--world-primary); color: var(--ink);
   font-family: 'Lilita One', system-ui; font-size: 36px;
   cursor: pointer; user-select: none;
   box-shadow: var(--sh-3);
   transition: transform .08s var(--ease-pop), box-shadow .08s var(--ease-pop);
   padding: 0 32px;
-  /* Always crisp — no browser focus ring, tap highlight, or hover fade can
-     mute these. The only allowed "off" state is the explicit .disabled. */
-  outline: none;
-  opacity: 1;
-  filter: none;
+  /* Always crisp — no browser focus ring, tap highlight, hover fade, or
+     UA-default border style can mute these. */
+  outline: 0 !important;
+  opacity: 1 !important;
+  filter: none !important;
   -webkit-tap-highlight-color: transparent;
   -webkit-appearance: none;
   appearance: none;
 }
 .btn:active { transform: translateY(6px); box-shadow: var(--sh-pressed); }
-.btn:focus, .btn:focus-visible, .btn:hover { outline: none; opacity: 1; filter: none; }
-button { outline: none; -webkit-tap-highlight-color: transparent; }
+.btn:focus, .btn:focus-visible, .btn:hover {
+  outline: 0 !important;
+  opacity: 1 !important;
+  filter: none !important;
+  border-style: solid !important;
+  border-color: var(--ink) !important;
+}
+button {
+  outline: 0 !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:disabled, .btn.disabled {
+  /* Restore opacity here since the global .btn rule pins it to 1 with
+     !important; the explicit disabled state still needs to mute. */
+  opacity: .55 !important;
+}
 .btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
 .btn.ghost  { background: var(--bg-card); }
 .btn.success{ background: var(--success); color: #fff; }
