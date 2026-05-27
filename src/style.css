@@ -747,7 +747,10 @@ button {
   border-color: var(--success-deep);
   background: var(--star-glow);
 }
-.ghost {
+/* Scoped to mult-drag group trays so it doesn't accidentally match
+   `.btn.ghost` buttons elsewhere (settings RESET PROGRESS/CLOSE, complete
+   screen AGAIN/MAP). Those need the full .btn box, not a tiny dashed slot. */
+.group-tray .ghost {
   width: 56px; height: 56px;
   border-radius: var(--r-sm);
   border: 3px dashed var(--ink-soft);
@@ -1078,7 +1081,7 @@ button {
   gap: 6px;
   min-height: 70px;
 }
-#stage[data-orient="portrait"] .ghost {
+#stage[data-orient="portrait"] .group-tray .ghost {
   width: 48px;
   height: 48px;
 }
