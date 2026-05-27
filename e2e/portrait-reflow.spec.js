@@ -43,10 +43,15 @@ test('splash in portrait: title top, mascot middle, play button bottom', async (
   expect(title.y).toBeLessThan(mascot.y);
   expect(mascot.y).toBeLessThan(play.y);
   // All three are horizontally centered within the visible viewport.
-  // (Looseness ±20px to absorb scale rounding.)
+  // (Looseness ±30px to absorb scale rounding.)
   const vw = 390;
   expect(title.x + title.width / 2).toBeGreaterThan(vw / 2 - 30);
   expect(title.x + title.width / 2).toBeLessThan(vw / 2 + 30);
   expect(play.x + play.width / 2).toBeGreaterThan(vw / 2 - 30);
   expect(play.x + play.width / 2).toBeLessThan(vw / 2 + 30);
+
+  // Portrait-specific sizing: mascot is 320 (not 340 landscape), play button height is 110 (not 120).
+  // At PHONE_PORTRAIT scale (~0.542) the difference is real but small — generous tolerance.
+  expect(mascot.height).toBeLessThan(180); // portrait 320 * 0.542 ≈ 173; landscape 340 * 0.542 ≈ 184
+  expect(play.height).toBeLessThan(63);    // portrait 110 * 0.542 ≈ 60;  landscape 120 * 0.542 ≈ 65
 });
