@@ -1076,3 +1076,33 @@ button {
   padding: 1px 8px;
   bottom: -14px;
 }
+#stage[data-orient="portrait"] .complete-title {
+  top: 60px;
+  font-size: 60px;
+}
+#stage[data-orient="portrait"] #screen-complete .star-meter.big {
+  top: 160px;
+  gap: 16px;
+}
+#stage[data-orient="portrait"] .star-meter.big .star {
+  width: 76px;
+  height: 76px;
+}
+#stage[data-orient="portrait"] .complete-mascot {
+  top: 300px;
+  width: 180px;
+  height: 180px;
+}
+#stage[data-orient="portrait"] .complete-buttons {
+  flex-direction: column;
+  bottom: 40px;
+  gap: 12px;
+  width: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#stage[data-orient="portrait"] .complete-buttons .btn {
+  min-width: 240px;
+  height: 80px;
+  font-size: 28px;
+}

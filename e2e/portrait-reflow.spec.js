@@ -133,3 +133,24 @@ test('mult drag-groups in portrait: 3 group trays stacked + block pile below', a
   const pile = await page.locator('.block-pile').boundingBox();
   expect(pile.y).toBeGreaterThan(trayBoxes[2].y + trayBoxes[2].height - 10);
 });
+
+test('complete screen in portrait: 3 buttons stacked vertically', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  // Jump directly to complete via router with mock context
+  await page.evaluate(() => {
+    window.__router.go('complete', { world: 'add', level: 1, wrongCount: 0 });
+  });
+  await expect(page.locator('#screen-complete')).toBeVisible();
+
+  // Wait for star reveal animation to finish before measuring buttons
+  await page.waitForTimeout(2500);
+
+  const buttons = await page.locator('.complete-buttons .btn').all();
+  expect(buttons.length).toBeGreaterThanOrEqual(2);
+
+  const boxes = await Promise.all(buttons.map((b) => b.boundingBox()));
+  // Stacked vertically: button[1].top > button[0].top + (height - small overlap)
+  expect(boxes[1].y).toBeGreaterThan(boxes[0].y + boxes[0].height - 10);
+});
