@@ -114,3 +114,22 @@ test('mult tap-count in portrait: 3 lily-pads stacked vertically', async ({ page
   expect(boxes[1].y).toBeGreaterThan(boxes[0].y + 20);
   expect(boxes[2].y).toBeGreaterThan(boxes[1].y + 20);
 });
+
+test('mult drag-groups in portrait: 3 group trays stacked + block pile below', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'mult', 5); // L5 first problem is 3x4 → 3 group trays
+
+  await expect(page.locator('#screen-mult-drag')).toBeVisible();
+  const trays = await page.locator('.group-tray').all();
+  expect(trays.length).toBe(3);
+
+  const trayBoxes = await Promise.all(trays.map((t) => t.boundingBox()));
+  // Stacked vertically: tray[1].top > tray[0].top by at least 30px
+  expect(trayBoxes[1].y).toBeGreaterThan(trayBoxes[0].y + 30);
+  expect(trayBoxes[2].y).toBeGreaterThan(trayBoxes[1].y + 30);
+
+  const pile = await page.locator('.block-pile').boundingBox();
+  expect(pile.y).toBeGreaterThan(trayBoxes[2].y + trayBoxes[2].height - 10);
+});

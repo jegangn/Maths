@@ -1032,3 +1032,47 @@ button {
   height: 72px;
   font-size: 44px;
 }
+#stage[data-orient="portrait"] .group-row {
+  flex-direction: column;
+  top: 200px;
+  left: 16px;
+  right: 16px;
+  width: auto;
+  gap: 12px;
+}
+#stage[data-orient="portrait"] .group-tray {
+  min-width: 0;
+  width: 100%;
+  flex-direction: row;
+  padding: 10px;
+  gap: 6px;
+  min-height: 70px;
+}
+#stage[data-orient="portrait"] .ghost {
+  width: 48px;
+  height: 48px;
+}
+#stage[data-orient="portrait"] #screen-mult-drag .block-host {
+  width: 48px;
+  height: 48px;
+}
+#stage[data-orient="portrait"] .block-pile {
+  top: auto;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  width: auto;
+  height: 180px;
+  padding: 12px;
+  gap: 8px;
+}
+#stage[data-orient="portrait"] .ans-host {
+  top: auto;
+  bottom: 220px;
+  padding: 12px 16px;
+}
+#stage[data-orient="portrait"] .count-chip {
+  font-size: 14px;
+  padding: 1px 8px;
+  bottom: -14px;
+}
