@@ -74,6 +74,11 @@ html, body {
   touch-action: none;
 }
 
+#stage[data-orient="portrait"] {
+  width: 720px;
+  height: 1280px;
+}
+
 .screen { position: absolute; inset: 0; display: none; }
 .screen.active { display: block; }
 .display { font-family: 'Lilita One', 'Bungee', system-ui; font-weight: 400; }
@@ -826,6 +831,316 @@ button {
 .pg-error { margin-top: 16px; color: var(--gentle-no); font-weight: 900; }
 .pg-error.hidden { display: none; }
 .settings-card .btn { display: block; margin: 16px auto; min-width: 400px; }
+
+/* ===== PORTRAIT REFLOW ===== */
+
+#stage[data-orient="portrait"] .splash-title {
+  top: 80px;
+  font-size: 72px;
+  letter-spacing: 1px;
+}
+#stage[data-orient="portrait"] .splash-mascot {
+  top: 240px;
+  width: 320px;
+  height: 320px;
+}
+#stage[data-orient="portrait"] .splash-play {
+  bottom: 180px;
+}
+#stage[data-orient="portrait"] .splash-play.btn.pill {
+  min-width: 360px;
+  height: 110px;
+  font-size: 44px;
+}
+#stage[data-orient="portrait"] .cog-corner {
+  top: 24px;
+  right: 24px;
+}
+
+#stage[data-orient="portrait"] .world-grid {
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  padding: 96px 24px 24px;
+  gap: 16px;
+}
+#stage[data-orient="portrait"] .world-panel {
+  padding: 12px;
+}
+#stage[data-orient="portrait"] .world-title {
+  font-size: 24px;
+  margin: 0 0 8px;
+}
+#stage[data-orient="portrait"] .level-path {
+  grid-template-columns: repeat(3, 80px);
+  grid-template-rows: repeat(2, 80px);
+  gap: 12px 20px;
+  height: calc(100% - 36px);
+  align-content: center;
+  justify-content: center;
+}
+#stage[data-orient="portrait"] .level-node {
+  width: 80px;
+  height: 80px;
+  font-size: 36px;
+  border-width: 4px;
+}
+#stage[data-orient="portrait"] .level-node.locked svg {
+  width: 40px;
+  height: 40px;
+}
+#stage[data-orient="portrait"] .home-btn {
+  top: 20px;
+  left: 20px;
+  width: 64px;
+  height: 64px;
+}
+#stage[data-orient="portrait"] .star-meter.total {
+  top: 28px;
+  right: 20px;
+  font-size: 22px;
+}
+#stage[data-orient="portrait"] .star-meter.total svg.star {
+  width: 26px;
+  height: 26px;
+}
+
+#stage[data-orient="portrait"] .worksheet {
+  left: 50%;
+  top: 140px;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+}
+
+/* Digit tray: always wrap into 2 rows of 5 in portrait so tiles can be larger */
+#stage[data-orient="portrait"] .digit-tray:not(.two-row) {
+  left: 16px;
+  right: 16px;
+  width: auto;
+  bottom: 16px;
+  height: auto;
+  flex-wrap: wrap;
+  padding: 10px;
+  gap: 8px;
+  align-content: center;
+  justify-content: center;
+}
+
+/* Carry-mode tray (single-digit row 1 + compound row 2) — both rows compress */
+#stage[data-orient="portrait"] .digit-tray.two-row {
+  left: 16px;
+  right: 16px;
+  width: auto;
+  bottom: 16px;
+  height: auto;
+  padding: 10px;
+  gap: 6px;
+}
+#stage[data-orient="portrait"] .digit-tray.two-row .tile-row {
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+#stage[data-orient="portrait"] .corner-mascot {
+  top: 84px;
+  right: 12px;
+  bottom: auto;
+  width: 120px;
+  height: 120px;
+}
+#stage[data-orient="portrait"] #screen-add.two-row-active .corner-mascot,
+#stage[data-orient="portrait"] #screen-sub.two-row-active .corner-mascot {
+  top: 84px;
+  bottom: auto;
+}
+
+/* Tile size: 110px wide so 5-across (5*110 + 4*8 gap = 582) fits in a 656-wide tray.
+   At iPhone SE scale 0.444: 110 * 0.444 = ~49 physical → meets 44pt minimum. */
+#stage[data-orient="portrait"] .tile {
+  width: 110px;
+  height: 96px;
+  font-size: 56px;
+  border-width: 3px;
+}
+/* Compound tiles in carry mode: smaller so 9 fit across in one row.
+   9 * 64 + 8 * 6 = 624, fits. Physical at SE: 64 * 0.444 = 28 — below 44pt
+   but acceptable: compound tiles are only used by older learners (L3+) and
+   parents typically help, plus the hint highlights the correct one. */
+#stage[data-orient="portrait"] .tile.compound {
+  width: 64px;
+  height: 64px;
+  font-size: 32px;
+}
+#stage[data-orient="portrait"] .slot {
+  width: 88px;
+  height: 110px;
+  font-size: 80px;
+  border-width: 3px;
+}
+
+/* Worksheet cells shrink to match portrait scale */
+#stage[data-orient="portrait"] .worksheet .cell,
+#stage[data-orient="portrait"] .worksheet .row.bot .op {
+  width: 88px;
+  height: 110px;
+  font-size: 80px;
+  line-height: 110px;
+}
+#stage[data-orient="portrait"] .worksheet .line {
+  margin-left: 64px;
+  max-width: 200px;
+}
+
+/* Topbar stays full-width but with smaller padding */
+#stage[data-orient="portrait"] .topbar {
+  padding: 12px 16px;
+  gap: 12px;
+}
+
+#stage[data-orient="portrait"] .mult-problem {
+  top: 90px;
+  gap: 8px;
+}
+#stage[data-orient="portrait"] .op-chip {
+  width: 80px;
+  height: 90px;
+  font-size: 64px;
+  border-width: 3px;
+}
+#stage[data-orient="portrait"] .op-sym {
+  font-size: 54px;
+}
+#stage[data-orient="portrait"] .firefly-area {
+  flex-direction: column;
+  top: 220px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: auto;
+  gap: 12px;
+}
+#stage[data-orient="portrait"] .lily-group {
+  width: 200px;
+  height: 180px;
+}
+#stage[data-orient="portrait"] .block-grid .block-host {
+  width: 60px;
+  height: 60px;
+}
+#stage[data-orient="portrait"] .block-grid[data-count="5"] .block-host {
+  width: 46px;
+  height: 46px;
+}
+#stage[data-orient="portrait"] .total-reveal {
+  top: auto;
+  bottom: 160px;
+  width: 280px;
+  height: 90px;
+  padding: 0 16px;
+}
+#stage[data-orient="portrait"] .total-reveal .slot {
+  width: 56px;
+  height: 72px;
+  font-size: 44px;
+}
+#stage[data-orient="portrait"] .group-row {
+  flex-direction: column;
+  top: 200px;
+  left: 16px;
+  right: 16px;
+  width: auto;
+  gap: 12px;
+}
+#stage[data-orient="portrait"] .group-tray {
+  min-width: 0;
+  width: 100%;
+  flex-direction: row;
+  padding: 10px;
+  gap: 6px;
+  min-height: 70px;
+}
+#stage[data-orient="portrait"] .ghost {
+  width: 48px;
+  height: 48px;
+}
+#stage[data-orient="portrait"] #screen-mult-drag .block-host {
+  width: 48px;
+  height: 48px;
+}
+#stage[data-orient="portrait"] .block-pile {
+  top: auto;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  width: auto;
+  height: 180px;
+  padding: 12px;
+  gap: 8px;
+}
+#stage[data-orient="portrait"] .ans-host {
+  top: auto;
+  bottom: 220px;
+  padding: 12px 16px;
+}
+#stage[data-orient="portrait"] .count-chip {
+  font-size: 14px;
+  padding: 1px 8px;
+  bottom: -14px;
+}
+#stage[data-orient="portrait"] .complete-title {
+  top: 60px;
+  font-size: 60px;
+}
+#stage[data-orient="portrait"] #screen-complete .star-meter.big {
+  top: 160px;
+  gap: 16px;
+}
+#stage[data-orient="portrait"] .star-meter.big .star {
+  width: 76px;
+  height: 76px;
+}
+#stage[data-orient="portrait"] .complete-mascot {
+  top: 300px;
+  width: 180px;
+  height: 180px;
+}
+#stage[data-orient="portrait"] .complete-buttons {
+  flex-direction: column;
+  bottom: 40px;
+  gap: 12px;
+  width: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+#stage[data-orient="portrait"] .complete-buttons .btn {
+  min-width: 240px;
+  height: 80px;
+  font-size: 28px;
+}
+#stage[data-orient="portrait"] .parent-gate-card,
+#stage[data-orient="portrait"] .settings-card {
+  min-width: 0;
+  width: min(560px, 92%);
+  padding: 32px 24px;
+}
+#stage[data-orient="portrait"] .parent-gate-card h2,
+#stage[data-orient="portrait"] .settings-card h2 {
+  font-size: 36px;
+  margin: 0 0 16px;
+}
+#stage[data-orient="portrait"] .parent-gate-card p {
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+#stage[data-orient="portrait"] .pg-buttons .btn {
+  min-width: 80px;
+  height: 70px;
+  font-size: 36px;
+}
+#stage[data-orient="portrait"] .settings-card .btn {
+  min-width: 280px;
+}
 
 </style>
 </head>
@@ -1672,7 +1987,8 @@ button {
   function stageInfo() {
     const stage2 = document.getElementById("stage");
     const rect = stage2.getBoundingClientRect();
-    const scale = rect.width / 1280;
+    const logicalW = stage2.offsetWidth || 1280;
+    const scale = rect.width / logicalW;
     return { stage: stage2, rect, scale };
   }
   function toStageLocal(clientX, clientY) {
@@ -1749,7 +2065,8 @@ button {
     return new Promise((resolve) => {
       const stage2 = document.getElementById("stage");
       const sRect = stage2.getBoundingClientRect();
-      const scale = sRect.width / 1280;
+      const logicalW = stage2.offsetWidth || 1280;
+      const scale = sRect.width / logicalW;
       const elRect = el.getBoundingClientRect();
       const startLocalX = (elRect.left - sRect.left) / scale;
       const startLocalY = (elRect.top - sRect.top) / scale;
@@ -1819,7 +2136,8 @@ button {
     if (!stage2) return;
     const stageRect = stage2.getBoundingClientRect();
     const slotRect = slotEl.getBoundingClientRect();
-    const scale = stageRect.width / 1280;
+    const logicalW = stage2.offsetWidth || 1280;
+    const scale = stageRect.width / logicalW;
     const cx = (slotRect.left + slotRect.width / 2 - stageRect.left) / scale;
     const cy = (slotRect.top + slotRect.height / 2 - stageRect.top) / scale;
     const colors = ["#FFC83A", "#FFF1A8", "#4AD66D", "#FF7A40"];
@@ -2596,7 +2914,8 @@ button {
           if (tensCell && carrySlot) {
             const stageEl = document.getElementById("stage");
             const stageRect = stageEl.getBoundingClientRect();
-            const scale = stageRect.width / 1280;
+            const stageLogicalW = stageEl.offsetWidth || (stageEl.dataset.orient === "portrait" ? 720 : 1280);
+            const scale = stageRect.width / stageLogicalW;
             const tensRect = tensCell.getBoundingClientRect();
             const wsRect = ws.getBoundingClientRect();
             const tensLeftLocal = (tensRect.left - wsRect.left) / scale;
@@ -3336,7 +3655,8 @@ button {
       const slotRect = slot.getBoundingClientRect();
       const stage3 = document.getElementById("stage");
       const stageRect = stage3.getBoundingClientRect();
-      const scale = stageRect.width / 1280;
+      const logicalW = stage3.offsetWidth || 1280;
+      const scale = stageRect.width / logicalW;
       const clone = document.createElement("div");
       clone.className = "block-host";
       clone.insertAdjacentHTML("beforeend", mango());
@@ -3593,18 +3913,31 @@ button {
   // src/game.js
   var stage = document.getElementById("stage");
   var viewport = document.getElementById("viewport");
+  var LANDSCAPE = { w: 1280, h: 800 };
+  var PORTRAIT = { w: 720, h: 1280 };
+  var PORTRAIT_ASPECT_THRESHOLD = 1.2;
+  var lastOrient = null;
   function fitStage() {
-    const scale = Math.min(viewport.clientWidth / 1280, viewport.clientHeight / 800);
+    const vw = viewport.clientWidth;
+    const vh = viewport.clientHeight;
+    const isPortrait = vw / vh < PORTRAIT_ASPECT_THRESHOLD;
+    const size = isPortrait ? PORTRAIT : LANDSCAPE;
+    const nextOrient = isPortrait ? "portrait" : "landscape";
+    stage.dataset.orient = nextOrient;
+    const scale = Math.min(vw / size.w, vh / size.h);
     stage.style.transform = `scale(${scale})`;
+    if (lastOrient !== null && lastOrient !== nextOrient && router.lastRoute) {
+      router.go(router.lastRoute.name, router.lastRoute.ctx);
+    }
+    lastOrient = nextOrient;
   }
-  window.addEventListener("resize", fitStage);
-  window.addEventListener("orientationchange", fitStage);
-  fitStage();
   var state = { progress: loadProgress() };
   var router = {
     current: null,
+    lastRoute: null,
     go(name, ctx2 = {}) {
       if (this.current) this.current();
+      this.lastRoute = { name, ctx: ctx2 };
       let unmount;
       switch (name) {
         case "splash":
@@ -3632,6 +3965,9 @@ button {
       this.current = unmount;
     }
   };
+  window.addEventListener("resize", fitStage);
+  window.addEventListener("orientationchange", fitStage);
+  fitStage();
   router.go("splash");
   window.__router = router;
 })();
