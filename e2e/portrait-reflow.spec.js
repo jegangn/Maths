@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { unlockAll, goToLevel } from './helpers/math.js';
 
 // iPhone 14 dimensions — representative modern phone.
 const PHONE_PORTRAIT = { width: 390, height: 844 };
@@ -71,4 +72,29 @@ test('world map in portrait: 3 panels stacked vertically (not side-by-side)', as
   expect(boxes[2].y).toBeGreaterThan(boxes[1].y + boxes[1].height - 10);
   // All panels have similar widths (within 10px of each other).
   expect(Math.abs(boxes[0].width - boxes[1].width)).toBeLessThan(10);
+});
+
+test('addition level in portrait: worksheet centered, tray pinned bottom, tile >= 44px physical', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 1);
+
+  await expect(page.locator('#screen-add')).toBeVisible();
+
+  const worksheet = await page.locator('.worksheet').boundingBox();
+  const tray = await page.locator('.digit-tray').boundingBox();
+  const tile = await page.locator('.tile').first().boundingBox();
+
+  // Worksheet is above tray (allow up to 10px overlap to absorb scale rounding)
+  expect(worksheet.y + worksheet.height).toBeLessThanOrEqual(tray.y + 10);
+
+  // Worksheet roughly horizontally centered in 390px viewport
+  const wsCenter = worksheet.x + worksheet.width / 2;
+  expect(wsCenter).toBeGreaterThan(390 / 2 - 40);
+  expect(wsCenter).toBeLessThan(390 / 2 + 40);
+
+  // Tile rendered size >= 44px physical (iOS HIG minimum)
+  expect(tile.width).toBeGreaterThanOrEqual(44);
+  expect(tile.height).toBeGreaterThanOrEqual(44);
 });
