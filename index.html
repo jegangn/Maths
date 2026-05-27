@@ -967,22 +967,24 @@ button {
   bottom: auto;
 }
 
-/* Tile size: 110px wide so 5-across (5*110 + 4*8 gap = 582) fits in a 656-wide tray.
-   At iPhone SE scale 0.444: 110 * 0.444 = ~49 physical → meets 44pt minimum. */
-#stage[data-orient="portrait"] .tile {
+/* All tile choices the kid picks from are the same dimensions in portrait,
+   regardless of variant. 5-across at 110×96 + 8px gap = 582 fits in a
+   656-wide tray; rows wrap naturally when there are more than 5 tiles
+   (carry's 10 digits + 9 compounds, or mult-tap's 10-25 option range).
+   At iPhone SE scale 0.444: 110 * 0.444 = ~49 physical → meets 44pt. */
+#stage[data-orient="portrait"] .tile,
+#stage[data-orient="portrait"] .tile.compound,
+#stage[data-orient="portrait"] .tile.compound.mult-option {
   width: 110px;
   height: 96px;
   font-size: 56px;
   border-width: 3px;
 }
-/* Compound tiles in carry mode: smaller so 9 fit across in one row.
-   9 * 64 + 8 * 6 = 624, fits. Physical at SE: 64 * 0.444 = 28 — below 44pt
-   but acceptable: compound tiles are only used by older learners (L3+) and
-   parents typically help, plus the hint highlights the correct one. */
-#stage[data-orient="portrait"] .tile.compound {
-  width: 64px;
-  height: 64px;
-  font-size: 32px;
+/* Two-digit values (10-18, etc.) need a smaller font to fit the tile width
+   without changing the box. Keep digits visually centered with the rest. */
+#stage[data-orient="portrait"] .tile.compound,
+#stage[data-orient="portrait"] .tile.compound.mult-option {
+  font-size: 48px;
 }
 #stage[data-orient="portrait"] .slot {
   width: 120px;
