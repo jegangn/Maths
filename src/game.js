@@ -11,8 +11,19 @@ import * as settings from "./screens/settings.js";
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
 
+// Logical canvas dimensions per orientation.
+const LANDSCAPE = { w: 1280, h: 800 };
+const PORTRAIT = { w: 720, h: 1280 };
+// Aspect threshold: viewports wider than this (w/h > 1.2) use landscape.
+const PORTRAIT_ASPECT_THRESHOLD = 1.2;
+
 function fitStage() {
-  const scale = Math.min(viewport.clientWidth / 1280, viewport.clientHeight / 800);
+  const vw = viewport.clientWidth;
+  const vh = viewport.clientHeight;
+  const isPortrait = (vw / vh) < PORTRAIT_ASPECT_THRESHOLD;
+  const size = isPortrait ? PORTRAIT : LANDSCAPE;
+  stage.dataset.orient = isPortrait ? "portrait" : "landscape";
+  const scale = Math.min(vw / size.w, vh / size.h);
   stage.style.transform = `scale(${scale})`;
 }
 window.addEventListener("resize", fitStage);
