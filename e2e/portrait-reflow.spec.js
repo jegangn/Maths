@@ -55,3 +55,20 @@ test('splash in portrait: title top, mascot middle, play button bottom', async (
   expect(mascot.height).toBeLessThan(180); // portrait 320 * 0.542 ≈ 173; landscape 340 * 0.542 ≈ 184
   expect(play.height).toBeLessThan(63);    // portrait 110 * 0.542 ≈ 60;  landscape 120 * 0.542 ≈ 65
 });
+
+test('world map in portrait: 3 panels stacked vertically (not side-by-side)', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await page.locator('.splash-play').click();
+  await expect(page.locator('#screen-map')).toBeVisible();
+
+  const panels = await page.locator('.world-panel').all();
+  expect(panels.length).toBe(3);
+
+  const boxes = await Promise.all(panels.map((p) => p.boundingBox()));
+  // Stacked vertically: panel[1].top > panel[0].bottom (with small overlap tolerance).
+  expect(boxes[1].y).toBeGreaterThan(boxes[0].y + boxes[0].height - 10);
+  expect(boxes[2].y).toBeGreaterThan(boxes[1].y + boxes[1].height - 10);
+  // All panels have similar widths (within 10px of each other).
+  expect(Math.abs(boxes[0].width - boxes[1].width)).toBeLessThan(10);
+});

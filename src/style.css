@@ -844,3 +844,50 @@ button {
   top: 24px;
   right: 24px;
 }
+
+#stage[data-orient="portrait"] .world-grid {
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  padding: 96px 24px 24px;
+  gap: 16px;
+}
+#stage[data-orient="portrait"] .world-panel {
+  padding: 12px;
+}
+#stage[data-orient="portrait"] .world-title {
+  font-size: 24px;
+  margin: 0 0 8px;
+}
+#stage[data-orient="portrait"] .level-path {
+  grid-template-columns: repeat(3, 80px);
+  grid-template-rows: repeat(2, 80px);
+  gap: 12px 20px;
+  height: calc(100% - 36px);
+  align-content: center;
+  justify-content: center;
+}
+#stage[data-orient="portrait"] .level-node {
+  width: 80px;
+  height: 80px;
+  font-size: 36px;
+  border-width: 4px;
+}
+#stage[data-orient="portrait"] .level-node.locked svg {
+  width: 40px;
+  height: 40px;
+}
+#stage[data-orient="portrait"] .home-btn {
+  top: 20px;
+  left: 20px;
+  width: 64px;
+  height: 64px;
+}
+#stage[data-orient="portrait"] .star-meter.total {
+  top: 28px;
+  right: 20px;
+  font-size: 22px;
+}
+#stage[data-orient="portrait"] .star-meter.total svg.star {
+  width: 26px;
+  height: 26px;
+}
