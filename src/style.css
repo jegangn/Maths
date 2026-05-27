@@ -819,3 +819,28 @@ button {
 .pg-error { margin-top: 16px; color: var(--gentle-no); font-weight: 900; }
 .pg-error.hidden { display: none; }
 .settings-card .btn { display: block; margin: 16px auto; min-width: 400px; }
+
+/* ===== PORTRAIT REFLOW ===== */
+
+#stage[data-orient="portrait"] .splash-title {
+  top: 80px;
+  font-size: 72px;
+  letter-spacing: 1px;
+}
+#stage[data-orient="portrait"] .splash-mascot {
+  top: 240px;
+  width: 320px;
+  height: 320px;
+}
+#stage[data-orient="portrait"] .splash-play {
+  bottom: 180px;
+}
+#stage[data-orient="portrait"] .splash-play.btn.pill {
+  min-width: 360px;
+  height: 110px;
+  font-size: 44px;
+}
+#stage[data-orient="portrait"] .cog-corner {
+  top: 24px;
+  right: 24px;
+}
