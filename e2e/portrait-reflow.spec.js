@@ -154,3 +154,15 @@ test('complete screen in portrait: 3 buttons stacked vertically', async ({ page 
   // Stacked vertically: button[1].top > button[0].top + (height - small overlap)
   expect(boxes[1].y).toBeGreaterThan(boxes[0].y + boxes[0].height - 10);
 });
+
+test('settings modal in portrait: fits within viewport width', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await page.evaluate(() => window.__router.go('settings'));
+  await expect(page.locator('#screen-settings')).toBeVisible();
+
+  const card = await page.locator('.parent-gate-card, .settings-card').first().boundingBox();
+  // Card must fit inside the 390px viewport (with at least 4px margin each side)
+  expect(card.width).toBeLessThanOrEqual(390 - 8);
+  expect(card.x).toBeGreaterThanOrEqual(4);
+});

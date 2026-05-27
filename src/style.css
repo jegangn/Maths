@@ -1106,3 +1106,26 @@ button {
   height: 80px;
   font-size: 28px;
 }
+#stage[data-orient="portrait"] .parent-gate-card,
+#stage[data-orient="portrait"] .settings-card {
+  min-width: 0;
+  width: min(560px, 92%);
+  padding: 32px 24px;
+}
+#stage[data-orient="portrait"] .parent-gate-card h2,
+#stage[data-orient="portrait"] .settings-card h2 {
+  font-size: 36px;
+  margin: 0 0 16px;
+}
+#stage[data-orient="portrait"] .parent-gate-card p {
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+#stage[data-orient="portrait"] .pg-buttons .btn {
+  min-width: 80px;
+  height: 70px;
+  font-size: 36px;
+}
+#stage[data-orient="portrait"] .settings-card .btn {
+  min-width: 280px;
+}
