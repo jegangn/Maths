@@ -98,3 +98,19 @@ test('addition level in portrait: worksheet centered, tray pinned bottom, tile >
   expect(tile.width).toBeGreaterThanOrEqual(44);
   expect(tile.height).toBeGreaterThanOrEqual(44);
 });
+
+test('mult tap-count in portrait: 3 lily-pads stacked vertically', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'mult', 2); // L2 = 3xN, so the screen has 3 lily-pads
+
+  await expect(page.locator('#screen-mult-tap')).toBeVisible();
+  const pads = await page.locator('.lily-group').all();
+  expect(pads.length).toBe(3);
+
+  const boxes = await Promise.all(pads.map((p) => p.boundingBox()));
+  // Stacked vertically: pad[1].top > pad[0].top + some delta
+  expect(boxes[1].y).toBeGreaterThan(boxes[0].y + 20);
+  expect(boxes[2].y).toBeGreaterThan(boxes[1].y + 20);
+});

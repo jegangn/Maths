@@ -985,3 +985,50 @@ button {
   padding: 12px 16px;
   gap: 12px;
 }
+
+#stage[data-orient="portrait"] .mult-problem {
+  top: 90px;
+  gap: 8px;
+}
+#stage[data-orient="portrait"] .op-chip {
+  width: 80px;
+  height: 90px;
+  font-size: 64px;
+  border-width: 3px;
+}
+#stage[data-orient="portrait"] .op-sym {
+  font-size: 54px;
+}
+#stage[data-orient="portrait"] .firefly-area {
+  flex-direction: column;
+  top: 220px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: auto;
+  gap: 12px;
+}
+#stage[data-orient="portrait"] .lily-group {
+  width: 200px;
+  height: 180px;
+}
+#stage[data-orient="portrait"] .block-grid .block-host {
+  width: 60px;
+  height: 60px;
+}
+#stage[data-orient="portrait"] .block-grid[data-count="5"] .block-host {
+  width: 46px;
+  height: 46px;
+}
+#stage[data-orient="portrait"] .total-reveal {
+  top: auto;
+  bottom: 160px;
+  width: 280px;
+  height: 90px;
+  padding: 0 16px;
+}
+#stage[data-orient="portrait"] .total-reveal .slot {
+  width: 56px;
+  height: 72px;
+  font-size: 44px;
+}
