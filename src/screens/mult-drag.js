@@ -209,7 +209,8 @@ export function mount(stage, ctx, router) {
     const slotRect = slot.getBoundingClientRect();
     const stage = document.getElementById("stage");
     const stageRect = stage.getBoundingClientRect();
-    const scale = stageRect.width / 1280;
+    const logicalW = stage.offsetWidth || 1280;
+    const scale = stageRect.width / logicalW;
 
     const clone = document.createElement("div");
     clone.className = "block-host";
