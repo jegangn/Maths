@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { unlockAll, goToLevel } from './helpers/math.js';
+import { unlockAll, goToLevel, dragDigitToSlot } from './helpers/math.js';
 
 // iPhone 14 dimensions — representative modern phone.
 const PHONE_PORTRAIT = { width: 390, height: 844 };
@@ -223,4 +223,24 @@ test('rotating from landscape to portrait re-renders active screen', async ({ pa
   const tensCenterX = tens.x + tens.width / 2;
   const carryCenterX = carry.x + carry.width / 2;
   expect(Math.abs(tensCenterX - carryCenterX)).toBeLessThan(10);
+});
+
+test('full smoke: iPhone SE can complete addition L1 problem 1 (12+3)', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 1);
+  await expect(page.locator('#screen-add')).toBeVisible();
+
+  // Drag ones answer (15 → ones=5)
+  await dragDigitToSlot(page, 5, page.locator('.slot.active'));
+  await page.waitForTimeout(400);
+  // Drag tens answer (15 → tens=1)
+  await dragDigitToSlot(page, 1, page.locator('.slot.active'));
+  await page.waitForTimeout(400);
+
+  // Progress dot 0 should now be 'filled', dot 1 should be 'current'
+  const dots = await page.locator('.dot').all();
+  await expect(dots[0]).toHaveClass(/filled/);
+  await expect(dots[1]).toHaveClass(/current/);
 });
