@@ -897,10 +897,11 @@ button {
 
 #stage[data-orient="portrait"] .worksheet {
   left: 50%;
-  /* Vertically positioned with room above for the carry slot and corner
-     mascot, and clear space below to the digit tray. */
-  top: 260px;
-  transform: translateX(-50%);
+  /* Vertically centered between topbar and tray. Centring (not a fixed top)
+     means the worksheet sits in the middle of the canvas at any phone
+     aspect ratio — iPhone SE, iPhone 14, Pixel 7 all look balanced. */
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: auto;
   height: auto;
 }
@@ -1016,9 +1017,10 @@ button {
 }
 #stage[data-orient="portrait"] .firefly-area {
   flex-direction: column;
-  top: 220px;
+  /* Vertically centred between problem (top) and total-reveal/tray (bottom). */
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   width: 240px;
   height: auto;
   gap: 12px;
@@ -1074,9 +1076,11 @@ button {
 }
 /* Mult-drag portrait stacking (top→bottom): topbar, problem, group trays,
    pile, answer host, digit tray. All visible at once per the simplified flow
-   in mult-drag.js (kid can answer immediately; pile is for counting only). */
+   in mult-drag.js (kid can answer immediately; pile is for counting only).
+   Block-pile is centred vertically and answer host is anchored above the
+   tray so they distribute evenly on any phone height. */
 #stage[data-orient="portrait"] .block-pile {
-  top: 540px;
+  top: 50%;
   bottom: auto;
   left: 16px;
   right: 16px;
@@ -1084,10 +1088,14 @@ button {
   height: 180px;
   padding: 12px;
   gap: 8px;
+  transform: translateY(-50%);
 }
 #stage[data-orient="portrait"] .ans-host {
-  top: 760px;
-  bottom: auto;
+  /* Sits clearly above the digit tray. Mult answers can include compound
+     tiles that wrap to 3 rows in the tray, so allow ~360px for the tray
+     plus a 24px gap. */
+  top: auto;
+  bottom: 384px;
   padding: 10px 16px;
 }
 #stage[data-orient="portrait"] .count-chip {
@@ -1108,7 +1116,10 @@ button {
   height: 76px;
 }
 #stage[data-orient="portrait"] .complete-mascot {
-  top: 300px;
+  /* Vertically centred between the star meter (top) and the buttons (bottom),
+     adapts to any phone height. */
+  top: 50%;
+  transform: translate(-50%, -50%);
   width: 180px;
   height: 180px;
 }

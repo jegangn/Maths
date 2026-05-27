@@ -12,8 +12,11 @@ const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
 
 // Logical canvas dimensions per orientation.
+// Landscape stays fixed at 1280×800 (tablet target). Portrait fixes WIDTH at
+// 720 and stretches HEIGHT to match the phone's aspect ratio — that way the
+// stage fills the entire phone viewport with no letterbox bars on any device.
 const LANDSCAPE = { w: 1280, h: 800 };
-const PORTRAIT = { w: 720, h: 1280 };
+const PORTRAIT_W = 720;
 // Aspect threshold: viewports wider than this (w/h > 1.2) use landscape.
 const PORTRAIT_ASPECT_THRESHOLD = 1.2;
 
@@ -23,11 +26,26 @@ function fitStage() {
   const vw = viewport.clientWidth;
   const vh = viewport.clientHeight;
   const isPortrait = (vw / vh) < PORTRAIT_ASPECT_THRESHOLD;
-  const size = isPortrait ? PORTRAIT : LANDSCAPE;
   const nextOrient = isPortrait ? "portrait" : "landscape";
-
   stage.dataset.orient = nextOrient;
-  const scale = Math.min(vw / size.w, vh / size.h);
+
+  let scale;
+  if (isPortrait) {
+    // Scale to fit width; canvas height stretches so the stage fills the
+    // viewport exactly. Elements anchored to top/bottom move with the edges;
+    // central elements (worksheet, firefly-area) centre via top:50%.
+    scale = vw / PORTRAIT_W;
+    const logicalH = vh / scale;
+    stage.style.width = `${PORTRAIT_W}px`;
+    stage.style.height = `${logicalH}px`;
+    // Expose for code that needs to read the current logical canvas size.
+    stage.style.setProperty("--stage-h", `${logicalH}px`);
+  } else {
+    scale = Math.min(vw / LANDSCAPE.w, vh / LANDSCAPE.h);
+    stage.style.width = `${LANDSCAPE.w}px`;
+    stage.style.height = `${LANDSCAPE.h}px`;
+    stage.style.setProperty("--stage-h", `${LANDSCAPE.h}px`);
+  }
   stage.style.transform = `scale(${scale})`;
 
   // Re-render active screen when orientation flips so JS-positioned elements recompute.
