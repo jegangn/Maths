@@ -858,6 +858,18 @@ button {
 #stage[data-orient="portrait"] .cog-corner {
   top: 24px;
   right: 24px;
+  /* Tight padding when the label is hidden — just the icon stays. */
+  padding: 6px;
+}
+/* In portrait the "PARENTS" label is dropped — the icon alone fits without
+   colliding with the title or the mascot. Parents who know the gate is
+   long-press on the cog will still find it. */
+#stage[data-orient="portrait"] .cog-corner .cog-label {
+  display: none;
+}
+#stage[data-orient="portrait"] .cog-corner svg {
+  width: 44px;
+  height: 44px;
 }
 
 #stage[data-orient="portrait"] .world-grid {
