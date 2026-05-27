@@ -20,7 +20,8 @@ export function findDropTarget(targets, x, y, tol = 0) {
 function stageInfo() {
   const stage = document.getElementById("stage");
   const rect = stage.getBoundingClientRect();
-  const scale = rect.width / 1280;
+  const logicalW = stage.offsetWidth || 1280;
+  const scale = rect.width / logicalW;
   return { stage, rect, scale };
 }
 

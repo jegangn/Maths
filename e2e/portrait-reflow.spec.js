@@ -181,3 +181,26 @@ test('addition carry slot lands above tens cell in portrait', async ({ page }) =
   const carryCenterX = carry.x + carry.width / 2;
   expect(Math.abs(tensCenterX - carryCenterX)).toBeLessThan(10);
 });
+
+test('drag math works in portrait: dragging a digit tile lands on the active slot', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 1); // L1 problem 1: 12 + 3 = 15
+
+  await expect(page.locator('#screen-add')).toBeVisible();
+
+  // Drag the "5" tile into the ones slot (active)
+  const tile = page.locator('.tile[data-digit="5"]').first();
+  const slot = page.locator('.slot.active');
+  const tBox = await tile.boundingBox();
+  const sBox = await slot.boundingBox();
+  await page.mouse.move(tBox.x + tBox.width / 2, tBox.y + tBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sBox.x + sBox.width / 2, sBox.y + sBox.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(500);
+
+  // The slot should now be filled with "5" and no longer active
+  await expect(page.locator('.slot[data-index="1"].filled')).toBeAttached();
+});

@@ -12,7 +12,8 @@ export function tileBounceBack(el, origin, parentInfo) {
   return new Promise((resolve) => {
     const stage = document.getElementById("stage");
     const sRect = stage.getBoundingClientRect();
-    const scale = sRect.width / 1280;
+    const logicalW = stage.offsetWidth || 1280;
+    const scale = sRect.width / logicalW;
     const elRect = el.getBoundingClientRect();
     const startLocalX = (elRect.left - sRect.left) / scale;
     const startLocalY = (elRect.top  - sRect.top)  / scale;
@@ -95,7 +96,8 @@ export function correctBurst(slotEl) {
   if (!stage) return;
   const stageRect = stage.getBoundingClientRect();
   const slotRect = slotEl.getBoundingClientRect();
-  const scale = stageRect.width / 1280;
+  const logicalW = stage.offsetWidth || 1280;
+  const scale = stageRect.width / logicalW;
   const cx = (slotRect.left + slotRect.width / 2 - stageRect.left) / scale;
   const cy = (slotRect.top + slotRect.height / 2 - stageRect.top) / scale;
 
