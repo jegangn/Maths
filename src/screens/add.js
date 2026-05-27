@@ -118,7 +118,10 @@ export function mount(stage, ctx, router) {
     `;
     sec.dataset.problem = `${p.a}${p.op}${p.b}`;
 
-    // Position carry slot directly above the tens cell of the top row
+    // Position carry slot directly above the tens cell of the top row.
+    // Use bounding rects + the stage's actual scale (read from getBoundingClientRect
+    // vs. offsetWidth, which gives the rendered:logical ratio even when an outer
+    // flex container shrinks the stage before its own transform is applied).
     if (a.carry) {
       requestAnimationFrame(() => {
         const tensCell = ws.querySelector(".row.top .cell:nth-child(1)");
@@ -126,12 +129,14 @@ export function mount(stage, ctx, router) {
         if (tensCell && carrySlot) {
           const stageEl = document.getElementById("stage");
           const stageRect = stageEl.getBoundingClientRect();
-          const scale = stageRect.width / 1280;
+          const stageLogicalW = stageEl.offsetWidth || (stageEl.dataset.orient === "portrait" ? 720 : 1280);
+          const scale = stageRect.width / stageLogicalW;
           const tensRect = tensCell.getBoundingClientRect();
           const wsRect = ws.getBoundingClientRect();
           const tensLeftLocal = (tensRect.left - wsRect.left) / scale;
           const tensWidthLocal = tensRect.width / scale;
           const tensCenter = tensLeftLocal + tensWidthLocal / 2;
+          // Carry slot is 60px wide in CSS; subtract half-width to center it.
           carrySlot.style.left = `${tensCenter - 30}px`;
           carrySlot.style.top = "-72px";
           carrySlot.style.right = "auto";

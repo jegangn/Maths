@@ -166,3 +166,18 @@ test('settings modal in portrait: fits within viewport width', async ({ page }) 
   expect(card.width).toBeLessThanOrEqual(390 - 8);
   expect(card.x).toBeGreaterThanOrEqual(4);
 });
+
+test('addition carry slot lands above tens cell in portrait', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 3); // L3 has carry on every problem
+
+  await expect(page.locator('.carry-slot')).toBeAttached();
+  // After render, carry slot's horizontal center should match the tens cell's center (within ±10px)
+  const tens = await page.locator('.worksheet .row.top .cell').first().boundingBox();
+  const carry = await page.locator('.carry-slot').boundingBox();
+  const tensCenterX = tens.x + tens.width / 2;
+  const carryCenterX = carry.x + carry.width / 2;
+  expect(Math.abs(tensCenterX - carryCenterX)).toBeLessThan(10);
+});
