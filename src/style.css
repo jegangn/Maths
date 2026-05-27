@@ -56,6 +56,9 @@ html, body {
 #stage {
   position: relative;
   width: 1280px; height: 800px;
+  /* Prevent the flex parent from shrinking the stage below its declared
+     logical size — the transform-scale handles fit, not flex layout. */
+  flex-shrink: 0;
   transform-origin: center center;
   background: var(--world-sky);
   overflow: hidden;
@@ -894,10 +897,19 @@ button {
 
 #stage[data-orient="portrait"] .worksheet {
   left: 50%;
-  top: 140px;
+  /* Vertically positioned with room above for the carry slot and corner
+     mascot, and clear space below to the digit tray. */
+  top: 260px;
   transform: translateX(-50%);
   width: auto;
   height: auto;
+}
+/* Carry slot fallback positioning for portrait — JS in add.js fine-tunes
+   via requestAnimationFrame, but a sane default keeps the slot above the
+   tens column before/if RAF has fired. */
+#stage[data-orient="portrait"] .carry-slot {
+  top: -80px;
+  left: 0;
 }
 
 /* Digit tray: always wrap into 2 rows of 5 in portrait so tiles can be larger */
@@ -961,23 +973,24 @@ button {
   font-size: 32px;
 }
 #stage[data-orient="portrait"] .slot {
-  width: 88px;
-  height: 110px;
-  font-size: 80px;
+  width: 120px;
+  height: 150px;
+  font-size: 110px;
   border-width: 3px;
 }
 
-/* Worksheet cells shrink to match portrait scale */
+/* Worksheet cells — larger in portrait to give the math problem visual weight
+   and use the available vertical space between topbar and tray. */
 #stage[data-orient="portrait"] .worksheet .cell,
 #stage[data-orient="portrait"] .worksheet .row.bot .op {
-  width: 88px;
-  height: 110px;
-  font-size: 80px;
-  line-height: 110px;
+  width: 120px;
+  height: 150px;
+  font-size: 110px;
+  line-height: 150px;
 }
 #stage[data-orient="portrait"] .worksheet .line {
-  margin-left: 64px;
-  max-width: 200px;
+  margin-left: 92px;
+  max-width: 272px;
 }
 
 /* Topbar stays full-width but with smaller padding */
@@ -1022,7 +1035,8 @@ button {
 }
 #stage[data-orient="portrait"] .total-reveal {
   top: auto;
-  bottom: 160px;
+  /* Sits clearly above the digit tray (tray bottom-anchored at 16, height ~240). */
+  bottom: 290px;
   width: 280px;
   height: 90px;
   padding: 0 16px;
@@ -1056,9 +1070,12 @@ button {
   width: 48px;
   height: 48px;
 }
+/* Mult-drag portrait stacking (top→bottom): topbar, problem, group trays,
+   pile, answer host, digit tray. All visible at once per the simplified flow
+   in mult-drag.js (kid can answer immediately; pile is for counting only). */
 #stage[data-orient="portrait"] .block-pile {
-  top: auto;
-  bottom: 16px;
+  top: 540px;
+  bottom: auto;
   left: 16px;
   right: 16px;
   width: auto;
@@ -1067,9 +1084,9 @@ button {
   gap: 8px;
 }
 #stage[data-orient="portrait"] .ans-host {
-  top: auto;
-  bottom: 220px;
-  padding: 12px 16px;
+  top: 760px;
+  bottom: auto;
+  padding: 10px 16px;
 }
 #stage[data-orient="portrait"] .count-chip {
   font-size: 14px;
@@ -1102,7 +1119,12 @@ button {
   transform: translateX(-50%);
 }
 #stage[data-orient="portrait"] .complete-buttons .btn {
-  min-width: 240px;
+  /* Force all 3 buttons (ghost + success + ghost) to the same width.
+     Without this, flex column with align-items:normal stretches success
+     to fill the parent while min-width holds the ghosts at their floor,
+     producing wildly mismatched widths. */
+  width: 100%;
+  min-width: 0;
   height: 80px;
   font-size: 28px;
 }
