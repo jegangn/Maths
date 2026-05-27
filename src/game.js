@@ -17,25 +17,34 @@ const PORTRAIT = { w: 720, h: 1280 };
 // Aspect threshold: viewports wider than this (w/h > 1.2) use landscape.
 const PORTRAIT_ASPECT_THRESHOLD = 1.2;
 
+let lastOrient = null;
+
 function fitStage() {
   const vw = viewport.clientWidth;
   const vh = viewport.clientHeight;
   const isPortrait = (vw / vh) < PORTRAIT_ASPECT_THRESHOLD;
   const size = isPortrait ? PORTRAIT : LANDSCAPE;
-  stage.dataset.orient = isPortrait ? "portrait" : "landscape";
+  const nextOrient = isPortrait ? "portrait" : "landscape";
+
+  stage.dataset.orient = nextOrient;
   const scale = Math.min(vw / size.w, vh / size.h);
   stage.style.transform = `scale(${scale})`;
+
+  // Re-render active screen when orientation flips so JS-positioned elements recompute.
+  if (lastOrient !== null && lastOrient !== nextOrient && router.lastRoute) {
+    router.go(router.lastRoute.name, router.lastRoute.ctx);
+  }
+  lastOrient = nextOrient;
 }
-window.addEventListener("resize", fitStage);
-window.addEventListener("orientationchange", fitStage);
-fitStage();
 
 const state = { progress: loadProgress() };
 
 const router = {
   current: null,
+  lastRoute: null,
   go(name, ctx = {}) {
     if (this.current) this.current();
+    this.lastRoute = { name, ctx };
     let unmount;
     switch (name) {
       case "splash":
@@ -63,6 +72,10 @@ const router = {
     this.current = unmount;
   },
 };
+
+window.addEventListener("resize", fitStage);
+window.addEventListener("orientationchange", fitStage);
+fitStage();
 
 router.go("splash");
 window.__router = router;

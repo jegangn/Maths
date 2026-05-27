@@ -204,3 +204,23 @@ test('drag math works in portrait: dragging a digit tile lands on the active slo
   // The slot should now be filled with "5" and no longer active
   await expect(page.locator('.slot[data-index="1"].filled')).toBeAttached();
 });
+
+test('rotating from landscape to portrait re-renders active screen', async ({ page }) => {
+  await page.setViewportSize(TABLET_LANDSCAPE);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 3);
+  await expect(page.locator('#screen-add')).toBeVisible();
+
+  // Rotate to portrait
+  await page.setViewportSize(PHONE_PORTRAIT);
+  // After resize, screen should still be visible and carry slot still aligned
+  await page.waitForTimeout(200);
+  await expect(page.locator('#screen-add')).toBeVisible();
+
+  const tens = await page.locator('.worksheet .row.top .cell').first().boundingBox();
+  const carry = await page.locator('.carry-slot').boundingBox();
+  const tensCenterX = tens.x + tens.width / 2;
+  const carryCenterX = carry.x + carry.width / 2;
+  expect(Math.abs(tensCenterX - carryCenterX)).toBeLessThan(10);
+});
