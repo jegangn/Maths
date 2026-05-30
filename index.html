@@ -731,11 +731,18 @@ button {
 }
 .total-reveal.hidden { display: none; }
 .total-reveal .display { font-size: 32px; }
-.total-reveal .slot {
-  width: 72px; height: 88px;
-  font-size: 56px;
+/* The single mult answer slot holds a 1- OR 2-digit answer (e.g. "20"), so size
+   it to fit two digits without overflow — roomy but not oversized. Shared by the
+   tap-count TOTAL box and the drag-groups answer box (the latter otherwise falls
+   through to the base .slot whose 110px font clips two-digit answers). */
+.total-reveal .slot,
+.ans-host .slot {
+  width: 104px; height: 104px;
+  font-size: 60px;
   border-radius: var(--r-md);
 }
+/* "HOW MANY TOTAL?" was rendering at the default ~16px — bump it up to read clearly. */
+.ans-host .display { font-size: 30px; }
 .ans-slot-host { display: flex; gap: 8px; }
 
 /* ===== TASK 29: Multiplication Drag-Groups Level Screen ===== */
@@ -1085,14 +1092,18 @@ button {
   top: auto;
   /* Sits clearly above the digit tray (tray bottom-anchored at 16, height ~240). */
   bottom: 290px;
-  width: 280px;
-  height: 90px;
+  width: 296px;
+  height: 116px;
   padding: 0 16px;
 }
-#stage[data-orient="portrait"] .total-reveal .slot {
-  width: 56px;
-  height: 72px;
-  font-size: 44px;
+#stage[data-orient="portrait"] .total-reveal .slot,
+#stage[data-orient="portrait"] .ans-host .slot {
+  width: 96px;
+  height: 96px;
+  font-size: 56px;
+}
+#stage[data-orient="portrait"] .ans-host .display {
+  font-size: 27px;
 }
 /* Portrait: trays + pile live inside .play-col, which the layout engine centres
    in the band between the problem and the answer box (and scales down to fit
@@ -4214,7 +4225,7 @@ button {
   var router = {
     current: null,
     lastRoute: null,
-    go(name, ctx2 = {}) {
+    go(name, ctx2 = {}, opts = {}) {
       if (this.current) this.current();
       this.lastRoute = { name, ctx: ctx2 };
       let unmount;
@@ -4242,12 +4253,28 @@ button {
           console.warn("Unknown route:", name);
       }
       this.current = unmount;
+      if (!opts.fromPop) {
+        const entry = { mathRoute: { name, ctx: ctx2 } };
+        try {
+          if (opts.replace) history.replaceState(entry, "");
+          else history.pushState(entry, "");
+        } catch (_) {
+        }
+      }
     }
   };
+  window.addEventListener("popstate", (e) => {
+    const r = e.state && e.state.mathRoute;
+    if (r && r.name) {
+      router.go(r.name, r.ctx || {}, { fromPop: true });
+    } else {
+      router.go("splash", {}, { fromPop: true });
+    }
+  });
   window.addEventListener("resize", fitStage);
   window.addEventListener("orientationchange", fitStage);
   fitStage();
-  router.go("splash");
+  router.go("splash", {}, { replace: true });
   window.__router = router;
 })();
 
