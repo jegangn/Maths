@@ -3,6 +3,7 @@ import { createDragManager } from "../drag.js";
 import { tilePickup, tileBounceBack, tileSnapIn, animateBorrow } from "../animate.js";
 import { sfx } from "../audio.js";
 import { home, mo } from "../svg.js";
+import { layoutAddSub } from "../layout.js";
 
 export function mount(stage, ctx, router) {
   const { world, level } = ctx;
@@ -32,13 +33,16 @@ export function mount(stage, ctx, router) {
   sec.querySelector(".home-btn").addEventListener("pointerup", () => router.go("map"));
   sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", mo("idle"));
 
+  const relayout = () => layoutAddSub(stage, sec);
+
   renderProgressDots();
   renderTray();
   // IMPORTANT: append the section to the stage BEFORE running renderProblem.
   // animateBorrow reads offsetLeft/offsetWidth on the worksheet cells, which
   // both return 0 if the section isn't yet attached to the DOM.
   stage.appendChild(sec);
-  renderProblem().then(setupDrag);
+  window.__activeRelayout = relayout;
+  renderProblem().then(() => { setupDrag(); relayout(); });
 
   function renderProgressDots() {
     const d = sec.querySelector(".progress-dots");
@@ -60,6 +64,7 @@ export function mount(stage, ctx, router) {
       t.textContent = String(n);
       tray.appendChild(t);
     }
+    relayout();
   }
 
   async function renderProblem() {
@@ -98,6 +103,7 @@ export function mount(stage, ctx, router) {
     }
 
     syncTrayDim();
+    relayout();
   }
 
   function syncTrayDim() {
@@ -201,5 +207,8 @@ export function mount(stage, ctx, router) {
     }, 500);
   }
 
-  return () => sec.remove();
+  return () => {
+    if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+    sec.remove();
+  };
 }

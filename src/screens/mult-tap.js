@@ -3,6 +3,7 @@ import { createDragManager } from "../drag.js";
 import { tilePickup, tileBounceBack, tileSnapIn, tapBlock, blockFlyIn } from "../animate.js";
 import { home, pip, lilypad, firefly } from "../svg.js";
 import { sfx } from "../audio.js";
+import { layoutMultTap } from "../layout.js";
 
 // Build a sequential 10..max compound-tile range so the kid sees a clear
 // counting ladder. Range goes from 10 up to at least 20, extending if the
@@ -43,6 +44,8 @@ export function mount(stage, ctx, router) {
   sec.querySelector(".home-btn").insertAdjacentHTML("beforeend", home());
   sec.querySelector(".home-btn").addEventListener("pointerup", () => router.go("map"));
   sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", pip("idle"));
+
+  const relayout = () => layoutMultTap(stage, sec);
 
   renderProgressDots();
   renderProblem();
@@ -101,6 +104,7 @@ export function mount(stage, ctx, router) {
     // answer right away if they already know it. Tapping the bees is still
     // available for counting practice but is no longer required to reveal.
     showReveal();
+    relayout();
   }
 
   function onBlockTap(wrap) {
@@ -203,5 +207,10 @@ export function mount(stage, ctx, router) {
   }
 
   stage.appendChild(sec);
-  return () => sec.remove();
+  window.__activeRelayout = relayout;
+  relayout();
+  return () => {
+    if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+    sec.remove();
+  };
 }

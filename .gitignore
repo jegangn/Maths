@@ -4,3 +4,6 @@ dist/
 *.log
 *.err
 .bun
+test-results/
+playwright-report/
+.claude/worktrees/

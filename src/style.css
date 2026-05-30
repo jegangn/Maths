@@ -727,6 +727,10 @@ button {
 .ans-slot-host { display: flex; gap: 8px; }
 
 /* ===== TASK 29: Multiplication Drag-Groups Level Screen ===== */
+/* Wrapper around the counting trays + mango pile. Landscape: transparent, so
+   the children keep their original absolute layout. Portrait: see the portrait
+   section, where it becomes a centred flex column the layout engine fits. */
+.play-col { display: contents; }
 .group-row {
   position: absolute; top: 220px; left: 100px; width: 1080px;
   display: flex; gap: 60px; justify-content: center;
@@ -829,17 +833,22 @@ button {
 /* ===== PORTRAIT REFLOW ===== */
 
 #stage[data-orient="portrait"] .splash-title {
-  top: 80px;
-  font-size: 72px;
+  top: 96px;
+  font-size: 76px;
   letter-spacing: 1px;
 }
+/* Centre the hero mascot in the canvas (was pinned near the top, leaving a big
+   empty void below). Bigger, too, so it fills the space and the screen reads
+   as balanced: title up top, mascot in the middle, play button at the bottom. */
 #stage[data-orient="portrait"] .splash-mascot {
-  top: 240px;
-  width: 320px;
-  height: 320px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 384px;
+  height: 384px;
 }
 #stage[data-orient="portrait"] .splash-play {
-  bottom: 180px;
+  bottom: 150px;
 }
 #stage[data-orient="portrait"] .splash-play.btn.pill {
   min-width: 360px;
@@ -866,28 +875,31 @@ button {
 #stage[data-orient="portrait"] .world-grid {
   grid-template-columns: 1fr;
   grid-template-rows: repeat(3, 1fr);
-  padding: 96px 24px 24px;
-  gap: 16px;
+  padding: 92px 20px 24px;
+  gap: 20px;
 }
 #stage[data-orient="portrait"] .world-panel {
-  padding: 12px;
+  padding: 14px 16px;
 }
 #stage[data-orient="portrait"] .world-title {
-  font-size: 24px;
-  margin: 0 0 8px;
+  font-size: 28px;
+  margin: 0 0 10px;
 }
 #stage[data-orient="portrait"] .level-path {
-  grid-template-columns: repeat(3, 80px);
-  grid-template-rows: repeat(2, 80px);
-  gap: 12px 20px;
-  height: calc(100% - 36px);
+  /* Bigger nodes with more generous gaps so each panel feels open and the
+     level buttons are easy targets for little fingers, rather than a tight
+     cluster lost in the middle of the panel. */
+  grid-template-columns: repeat(3, 96px);
+  grid-template-rows: repeat(2, 96px);
+  gap: 16px 28px;
+  height: calc(100% - 42px);
   align-content: center;
   justify-content: center;
 }
 #stage[data-orient="portrait"] .level-node {
-  width: 80px;
-  height: 80px;
-  font-size: 36px;
+  width: 96px;
+  height: 96px;
+  font-size: 42px;
   border-width: 4px;
 }
 #stage[data-orient="portrait"] .level-node.locked svg {
@@ -959,11 +971,13 @@ button {
 }
 
 #stage[data-orient="portrait"] .corner-mascot {
-  top: 84px;
+  top: 78px;
   right: 12px;
   bottom: auto;
-  width: 120px;
-  height: 120px;
+  /* ~1.4× bigger so the buddy reads clearly on a phone. Sits top-right, clear
+     of the centred equation (which spans ~200–520 of the 720 canvas). */
+  width: 168px;
+  height: 168px;
 }
 #stage[data-orient="portrait"] #screen-add.two-row-active .corner-mascot,
 #stage[data-orient="portrait"] #screen-sub.two-row-active .corner-mascot {
@@ -1031,14 +1045,17 @@ button {
   font-size: 54px;
 }
 #stage[data-orient="portrait"] .firefly-area {
-  flex-direction: column;
-  /* Vertically centred between problem (top) and total-reveal/tray (bottom). */
+  /* Wrap lily-pads into a 2-wide grid so 3–4 groups stay compact instead of a
+     tall single column. The layout engine re-centres this and scales to fit. */
+  flex-flow: row wrap;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 240px;
+  width: 432px;
   height: auto;
-  gap: 12px;
+  gap: 14px 12px;
+  justify-content: center;
+  align-content: center;
 }
 #stage[data-orient="portrait"] .lily-group {
   width: 200px;
@@ -1065,13 +1082,23 @@ button {
   height: 72px;
   font-size: 44px;
 }
-#stage[data-orient="portrait"] .group-row {
+/* Portrait: trays + pile live inside .play-col, which the layout engine centres
+   in the band between the problem and the answer box (and scales down to fit
+   short phones). They flow in-column here rather than being absolutely pinned. */
+#stage[data-orient="portrait"] .play-col {
+  display: flex;
   flex-direction: column;
-  top: 200px;
-  left: 16px;
-  right: 16px;
-  width: auto;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
+  width: calc(100% - 32px);
+}
+#stage[data-orient="portrait"] .group-row {
+  position: static;
+  top: auto; left: auto; right: auto;
+  transform: none;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
 }
 #stage[data-orient="portrait"] .group-tray {
   min-width: 0;
@@ -1095,15 +1122,14 @@ button {
    Block-pile is centred vertically and answer host is anchored above the
    tray so they distribute evenly on any phone height. */
 #stage[data-orient="portrait"] .block-pile {
-  top: 50%;
-  bottom: auto;
-  left: 16px;
-  right: 16px;
-  width: auto;
-  height: 180px;
+  position: static;
+  top: auto; bottom: auto; left: auto; right: auto;
+  transform: none;
+  width: 100%;
+  height: auto;
+  min-height: 0;
   padding: 12px;
   gap: 8px;
-  transform: translateY(-50%);
 }
 #stage[data-orient="portrait"] .ans-host {
   /* Sits clearly above the digit tray. Mult answers can include compound
@@ -1132,11 +1158,11 @@ button {
 }
 #stage[data-orient="portrait"] .complete-mascot {
   /* Vertically centred between the star meter (top) and the buttons (bottom),
-     adapts to any phone height. */
+     adapts to any phone height. Enlarged to fill the celebration space. */
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
+  width: 232px;
+  height: 232px;
 }
 #stage[data-orient="portrait"] .complete-buttons {
   flex-direction: column;

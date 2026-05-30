@@ -3,6 +3,7 @@ import { createDragManager } from "../drag.js";
 import { tilePickup, tileBounceBack, tileSnapIn, flyCarry } from "../animate.js";
 import { sfx } from "../audio.js";
 import { home, banji } from "../svg.js";
+import { layoutAddSub } from "../layout.js";
 
 export function mount(stage, ctx, router) {
   const { world, level } = ctx;
@@ -31,6 +32,8 @@ export function mount(stage, ctx, router) {
   sec.querySelector(".home-btn").insertAdjacentHTML("beforeend", home());
   sec.querySelector(".home-btn").addEventListener("pointerup", () => router.go("map"));
   sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", banji("idle"));
+
+  const relayout = () => layoutAddSub(stage, sec);
 
   renderProgressDots();
   renderTray();
@@ -91,6 +94,7 @@ export function mount(stage, ctx, router) {
         tray.appendChild(t);
       }
     }
+    relayout();
   }
 
   function renderProblem() {
@@ -145,6 +149,7 @@ export function mount(stage, ctx, router) {
     }
 
     syncTrayDim();
+    relayout();
   }
 
   function syncTrayDim() {
@@ -343,5 +348,10 @@ export function mount(stage, ctx, router) {
   }
 
   stage.appendChild(sec);
-  return () => sec.remove();
+  window.__activeRelayout = relayout;
+  relayout();
+  return () => {
+    if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+    sec.remove();
+  };
 }

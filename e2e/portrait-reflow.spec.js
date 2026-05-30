@@ -51,10 +51,15 @@ test('splash in portrait: title top, mascot middle, play button bottom', async (
   expect(play.x + play.width / 2).toBeGreaterThan(vw / 2 - 30);
   expect(play.x + play.width / 2).toBeLessThan(vw / 2 + 30);
 
-  // Portrait-specific sizing: mascot is 320 (not 340 landscape), play button height is 110 (not 120).
-  // At PHONE_PORTRAIT scale (~0.542) the difference is real but small — generous tolerance.
-  expect(mascot.height).toBeLessThan(180); // portrait 320 * 0.542 ≈ 173; landscape 340 * 0.542 ≈ 184
-  expect(play.height).toBeLessThan(63);    // portrait 110 * 0.542 ≈ 60;  landscape 120 * 0.542 ≈ 65
+  // Mascot is centred + enlarged (384 logical ≈ 208px at this scale) so the
+  // splash reads as balanced rather than top-heavy with a void below it.
+  expect(mascot.height).toBeGreaterThan(190);
+  expect(mascot.height).toBeLessThan(230);
+  // It sits roughly in the vertical middle of the 844px viewport.
+  const mascotCenterY = mascot.y + mascot.height / 2;
+  expect(mascotCenterY).toBeGreaterThan(844 * 0.34);
+  expect(mascotCenterY).toBeLessThan(844 * 0.62);
+  expect(play.height).toBeLessThan(63); // portrait play button 110 * 0.542 ≈ 60
 });
 
 test('world map in portrait: 3 panels stacked vertically (not side-by-side)', async ({ page }) => {
@@ -99,7 +104,7 @@ test('addition level in portrait: worksheet centered, tray pinned bottom, tile >
   expect(tile.height).toBeGreaterThanOrEqual(44);
 });
 
-test('mult tap-count in portrait: 3 lily-pads stacked vertically', async ({ page }) => {
+test('mult tap-count in portrait: lily-pads wrap into a 2-wide grid', async ({ page }) => {
   await page.setViewportSize(PHONE_PORTRAIT);
   await page.goto('/');
   await unlockAll(page);
@@ -110,9 +115,12 @@ test('mult tap-count in portrait: 3 lily-pads stacked vertically', async ({ page
   expect(pads.length).toBe(3);
 
   const boxes = await Promise.all(pads.map((p) => p.boundingBox()));
-  // Stacked vertically: pad[1].top > pad[0].top + some delta
-  expect(boxes[1].y).toBeGreaterThan(boxes[0].y + 20);
-  expect(boxes[2].y).toBeGreaterThan(boxes[1].y + 20);
+  // 2-wide grid: pad[1] sits to the RIGHT of pad[0] on the same row;
+  // pad[2] wraps to the next row below. (Keeps 3–4 groups compact instead of
+  // a tall single column that would crowd the answer box on short phones.)
+  expect(boxes[1].x).toBeGreaterThan(boxes[0].x + 20);
+  expect(Math.abs(boxes[1].y - boxes[0].y)).toBeLessThan(30);
+  expect(boxes[2].y).toBeGreaterThan(boxes[0].y + 20);
 });
 
 test('mult drag-groups in portrait: 3 group trays stacked + block pile below', async ({ page }) => {
@@ -243,4 +251,100 @@ test('full smoke: iPhone SE can complete addition L1 problem 1 (12+3)', async ({
   const dots = await page.locator('.dot').all();
   await expect(dots[0]).toHaveClass(/filled/);
   await expect(dots[1]).toHaveClass(/current/);
+});
+
+// ---------------------------------------------------------------------------
+// Point 2 regression: the number pad must never cover the answer box, for any
+// tile count or phone height. These reproduce the exact reported screenshots.
+// ---------------------------------------------------------------------------
+
+// Drag a mult option tile (data-value) onto the active answer slot.
+async function dragValueToSlot(page, value) {
+  const tile = page.locator(`.tile[data-value="${value}"]`).first();
+  const slot = page.locator('.slot.active').first();
+  const tb = await tile.boundingBox();
+  const sb = await slot.boundingBox();
+  await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(800);
+}
+
+test('mult tap-count ≥10: TOTAL box clears the tray (reported screenshot 1)', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'mult', 3); // 4×N — drive past 4×1, 4×2 to reach 4×3 = 12
+  await dragValueToSlot(page, 4);
+  await dragValueToSlot(page, 8);
+  await page.waitForTimeout(300);
+
+  // Now showing 4×3 = 12 → compound options 10–20 (11 tiles, 3 rows).
+  const reveal = await page.locator('.total-reveal').boundingBox();
+  const tray = await page.locator('.digit-tray').boundingBox();
+  const slot = await page.locator('.total-reveal .slot').first().boundingBox();
+  expect(reveal.y + reveal.height).toBeLessThanOrEqual(tray.y + 1);
+  expect(slot.y).toBeGreaterThanOrEqual(reveal.y - 1);
+  expect(slot.y + slot.height).toBeLessThanOrEqual(reveal.y + reveal.height + 1);
+  // Option tiles stay a usable size.
+  const tile = await page.locator('.digit-tray .tile').first().boundingBox();
+  expect(tile.height).toBeGreaterThanOrEqual(44);
+});
+
+test('mult drag-groups: answer box clears the 16-tile tray', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'mult', 6); // first problem 5×4 = 20 → options 10–20 (16 tiles)
+  const ans = await page.locator('.ans-host').boundingBox();
+  const tray = await page.locator('.digit-tray').boundingBox();
+  expect(ans.y + ans.height).toBeLessThanOrEqual(tray.y + 1);
+});
+
+test('addition carry on iPhone SE: answer slots clear the tray (reported screenshot 2)', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 3); // carry on every problem → tall two-row tray
+  const slot = await page.locator('.slot.active').boundingBox();
+  const tray = await page.locator('.digit-tray').boundingBox();
+  expect(slot.y + slot.height).toBeLessThanOrEqual(tray.y + 1);
+});
+
+// ---------------------------------------------------------------------------
+// Point 1 regression: dragging a tile must not reflow the rest of the palette.
+// The dragged original is hidden in place (its slot reserved); a clone flies.
+// ---------------------------------------------------------------------------
+test('point 1: dragging a tile does not shift the other tiles', async ({ page }) => {
+  await page.setViewportSize(PHONE_PORTRAIT);
+  await page.goto('/');
+  await unlockAll(page);
+  await goToLevel(page, 'add', 1);
+  await expect(page.locator('#screen-add')).toBeVisible();
+
+  const snapshot = () => page.locator('.digit-tray .tile').evaluateAll((els) =>
+    els.map((e) => {
+      const r = e.getBoundingClientRect();
+      return { d: e.dataset.digit, x: Math.round(r.x), y: Math.round(r.y) };
+    })
+  );
+
+  const before = await snapshot();
+  const five = page.locator('.tile[data-digit="5"]').first();
+  const fb = await five.boundingBox();
+  await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(180, 320, { steps: 10 }); // drag well away from the tray
+  await page.waitForTimeout(60);
+
+  const during = await snapshot(); // tray still holds all 10 tiles in place
+  await page.mouse.up();
+
+  expect(during.length).toBe(before.length);
+  for (let i = 0; i < before.length; i++) {
+    expect(during[i].d).toBe(before[i].d);
+    expect(Math.abs(during[i].x - before[i].x)).toBeLessThanOrEqual(1);
+    expect(Math.abs(during[i].y - before[i].y)).toBeLessThanOrEqual(1);
+  }
 });

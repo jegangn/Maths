@@ -50,23 +50,28 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
     const offsetY = pointerLocal.y - tileLocalTop;
     const origin = { x: tileLocalLeft, y: tileLocalTop };
 
-    // Save original DOM position so bounce-back can restore it
-    const originalParent = sourceEl.parentNode;
-    const originalNextSibling = sourceEl.nextSibling;
+    // Drag a CLONE and keep the ORIGINAL tile in its tray slot, just hidden, so
+    // the palette never reflows. The original "disappears" for the duration of
+    // the drag (its space is reserved) and reappears the moment the drag ends —
+    // whether the value lands in the answer or bounces back. Digits stay
+    // reusable and the tray layout is perfectly stable.
+    const dragEl = sourceEl.cloneNode(true);
+    dragEl.classList.add("drag-clone");
+    dragEl.classList.remove("dim", "hint-dim", "hint-target");
+    dragEl.style.position = "absolute";
+    dragEl.style.left = `${origin.x}px`;
+    dragEl.style.top  = `${origin.y}px`;
+    dragEl.style.margin = "0";
+    dragEl.style.pointerEvents = "none";
+    stage.appendChild(dragEl);
 
-    dragging = { sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId,
-                 originalParent, originalNextSibling };
+    sourceEl.style.visibility = "hidden";
+
+    dragging = { dragEl, sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId };
     sourceEl.setPointerCapture?.(e.pointerId);
-    onPickup?.(payload, sourceEl);
+    onPickup?.(payload, dragEl);
 
-    // Re-parent to #stage so absolute positioning is relative to the stage,
-    // not to the digit-tray. Set position before appending to avoid flicker.
-    sourceEl.style.position = "absolute";
-    sourceEl.style.left = `${origin.x}px`;
-    sourceEl.style.top  = `${origin.y}px`;
-    stage.appendChild(sourceEl);
-
-    sourceEl.classList.add("dragging");
+    dragEl.classList.add("dragging");
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", end);
     window.addEventListener("pointercancel", end);
@@ -74,26 +79,28 @@ export function createDragManager({ getTargets, onPickup, onDrop }) {
 
   function move(e) {
     if (!dragging || e.pointerId !== dragging.pointerId) return;
-    const { sourceEl, offsetX, offsetY } = dragging;
+    const { dragEl, offsetX, offsetY } = dragging;
     const p = toStageLocal(e.clientX, e.clientY);
-    sourceEl.style.position = "absolute";
-    sourceEl.style.left = `${p.x - offsetX}px`;
-    sourceEl.style.top  = `${p.y - offsetY}px`;
+    dragEl.style.left = `${p.x - offsetX}px`;
+    dragEl.style.top  = `${p.y - offsetY}px`;
   }
 
   function end(e) {
     if (!dragging || e.pointerId !== dragging.pointerId) return;
-    const { sourceEl, payload, origin, originalParent, originalNextSibling } = dragging;
+    const { dragEl, sourceEl, payload, origin } = dragging;
     const targets = getTargets();
     // Targets use viewport-pixel rects (from getBoundingClientRect on slots).
     // Pointer event is in viewport pixels too. Hit-test stays in viewport space.
     const target = findDropTarget(targets, e.clientX, e.clientY, 40);
-    sourceEl.classList.remove("dragging");
+    dragEl.classList.remove("dragging");
+    // Reveal the original tile again — it never left its tray slot.
+    sourceEl.style.visibility = "";
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", end);
     window.removeEventListener("pointercancel", end);
     dragging = null;
-    onDrop?.(payload, target, sourceEl, origin, { originalParent, originalNextSibling });
+    // The clone carries the snap-in / bounce-back animation, then removes itself.
+    onDrop?.(payload, target, dragEl, origin, { sourceEl });
   }
 
   return { start };

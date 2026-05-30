@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "math-game",
+      "runtimeExecutable": "C:/Users/JeganGN/.bun/bin/bun.exe",
+      "runtimeArgs": ["dev.js"],
+      "port": 5173
+    }
+  ]
+}

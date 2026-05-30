@@ -25,6 +25,10 @@ let lastOrient = null;
 function fitStage() {
   const vw = viewport.clientWidth;
   const vh = viewport.clientHeight;
+  // A 0-sized viewport (can happen for one frame at load) would compute
+  // scale(0) and blank the whole game until the next resize. Skip until the
+  // viewport has real dimensions.
+  if (!vw || !vh) return;
   const isPortrait = (vw / vh) < PORTRAIT_ASPECT_THRESHOLD;
   const nextOrient = isPortrait ? "portrait" : "landscape";
   stage.dataset.orient = nextOrient;
@@ -53,6 +57,11 @@ function fitStage() {
     router.go(router.lastRoute.name, router.lastRoute.ctx);
   }
   lastOrient = nextOrient;
+
+  // Let the active gameplay screen re-run its portrait layout pass for plain
+  // resizes (browser height change, on-screen keyboard) that don't flip
+  // orientation — orientation flips already re-render above.
+  if (typeof window.__activeRelayout === "function") window.__activeRelayout();
 }
 
 const state = { progress: loadProgress() };

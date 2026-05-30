@@ -30,6 +30,14 @@ export function tileBounceBack(el, origin, parentInfo) {
       ],
       { duration: 450, easing: "cubic-bezier(0.7,-0.5,0.3,1.5)" }
     ).onfinish = () => {
+      // Clone-drag: the original tile is already visible back in its tray slot,
+      // so the bounced clone simply removes itself. (The legacy re-parent path
+      // is kept for any caller still passing originalParent.)
+      if (el.classList.contains("drag-clone")) {
+        el.remove();
+        resolve();
+        return;
+      }
       el.style.position = "";
       el.style.left = "";
       el.style.top = "";

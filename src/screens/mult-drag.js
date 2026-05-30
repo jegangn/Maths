@@ -3,6 +3,7 @@ import { createDragManager } from "../drag.js";
 import { tilePickup, tileBounceBack, tileSnapIn } from "../animate.js";
 import { home, pip, mango } from "../svg.js";
 import { sfx } from "../audio.js";
+import { layoutMultDrag } from "../layout.js";
 
 function compoundOptions(correct) {
   const max = Math.max(20, correct);
@@ -63,13 +64,22 @@ export function mount(stage, ctx, router) {
   cornerMascot.className = "corner-mascot";
   cornerMascot.insertAdjacentHTML("beforeend", pip("idle"));
 
+  // In portrait the counting trays + mango pile are stacked and centred as a
+  // single unit (scaled to fit short phones); in landscape `.play-col` is
+  // transparent (display:contents) so the children keep their absolute layout.
+  const playCol = document.createElement("div");
+  playCol.className = "play-col";
+  playCol.appendChild(groupRow);
+  playCol.appendChild(blockPile);
+
   sec.appendChild(topbar);
   sec.appendChild(multProblem);
-  sec.appendChild(groupRow);
-  sec.appendChild(blockPile);
+  sec.appendChild(playCol);
   sec.appendChild(ansHost);
   sec.appendChild(digitTray);
   sec.appendChild(cornerMascot);
+
+  const relayout = () => layoutMultDrag(stage, sec);
 
   renderProgressDots();
   renderProblem();
@@ -181,6 +191,7 @@ export function mount(stage, ctx, router) {
         }
       },
     });
+    relayout();
   }
 
   // Tapping a pile mango flies a copy into the next empty group slot.
@@ -297,5 +308,10 @@ export function mount(stage, ctx, router) {
   }
 
   stage.appendChild(sec);
-  return () => sec.remove();
+  window.__activeRelayout = relayout;
+  relayout();
+  return () => {
+    if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+    sec.remove();
+  };
 }
