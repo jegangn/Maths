@@ -69,7 +69,7 @@ const state = { progress: loadProgress() };
 const router = {
   current: null,
   lastRoute: null,
-  go(name, ctx = {}) {
+  go(name, ctx = {}, opts = {}) {
     if (this.current) this.current();
     this.lastRoute = { name, ctx };
     let unmount;
@@ -97,12 +97,36 @@ const router = {
         console.warn("Unknown route:", name);
     }
     this.current = unmount;
+
+    // Mirror navigation into browser history so the device/browser Back button
+    // walks back THROUGH the game (level → map → splash) instead of leaving the
+    // site. Calls that replay an existing entry (fromPop) must not push again.
+    if (!opts.fromPop) {
+      const entry = { mathRoute: { name, ctx } };
+      try {
+        if (opts.replace) history.replaceState(entry, "");
+        else history.pushState(entry, "");
+      } catch (_) { /* history unavailable — navigation still works */ }
+    }
   },
 };
+
+// Device/browser Back button → step back through the game rather than leaving.
+window.addEventListener("popstate", (e) => {
+  const r = e.state && e.state.mathRoute;
+  if (r && r.name) {
+    router.go(r.name, r.ctx || {}, { fromPop: true });
+  } else {
+    // Backed out past the first screen — keep the kid on the home screen
+    // instead of letting Back fall through to a different page.
+    router.go("splash", {}, { fromPop: true });
+  }
+});
 
 window.addEventListener("resize", fitStage);
 window.addEventListener("orientationchange", fitStage);
 fitStage();
 
-router.go("splash");
+// Seed exactly one base history entry for the home screen.
+router.go("splash", {}, { replace: true });
 window.__router = router;
