@@ -739,6 +739,10 @@ button {
 .ans-slot-host { display: flex; gap: 8px; }
 
 /* ===== TASK 29: Multiplication Drag-Groups Level Screen ===== */
+/* Wrapper around the counting trays + mango pile. Landscape: transparent, so
+   the children keep their original absolute layout. Portrait: see the portrait
+   section, where it becomes a centred flex column the layout engine fits. */
+.play-col { display: contents; }
 .group-row {
   position: absolute; top: 220px; left: 100px; width: 1080px;
   display: flex; gap: 60px; justify-content: center;
@@ -841,17 +845,22 @@ button {
 /* ===== PORTRAIT REFLOW ===== */
 
 #stage[data-orient="portrait"] .splash-title {
-  top: 80px;
-  font-size: 72px;
+  top: 96px;
+  font-size: 76px;
   letter-spacing: 1px;
 }
+/* Centre the hero mascot in the canvas (was pinned near the top, leaving a big
+   empty void below). Bigger, too, so it fills the space and the screen reads
+   as balanced: title up top, mascot in the middle, play button at the bottom. */
 #stage[data-orient="portrait"] .splash-mascot {
-  top: 240px;
-  width: 320px;
-  height: 320px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 384px;
+  height: 384px;
 }
 #stage[data-orient="portrait"] .splash-play {
-  bottom: 180px;
+  bottom: 150px;
 }
 #stage[data-orient="portrait"] .splash-play.btn.pill {
   min-width: 360px;
@@ -878,28 +887,31 @@ button {
 #stage[data-orient="portrait"] .world-grid {
   grid-template-columns: 1fr;
   grid-template-rows: repeat(3, 1fr);
-  padding: 96px 24px 24px;
-  gap: 16px;
+  padding: 92px 20px 24px;
+  gap: 20px;
 }
 #stage[data-orient="portrait"] .world-panel {
-  padding: 12px;
+  padding: 14px 16px;
 }
 #stage[data-orient="portrait"] .world-title {
-  font-size: 24px;
-  margin: 0 0 8px;
+  font-size: 28px;
+  margin: 0 0 10px;
 }
 #stage[data-orient="portrait"] .level-path {
-  grid-template-columns: repeat(3, 80px);
-  grid-template-rows: repeat(2, 80px);
-  gap: 12px 20px;
-  height: calc(100% - 36px);
+  /* Bigger nodes with more generous gaps so each panel feels open and the
+     level buttons are easy targets for little fingers, rather than a tight
+     cluster lost in the middle of the panel. */
+  grid-template-columns: repeat(3, 96px);
+  grid-template-rows: repeat(2, 96px);
+  gap: 16px 28px;
+  height: calc(100% - 42px);
   align-content: center;
   justify-content: center;
 }
 #stage[data-orient="portrait"] .level-node {
-  width: 80px;
-  height: 80px;
-  font-size: 36px;
+  width: 96px;
+  height: 96px;
+  font-size: 42px;
   border-width: 4px;
 }
 #stage[data-orient="portrait"] .level-node.locked svg {
@@ -971,11 +983,13 @@ button {
 }
 
 #stage[data-orient="portrait"] .corner-mascot {
-  top: 84px;
+  top: 78px;
   right: 12px;
   bottom: auto;
-  width: 120px;
-  height: 120px;
+  /* ~1.4× bigger so the buddy reads clearly on a phone. Sits top-right, clear
+     of the centred equation (which spans ~200–520 of the 720 canvas). */
+  width: 168px;
+  height: 168px;
 }
 #stage[data-orient="portrait"] #screen-add.two-row-active .corner-mascot,
 #stage[data-orient="portrait"] #screen-sub.two-row-active .corner-mascot {
@@ -1043,14 +1057,17 @@ button {
   font-size: 54px;
 }
 #stage[data-orient="portrait"] .firefly-area {
-  flex-direction: column;
-  /* Vertically centred between problem (top) and total-reveal/tray (bottom). */
+  /* Wrap lily-pads into a 2-wide grid so 3–4 groups stay compact instead of a
+     tall single column. The layout engine re-centres this and scales to fit. */
+  flex-flow: row wrap;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 240px;
+  width: 432px;
   height: auto;
-  gap: 12px;
+  gap: 14px 12px;
+  justify-content: center;
+  align-content: center;
 }
 #stage[data-orient="portrait"] .lily-group {
   width: 200px;
@@ -1077,13 +1094,23 @@ button {
   height: 72px;
   font-size: 44px;
 }
-#stage[data-orient="portrait"] .group-row {
+/* Portrait: trays + pile live inside .play-col, which the layout engine centres
+   in the band between the problem and the answer box (and scales down to fit
+   short phones). They flow in-column here rather than being absolutely pinned. */
+#stage[data-orient="portrait"] .play-col {
+  display: flex;
   flex-direction: column;
-  top: 200px;
-  left: 16px;
-  right: 16px;
-  width: auto;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
+  width: calc(100% - 32px);
+}
+#stage[data-orient="portrait"] .group-row {
+  position: static;
+  top: auto; left: auto; right: auto;
+  transform: none;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
 }
 #stage[data-orient="portrait"] .group-tray {
   min-width: 0;
@@ -1107,15 +1134,14 @@ button {
    Block-pile is centred vertically and answer host is anchored above the
    tray so they distribute evenly on any phone height. */
 #stage[data-orient="portrait"] .block-pile {
-  top: 50%;
-  bottom: auto;
-  left: 16px;
-  right: 16px;
-  width: auto;
-  height: 180px;
+  position: static;
+  top: auto; bottom: auto; left: auto; right: auto;
+  transform: none;
+  width: 100%;
+  height: auto;
+  min-height: 0;
   padding: 12px;
   gap: 8px;
-  transform: translateY(-50%);
 }
 #stage[data-orient="portrait"] .ans-host {
   /* Sits clearly above the digit tray. Mult answers can include compound
@@ -1144,11 +1170,11 @@ button {
 }
 #stage[data-orient="portrait"] .complete-mascot {
   /* Vertically centred between the star meter (top) and the buttons (bottom),
-     adapts to any phone height. */
+     adapts to any phone height. Enlarged to fill the celebration space. */
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 180px;
-  height: 180px;
+  width: 232px;
+  height: 232px;
 }
 #stage[data-orient="portrait"] .complete-buttons {
   flex-direction: column;
@@ -2060,48 +2086,43 @@ button {
       const offsetX = pointerLocal.x - tileLocalLeft;
       const offsetY = pointerLocal.y - tileLocalTop;
       const origin = { x: tileLocalLeft, y: tileLocalTop };
-      const originalParent = sourceEl.parentNode;
-      const originalNextSibling = sourceEl.nextSibling;
-      dragging = {
-        sourceEl,
-        payload,
-        origin,
-        offsetX,
-        offsetY,
-        pointerId: e.pointerId,
-        originalParent,
-        originalNextSibling
-      };
+      const dragEl = sourceEl.cloneNode(true);
+      dragEl.classList.add("drag-clone");
+      dragEl.classList.remove("dim", "hint-dim", "hint-target");
+      dragEl.style.position = "absolute";
+      dragEl.style.left = `${origin.x}px`;
+      dragEl.style.top = `${origin.y}px`;
+      dragEl.style.margin = "0";
+      dragEl.style.pointerEvents = "none";
+      stage2.appendChild(dragEl);
+      sourceEl.style.visibility = "hidden";
+      dragging = { dragEl, sourceEl, payload, origin, offsetX, offsetY, pointerId: e.pointerId };
       sourceEl.setPointerCapture?.(e.pointerId);
-      onPickup?.(payload, sourceEl);
-      sourceEl.style.position = "absolute";
-      sourceEl.style.left = `${origin.x}px`;
-      sourceEl.style.top = `${origin.y}px`;
-      stage2.appendChild(sourceEl);
-      sourceEl.classList.add("dragging");
+      onPickup?.(payload, dragEl);
+      dragEl.classList.add("dragging");
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", end);
       window.addEventListener("pointercancel", end);
     }
     function move(e) {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
-      const { sourceEl, offsetX, offsetY } = dragging;
+      const { dragEl, offsetX, offsetY } = dragging;
       const p = toStageLocal(e.clientX, e.clientY);
-      sourceEl.style.position = "absolute";
-      sourceEl.style.left = `${p.x - offsetX}px`;
-      sourceEl.style.top = `${p.y - offsetY}px`;
+      dragEl.style.left = `${p.x - offsetX}px`;
+      dragEl.style.top = `${p.y - offsetY}px`;
     }
     function end(e) {
       if (!dragging || e.pointerId !== dragging.pointerId) return;
-      const { sourceEl, payload, origin, originalParent, originalNextSibling } = dragging;
+      const { dragEl, sourceEl, payload, origin } = dragging;
       const targets = getTargets();
       const target = findDropTarget(targets, e.clientX, e.clientY, 40);
-      sourceEl.classList.remove("dragging");
+      dragEl.classList.remove("dragging");
+      sourceEl.style.visibility = "";
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", end);
       window.removeEventListener("pointercancel", end);
       dragging = null;
-      onDrop?.(payload, target, sourceEl, origin, { originalParent, originalNextSibling });
+      onDrop?.(payload, target, dragEl, origin, { sourceEl });
     }
     return { start };
   }
@@ -2133,6 +2154,11 @@ button {
         ],
         { duration: 450, easing: "cubic-bezier(0.7,-0.5,0.3,1.5)" }
       ).onfinish = () => {
+        if (el.classList.contains("drag-clone")) {
+          el.remove();
+          resolve();
+          return;
+        }
         el.style.position = "";
         el.style.left = "";
         el.style.top = "";
@@ -2856,6 +2882,161 @@ button {
     }
   }
 
+  // src/layout.js
+  var TRAY_BOTTOM = 16;
+  var BOX_GAP = 20;
+  var BAND_PAD = 14;
+  var MAX_W = 112;
+  var MIN_W = 84;
+  var RATIO = 0.87;
+  function isPortrait(stage2) {
+    return stage2.dataset.orient === "portrait";
+  }
+  function stageScale(stage2) {
+    const r = stage2.getBoundingClientRect();
+    return r.width / (stage2.offsetWidth || 720);
+  }
+  function logicalRect(stage2, el) {
+    const s = stageScale(stage2) || 1;
+    const sr = stage2.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return {
+      top: (r.top - sr.top) / s,
+      bottom: (r.bottom - sr.top) / s,
+      height: r.height / s
+    };
+  }
+  function maxTrayHeight(H) {
+    return Math.min(H * 0.42, 420);
+  }
+  function setTileSizes(tiles, w) {
+    const h = Math.round(w * RATIO);
+    for (const t of tiles) {
+      t.style.width = `${w}px`;
+      t.style.height = `${h}px`;
+      const compound = t.classList.contains("compound");
+      t.style.fontSize = `${Math.round(w * (compound ? 0.43 : 0.5))}px`;
+    }
+  }
+  function clearTileSizes(tiles) {
+    for (const t of tiles) {
+      t.style.width = "";
+      t.style.height = "";
+      t.style.fontSize = "";
+    }
+  }
+  function fitTray(stage2, tray, maxH) {
+    const tiles = tray.querySelectorAll(".tile");
+    if (!tiles.length) return 0;
+    tray.style.height = "auto";
+    let w = MAX_W;
+    for (; w > MIN_W; w -= 2) {
+      setTileSizes(tiles, w);
+      if (tray.offsetHeight <= maxH) break;
+    }
+    setTileSizes(tiles, w);
+    const h = tray.offsetHeight;
+    tray.style.height = `${h}px`;
+    return h;
+  }
+  function centerPlay(stage2, el, bandTop, bandBottom, scaleToFit) {
+    if (!el) return;
+    el.style.position = "absolute";
+    el.style.left = "50%";
+    el.style.transform = "none";
+    el.style.top = "";
+    const natH = el.offsetHeight;
+    const bandH = Math.max(0, bandBottom - bandTop);
+    let s = 1;
+    if (scaleToFit && natH > bandH && natH > 0) s = bandH / natH;
+    const center = (bandTop + bandBottom) / 2;
+    el.style.top = `${center}px`;
+    el.style.transform = `translate(-50%, -50%) scale(${s})`;
+  }
+  function clearInline(el, props) {
+    if (!el) return;
+    for (const p of props) el.style[p] = "";
+  }
+  function headerBottom(stage2, sec) {
+    const problem = sec.querySelector(".mult-problem");
+    const mascot = sec.querySelector(".corner-mascot");
+    return Math.max(
+      problem ? logicalRect(stage2, problem).bottom : 0,
+      mascot ? logicalRect(stage2, mascot).bottom : 0
+    );
+  }
+  function layoutAddSub(stage2, sec) {
+    if (!sec || !sec.isConnected) return;
+    const tray = sec.querySelector(".digit-tray");
+    const ws = sec.querySelector(".worksheet");
+    if (!isPortrait(stage2)) {
+      if (tray) {
+        clearTileSizes(tray.querySelectorAll(".tile"));
+        tray.style.height = "";
+      }
+      clearInline(ws, ["position", "left", "top", "transform"]);
+      return;
+    }
+    const H = stage2.offsetHeight;
+    if (H < 400 || !tray || !ws) return;
+    const trayH = fitTray(stage2, tray, maxTrayHeight(H));
+    const bandTop = logicalRect(stage2, sec.querySelector(".topbar")).bottom + BAND_PAD;
+    const bandBottom = H - TRAY_BOTTOM - trayH - BAND_PAD;
+    centerPlay(stage2, ws, bandTop, bandBottom, false);
+  }
+  function layoutMultTap(stage2, sec) {
+    if (!sec || !sec.isConnected) return;
+    const tray = sec.querySelector(".digit-tray");
+    const reveal = sec.querySelector(".total-reveal");
+    const firefly2 = sec.querySelector(".firefly-area");
+    if (!isPortrait(stage2)) {
+      if (tray) {
+        clearTileSizes(tray.querySelectorAll(".tile"));
+        tray.style.height = "";
+      }
+      clearInline(reveal, ["bottom", "top"]);
+      clearInline(firefly2, ["position", "left", "top", "transform"]);
+      return;
+    }
+    const H = stage2.offsetHeight;
+    if (H < 400 || !tray) return;
+    const trayH = fitTray(stage2, tray, maxTrayHeight(H));
+    if (reveal && !reveal.classList.contains("hidden")) {
+      reveal.style.top = "auto";
+      reveal.style.bottom = `${TRAY_BOTTOM + trayH + BOX_GAP}px`;
+    }
+    const bandTop = headerBottom(stage2, sec) + BAND_PAD;
+    const boxTop = reveal ? logicalRect(stage2, reveal).top : H - TRAY_BOTTOM - trayH;
+    centerPlay(stage2, firefly2, bandTop, boxTop - BAND_PAD, true);
+  }
+  function layoutMultDrag(stage2, sec) {
+    if (!sec || !sec.isConnected) return;
+    const tray = sec.querySelector(".digit-tray");
+    const ansHost = sec.querySelector(".ans-host");
+    const playCol = sec.querySelector(".play-col");
+    if (!isPortrait(stage2)) {
+      if (tray) {
+        clearTileSizes(tray.querySelectorAll(".tile"));
+        tray.style.height = "";
+      }
+      clearInline(ansHost, ["bottom", "top"]);
+      clearInline(playCol, ["position", "left", "top", "transform"]);
+      return;
+    }
+    const H = stage2.offsetHeight;
+    if (H < 400 || !tray) return;
+    const trayHidden = tray.classList.contains("hidden");
+    const trayH = trayHidden ? 0 : fitTray(stage2, tray, maxTrayHeight(H));
+    let boxTop = H - TRAY_BOTTOM - trayH;
+    if (ansHost && !ansHost.classList.contains("hidden")) {
+      ansHost.style.top = "auto";
+      ansHost.style.bottom = `${TRAY_BOTTOM + trayH + BOX_GAP}px`;
+      boxTop = logicalRect(stage2, ansHost).top;
+    }
+    const bandTop = headerBottom(stage2, sec) + BAND_PAD;
+    centerPlay(stage2, playCol, bandTop, boxTop - BAND_PAD, true);
+  }
+
   // src/screens/add.js
   function mount3(stage2, ctx2, router2) {
     const { world, level } = ctx2;
@@ -2882,6 +3063,7 @@ button {
     sec.querySelector(".home-btn").insertAdjacentHTML("beforeend", home());
     sec.querySelector(".home-btn").addEventListener("pointerup", () => router2.go("map"));
     sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", banji("idle"));
+    const relayout = () => layoutAddSub(stage2, sec);
     renderProgressDots();
     renderTray();
     renderProblem();
@@ -2932,6 +3114,7 @@ button {
           tray.appendChild(t);
         }
       }
+      relayout();
     }
     function renderProblem() {
       trayWrongOnCurrentSlot = 0;
@@ -2978,6 +3161,7 @@ button {
         });
       }
       syncTrayDim();
+      relayout();
     }
     function syncTrayDim() {
       sec.querySelectorAll(".tile").forEach((tile) => {
@@ -3150,7 +3334,12 @@ button {
       }, 500);
     }
     stage2.appendChild(sec);
-    return () => sec.remove();
+    window.__activeRelayout = relayout;
+    relayout();
+    return () => {
+      if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+      sec.remove();
+    };
   }
 
   // src/screens/sub.js
@@ -3179,10 +3368,15 @@ button {
     sec.querySelector(".home-btn").insertAdjacentHTML("beforeend", home());
     sec.querySelector(".home-btn").addEventListener("pointerup", () => router2.go("map"));
     sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", mo("idle"));
+    const relayout = () => layoutAddSub(stage2, sec);
     renderProgressDots();
     renderTray();
     stage2.appendChild(sec);
-    renderProblem().then(setupDrag);
+    window.__activeRelayout = relayout;
+    renderProblem().then(() => {
+      setupDrag();
+      relayout();
+    });
     function renderProgressDots() {
       const d = sec.querySelector(".progress-dots");
       d.innerHTML = "";
@@ -3202,6 +3396,7 @@ button {
         t.textContent = String(n);
         tray.appendChild(t);
       }
+      relayout();
     }
     async function renderProblem() {
       trayWrongOnCurrentSlot = 0;
@@ -3237,6 +3432,7 @@ button {
         });
       }
       syncTrayDim();
+      relayout();
     }
     function syncTrayDim() {
       sec.querySelectorAll(".tile").forEach((tile) => {
@@ -3335,7 +3531,10 @@ button {
         });
       }, 500);
     }
-    return () => sec.remove();
+    return () => {
+      if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+      sec.remove();
+    };
   }
 
   // src/screens/mult-tap.js
@@ -3372,6 +3571,7 @@ button {
     sec.querySelector(".home-btn").insertAdjacentHTML("beforeend", home());
     sec.querySelector(".home-btn").addEventListener("pointerup", () => router2.go("map"));
     sec.querySelector(".corner-mascot").insertAdjacentHTML("beforeend", pip("idle"));
+    const relayout = () => layoutMultTap(stage2, sec);
     renderProgressDots();
     renderProblem();
     function renderProgressDots() {
@@ -3421,6 +3621,7 @@ button {
       }
       blockFlyIn(blockEls);
       showReveal();
+      relayout();
     }
     function onBlockTap(wrap) {
       const id = `${wrap.dataset.groupIndex}-${wrap.dataset.blockIndex}`;
@@ -3522,7 +3723,12 @@ button {
       });
     }
     stage2.appendChild(sec);
-    return () => sec.remove();
+    window.__activeRelayout = relayout;
+    relayout();
+    return () => {
+      if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+      sec.remove();
+    };
   }
 
   // src/screens/mult-drag.js
@@ -3575,13 +3781,17 @@ button {
     const cornerMascot = document.createElement("div");
     cornerMascot.className = "corner-mascot";
     cornerMascot.insertAdjacentHTML("beforeend", pip("idle"));
+    const playCol = document.createElement("div");
+    playCol.className = "play-col";
+    playCol.appendChild(groupRow);
+    playCol.appendChild(blockPile);
     sec.appendChild(topbar);
     sec.appendChild(multProblem);
-    sec.appendChild(groupRow);
-    sec.appendChild(blockPile);
+    sec.appendChild(playCol);
     sec.appendChild(ansHost);
     sec.appendChild(digitTray);
     sec.appendChild(cornerMascot);
+    const relayout = () => layoutMultDrag(stage2, sec);
     renderProgressDots();
     renderProblem();
     function renderProgressDots() {
@@ -3684,6 +3894,7 @@ button {
           }
         }
       });
+      relayout();
     }
     function onPileTap(srcMango) {
       const gIdx = groupContents.findIndex((g) => g.filled < g.needed);
@@ -3785,7 +3996,12 @@ button {
       );
     }
     stage2.appendChild(sec);
-    return () => sec.remove();
+    window.__activeRelayout = relayout;
+    relayout();
+    return () => {
+      if (window.__activeRelayout === relayout) window.__activeRelayout = null;
+      sec.remove();
+    };
   }
 
   // src/screens/complete.js
@@ -3970,11 +4186,12 @@ button {
   function fitStage() {
     const vw = viewport.clientWidth;
     const vh = viewport.clientHeight;
-    const isPortrait = vw / vh < PORTRAIT_ASPECT_THRESHOLD;
-    const nextOrient = isPortrait ? "portrait" : "landscape";
+    if (!vw || !vh) return;
+    const isPortrait2 = vw / vh < PORTRAIT_ASPECT_THRESHOLD;
+    const nextOrient = isPortrait2 ? "portrait" : "landscape";
     stage.dataset.orient = nextOrient;
     let scale;
-    if (isPortrait) {
+    if (isPortrait2) {
       scale = vw / PORTRAIT_W;
       const logicalH = vh / scale;
       stage.style.width = `${PORTRAIT_W}px`;
@@ -3991,6 +4208,7 @@ button {
       router.go(router.lastRoute.name, router.lastRoute.ctx);
     }
     lastOrient = nextOrient;
+    if (typeof window.__activeRelayout === "function") window.__activeRelayout();
   }
   var state = { progress: loadProgress() };
   var router = {
