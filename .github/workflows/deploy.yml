@@ -21,13 +21,16 @@ jobs:
       - name: Install dev deps
         run: bun install --frozen-lockfile || bun install
 
-      - name: Build single-file dist
+      - name: Build single-file index.html
         run: bun build.js
+
+      - name: Stage site for Pages
+        run: mkdir -p _site && cp index.html _site/index.html
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./_site
           publish_branch: gh-pages
           commit_message: "deploy: ${{ github.event.head_commit.message }}"

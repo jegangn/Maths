@@ -3,8 +3,8 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const SRC = "src";
-const OUT = "dist";
-mkdirSync(OUT, { recursive: true });
+const OUT = ".";
+if (OUT !== ".") mkdirSync(OUT, { recursive: true });
 
 const bundled = spawnSync("bunx", ["esbuild", "src/game.js", "--bundle", "--format=iife", "--target=es2020"], {
   encoding: "utf8",
