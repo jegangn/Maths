@@ -1,30 +1,30 @@
 :root {
-  --bg-paper: #FFF3DC;
-  --bg-card: #FFFAF0;
-  --ink: #2A1B0A;
-  --ink-soft: #6A4B28;
-  --success: #4AD66D;
-  --success-deep: #1F8A3E;
+  --bg-paper: #EFDDB4;
+  --bg-card: #FFF7E2;
+  --ink: #2B1A0B;
+  --ink-soft: #7A5622;
+  --success: #41C167;
+  --success-deep: #1B7E36;
   --gentle-no: #FF7A40;
-  --star: #FFC83A;
-  --star-glow: #FFF1A8;
-  --lock: #A89878;
+  --star: #FFC230;
+  --star-glow: #FFF0A0;
+  --lock: #9C8C6E;
 
-  --world-primary: #FFB933;
+  --world-primary: #FFB42E;
   --world-accent: #FF7A40;
-  --world-sky: #7DD2F0;
-  --world-ground: #4AAE3F;
+  --world-sky: #79CFE0;
+  --world-ground: #3E9E3A;
 
   --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px;
   --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px;
   --s-9: 96px; --s-10: 128px; --s-11: 160px;
 
-  --r-sm: 12px; --r-md: 20px; --r-lg: 32px; --r-xl: 48px; --r-pill: 9999px;
+  --r-sm: 14px; --r-md: 24px; --r-lg: 36px; --r-xl: 52px; --r-pill: 9999px;
 
-  --sh-1: 0 3px 0 #C8985A, 0 4px 10px rgba(120,70,20,.18);
-  --sh-2: 0 6px 0 #B07A40, 0 8px 18px rgba(120,70,20,.24);
-  --sh-3: 0 8px 0 #B07A40, 0 14px 26px rgba(120,70,20,.28);
-  --sh-pressed: 0 2px 0 #B07A40, 0 3px 6px rgba(120,70,20,.2);
+  --sh-1: 0 3px 0 #C79152, 0 5px 12px rgba(58,34,8,.22);
+  --sh-2: 0 6px 0 #A86A2C, 0 10px 20px rgba(58,34,8,.26);
+  --sh-3: 0 9px 0 #A86A2C, 0 16px 30px rgba(58,34,8,.30);
+  --sh-pressed: 0 2px 0 #A86A2C, 0 3px 7px rgba(58,34,8,.22);
 
   --ease-pop: cubic-bezier(0.34, 1.6, 0.5, 1);
   --ease-soft: cubic-bezier(0.45, 0.05, 0.25, 1);
@@ -33,9 +33,9 @@
   --ease-arc: cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-#stage[data-world="add"]  { --world-primary:#FFB933; --world-accent:#FF7A40; --world-sky:#7DD2F0; --world-ground:#4AAE3F; }
-#stage[data-world="sub"]  { --world-primary:#3DC5C5; --world-accent:#4A9EFF; --world-sky:#A8E5E5; --world-ground:#5FAF9A; }
-#stage[data-world="mult"] { --world-primary:#E89A2A; --world-accent:#7AB344; --world-sky:#F8D27A; --world-ground:#8A6A2E; }
+#stage[data-world="add"]  { --world-primary:#FFB42E; --world-accent:#FF7A40; --world-sky:#79CFE0; --world-ground:#3E9E3A; }
+#stage[data-world="sub"]  { --world-primary:#2FBEBE; --world-accent:#4A9EFF; --world-sky:#9FE2DF; --world-ground:#4FA88F; }
+#stage[data-world="mult"] { --world-primary:#E0921F; --world-accent:#79AE3C; --world-sky:#F6CE74; --world-ground:#7A5A24; }
 
 * { box-sizing: border-box; }
 html, body {
@@ -60,7 +60,9 @@ html, body {
      logical size — the transform-scale handles fit, not flex layout. */
   flex-shrink: 0;
   transform-origin: center center;
-  background: var(--world-sky);
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--world-sky) 55%, #fff) 0%, transparent 60%),
+    linear-gradient(180deg, color-mix(in srgb, var(--world-sky) 88%, #fff) 0%, var(--world-sky) 100%);
   overflow: hidden;
   touch-action: none;
 }
@@ -77,9 +79,9 @@ html, body {
 .tile {
   width: 96px; height: 96px;
   border-radius: var(--r-md);
-  background: var(--bg-card);
+  background: linear-gradient(180deg, #FFFDF4 0%, var(--bg-card) 60%, color-mix(in srgb, var(--bg-card) 88%, var(--ink) 12%) 100%);
   border: 4px solid var(--ink);
-  box-shadow: var(--sh-2);
+  box-shadow: var(--sh-2), inset 0 4px 0 rgba(255,255,255,.7), inset 0 -5px 0 rgba(120,70,20,.10);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
   font-weight: 700;
@@ -217,10 +219,10 @@ html, body {
   border-width: 4px !important;
   border-style: solid !important;
   border-color: var(--ink) !important;
-  background: var(--world-primary); color: var(--ink);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--world-primary) 72%, #fff) 0%, var(--world-primary) 52%, color-mix(in srgb, var(--world-primary) 82%, var(--ink) 18%) 100%); color: var(--ink);
   font-family: 'Lilita One', system-ui; font-size: 36px;
   cursor: pointer; user-select: none;
-  box-shadow: var(--sh-3);
+  box-shadow: var(--sh-3), inset 0 5px 0 rgba(255,255,255,.45), inset 0 -7px 0 rgba(120,60,10,.14);
   transition: transform .08s var(--ease-pop), box-shadow .08s var(--ease-pop);
   padding: 0 32px;
   /* Always crisp — no browser focus ring, tap highlight, hover fade, or
@@ -250,8 +252,8 @@ button {
   opacity: .55 !important;
 }
 .btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
-.btn.ghost  { background: var(--bg-card); }
-.btn.success{ background: var(--success); color: #fff; }
+.btn.ghost  { background: linear-gradient(180deg, #FFFDF4, var(--bg-card)); }
+.btn.success{ background: linear-gradient(180deg, color-mix(in srgb, var(--success) 75%, #fff), var(--success) 55%, var(--success-deep)); color: #fff; }
 .btn:disabled, .btn.disabled {
   opacity: .55; cursor: not-allowed; box-shadow: none;
   background: var(--ink-soft);
@@ -437,7 +439,9 @@ button {
 
 /* ===== TASK 24: Splash Screen ===== */
 #screen-splash {
-  background: linear-gradient(to bottom, var(--world-sky) 0%, var(--world-sky) 60%, var(--world-ground) 60%, var(--world-ground) 100%);
+  background:
+    radial-gradient(80% 50% at 50% 12%, rgba(255,255,255,.5), transparent 60%),
+    linear-gradient(to bottom, color-mix(in srgb, var(--world-sky) 80%, #fff) 0%, var(--world-sky) 52%, var(--world-ground) 60%, color-mix(in srgb, var(--world-ground) 85%, var(--ink) 15%) 100%);
 }
 .splash-title {
   position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
@@ -481,7 +485,7 @@ button {
 
 /* ===== TASK 25: World Map Screen ===== */
 #screen-map {
-  background: linear-gradient(to bottom, #FFF3DC 0%, #F7E2B0 100%);
+  background: linear-gradient(to bottom, #FBEFCD 0%, #ECD7A4 100%);
   padding: 80px 24px 24px;
 }
 .home-btn {
@@ -507,9 +511,10 @@ button {
   gap: 24px; height: 100%; padding: 120px 24px 24px;
 }
 .world-panel {
-  background: var(--bg-card);
+  background: linear-gradient(180deg, #FFFBEE 0%, var(--bg-card) 100%);
   border: 5px solid var(--ink);
   border-radius: var(--r-lg);
+  box-shadow: var(--sh-1), inset 0 0 0 3px rgba(255,255,255,.5);
   padding: 16px; position: relative; overflow: hidden;
 }
 .world-title { text-align: center; font-size: 28px; margin: 0 0 12px; }
@@ -526,12 +531,12 @@ button {
   width: 100px; height: 100px;
   border-radius: 50%;
   border: 5px solid var(--ink);
-  background: var(--world-primary);
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--world-primary) 60%, #fff), var(--world-primary) 72%);
   color: #fff;
   font-family: 'Lilita One', system-ui; font-size: 48px;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; position: relative;
-  box-shadow: var(--sh-1);
+  box-shadow: var(--sh-1), inset 0 4px 0 rgba(255,255,255,.4), inset 0 -6px 0 rgba(120,60,10,.15);
 }
 .level-node.locked { background: var(--lock); cursor: default; }
 .level-node.locked svg { width: 56px; height: 56px; }
@@ -550,7 +555,7 @@ button {
 
 /* ===== TASK 26: Addition Level Screen ===== */
 #screen-add, #screen-sub {
-  background: var(--world-sky);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--world-sky) 82%, #fff) 0%, var(--world-sky) 68%, color-mix(in srgb, var(--world-ground) 55%, var(--world-sky) 45%) 100%);
   padding: 0;
 }
 .topbar {
@@ -642,7 +647,7 @@ button {
 .corner-mascot svg { width: 100%; height: 100%; }
 
 /* ===== TASK 28: Multiplication Tap-Count Level Screen ===== */
-#screen-mult-tap, #screen-mult-drag { background: var(--world-sky); }
+#screen-mult-tap, #screen-mult-drag { background: linear-gradient(180deg, color-mix(in srgb, var(--world-sky) 82%, #fff), var(--world-sky)); }
 .mult-problem {
   position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
   display: flex; gap: 16px; align-items: center;
@@ -799,7 +804,7 @@ button {
 .digit-tray.hidden { display: none; }
 
 /* ===== TASK 30: Complete Screen ===== */
-#screen-complete { background: var(--world-sky); }
+#screen-complete { background: radial-gradient(100% 70% at 50% 0%, color-mix(in srgb, var(--world-sky) 55%, #fff), var(--world-sky)); }
 .complete-title {
   position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
   font-size: 80px; text-shadow: 0 4px 0 var(--world-primary);
