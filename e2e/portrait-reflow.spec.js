@@ -284,13 +284,10 @@ test('mult tap-count ≥10: TOTAL box clears the tray (reported screenshot 1)', 
   await dragValueToSlot(page, 8);
   await page.waitForTimeout(300);
 
-  // Now showing 4×3 = 12 → compound options 10–20 (11 tiles, 3 rows).
-  const reveal = await page.locator('.total-reveal').boundingBox();
+  // Now showing 4×3 = 12 → compound options. The answer box (after "=") clears the tray.
+  const box = await page.locator('.mult-problem .op-chip.q.slot').boundingBox();
   const tray = await page.locator('.digit-tray').boundingBox();
-  const slot = await page.locator('.total-reveal .slot').first().boundingBox();
-  expect(reveal.y + reveal.height).toBeLessThanOrEqual(tray.y + 1);
-  expect(slot.y).toBeGreaterThanOrEqual(reveal.y - 1);
-  expect(slot.y + slot.height).toBeLessThanOrEqual(reveal.y + reveal.height + 1);
+  expect(box.y + box.height).toBeLessThanOrEqual(tray.y + 1);
   // Option tiles stay a usable size.
   const tile = await page.locator('.digit-tray .tile').first().boundingBox();
   expect(tile.height).toBeGreaterThanOrEqual(44);
@@ -300,10 +297,10 @@ test('mult drag-groups: answer box clears the 16-tile tray', async ({ page }) =>
   await page.setViewportSize(PHONE_PORTRAIT);
   await page.goto('/');
   await unlockAll(page);
-  await goToLevel(page, 'mult', 6); // first problem 5×4 = 20 → options 10–20 (16 tiles)
-  const ans = await page.locator('.ans-host').boundingBox();
+  await goToLevel(page, 'mult', 6); // first problem 5×4 = 20 → compound options
+  const box = await page.locator('.mult-problem .op-chip.q.slot').boundingBox();
   const tray = await page.locator('.digit-tray').boundingBox();
-  expect(ans.y + ans.height).toBeLessThanOrEqual(tray.y + 1);
+  expect(box.y + box.height).toBeLessThanOrEqual(tray.y + 1);
 });
 
 test('addition carry on iPhone SE: answer slots clear the tray (reported screenshot 2)', async ({ page }) => {

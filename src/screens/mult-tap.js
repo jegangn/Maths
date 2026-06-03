@@ -37,7 +37,6 @@ export function mount(stage, ctx, router) {
     </div>
     <div class="mult-problem"></div>
     <div class="firefly-area"></div>
-    <div class="total-reveal hidden"><span class="display">TOTAL</span><div class="ans-slot-host"></div></div>
     <div class="digit-tray"></div>
     <div class="corner-mascot"></div>
   `;
@@ -72,7 +71,7 @@ export function mount(stage, ctx, router) {
       <div class="op-sym display">×</div>
       <div class="op-chip display">${p.b}</div>
       <div class="op-sym display">=</div>
-      <div class="op-chip q display">?</div>
+      <div class="op-chip q slot active display" data-index="0"></div>
     `;
 
     const area = sec.querySelector(".firefly-area");
@@ -101,10 +100,10 @@ export function mount(stage, ctx, router) {
     area.dataset.groups = String(p.b);           // drives the 5-group CSS tier
     blockFlyIn(blockEls);
 
-    // Show the answer panel + digit tray immediately so the kid can drag the
-    // answer right away if they already know it. Tapping the bees is still
-    // available for counting practice but is no longer required to reveal.
-    showReveal();
+    // The answer box (after "=") and the digit tray are shown immediately so the
+    // kid can drop the answer straight away. Tapping the bees is still available
+    // for counting practice but is no longer required.
+    buildTray();
     relayout();
   }
 
@@ -116,19 +115,8 @@ export function mount(stage, ctx, router) {
     tapBlock(wrap, globalCount);
   }
 
-  function showReveal() {
+  function buildTray() {
     const p = problems[idx];
-    const reveal = sec.querySelector(".total-reveal");
-    const host = reveal.querySelector(".ans-slot-host");
-    // Single answer slot — whether the answer is one digit or two, the
-    // kid drags a single tile (digit tile for <10, compound tile for ≥10).
-    host.innerHTML = `<div class="slot active" data-index="0"></div>`;
-    reveal.classList.remove("hidden");
-    reveal.animate(
-      [{ opacity: 0, transform: "translateY(20px) scale(0.9)" }, { opacity: 1, transform: "translateY(0) scale(1)" }],
-      { duration: 400, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
-    );
-
     const tray = sec.querySelector(".digit-tray");
     tray.innerHTML = "";
     tray.classList.remove("two-row");

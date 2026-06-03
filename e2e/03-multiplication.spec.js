@@ -27,7 +27,7 @@ test('Firefly Meadow L1: problem equation displayed correctly', async ({ page })
   const chips = page.locator('.op-chip');
   await expect(chips.nth(0)).toHaveText('2');
   await expect(chips.nth(1)).toHaveText('1');
-  await expect(page.locator('.op-chip.q')).toHaveText('?');
+  await expect(page.locator('.mult-problem .op-chip.q.slot.active')).toBeVisible();
 });
 
 test('Firefly Meadow tap-count flow: tap all blocks reveals answer panel', async ({ page }) => {
@@ -47,9 +47,8 @@ test('Firefly Meadow tap-count flow: tap all blocks reveals answer panel', async
     await page.waitForTimeout(150);
   }
 
-  // Total reveal panel should appear
-  await expect(page.locator('.total-reveal:not(.hidden)')).toBeVisible({ timeout: 3000 });
-  // Digit tray should now be populated
+  // Answer box (after "=") is the active drop target; digit tray is populated.
+  await expect(page.locator('.mult-problem .op-chip.q.slot.active')).toBeVisible();
   await expect(page.locator('.digit-tray .tile')).toHaveCount(10);
 });
 

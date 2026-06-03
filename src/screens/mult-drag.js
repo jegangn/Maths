@@ -47,16 +47,6 @@ export function mount(stage, ctx, router) {
   const blockPile = document.createElement("div");
   blockPile.className = "block-pile";
 
-  const ansHost = document.createElement("div");
-  ansHost.className = "ans-host hidden";
-  const ansLabel = document.createElement("span");
-  ansLabel.className = "display";
-  ansLabel.textContent = "HOW MANY TOTAL?";
-  const ansSlotHost = document.createElement("div");
-  ansSlotHost.className = "ans-slot-host";
-  ansHost.appendChild(ansLabel);
-  ansHost.appendChild(ansSlotHost);
-
   const digitTray = document.createElement("div");
   digitTray.className = "digit-tray hidden";
 
@@ -75,7 +65,6 @@ export function mount(stage, ctx, router) {
   sec.appendChild(topbar);
   sec.appendChild(multProblem);
   sec.appendChild(playCol);
-  sec.appendChild(ansHost);
   sec.appendChild(digitTray);
   sec.appendChild(cornerMascot);
 
@@ -112,8 +101,8 @@ export function mount(stage, ctx, router) {
     symEq.className = "op-sym display";
     symEq.textContent = "=";
     const chipQ = document.createElement("div");
-    chipQ.className = "op-chip q display";
-    chipQ.textContent = "?";
+    chipQ.className = "op-chip q slot active display";
+    chipQ.dataset.index = "0";
     multProblem.appendChild(chipA);
     multProblem.appendChild(symMult);
     multProblem.appendChild(chipB);
@@ -154,12 +143,6 @@ export function mount(stage, ctx, router) {
       blockPile.appendChild(wrap);
     }
 
-    // Show the answer panel + digit tray immediately so the kid can drag the
-    // answer right away if they already know it. Filling group trays with
-    // blocks is still available for counting practice but no longer gates
-    // the answer reveal.
-    setupAnswerArea();
-
     dragMgr = createDragManager({
       getTargets() {
         return Array.from(sec.querySelectorAll(".slot")).map((el) => ({
@@ -191,6 +174,8 @@ export function mount(stage, ctx, router) {
         }
       },
     });
+    // Tray must be built after dragMgr exists (tiles wire onpointerdown to it).
+    buildTray();
     relayout();
   }
 
@@ -251,18 +236,11 @@ export function mount(stage, ctx, router) {
     };
   }
 
-  // Build the answer slot + digit tray. Called at the start of every
-  // problem. Single slot whether the answer is one digit or two — the kid
-  // drags one tile (digit for <10, compound for ≥10).
-  function setupAnswerArea() {
+  // Build the digit tray. The answer slot is the box after "=" in the equation
+  // (built in renderProblem); the kid drags one tile (digit for <10, compound
+  // for ≥10) straight into it.
+  function buildTray() {
     const p = problems[idx];
-    ansSlotHost.textContent = "";
-    const slot = document.createElement("div");
-    slot.className = "slot active";
-    slot.dataset.index = "0";
-    ansSlotHost.appendChild(slot);
-    ansHost.classList.remove("hidden");
-
     digitTray.classList.remove("hidden", "two-row");
     digitTray.textContent = "";
     if (p.answer >= 10) {
@@ -298,8 +276,8 @@ export function mount(stage, ctx, router) {
   }
 
   // Fade the group row when all groups have been filled — a visual cue
-  // that the counting step is done. The answer slots / tiles are already
-  // visible (created in setupAnswerArea at problem start).
+  // that the counting step is done. The answer box (after "=") and the tiles
+  // are already visible (built at problem start).
   function showAnswerPhase() {
     groupRowFade = groupRow.animate(
       [{ opacity: 1 }, { opacity: 0.4 }],

@@ -661,6 +661,11 @@ button {
   font-size: 96px; box-shadow: var(--sh-2);
 }
 .op-chip.q { border-style: dashed; background: transparent; animation: slotPulse 1.8s var(--ease-soft) infinite; }
+/* The "?" box after "=" is the answer drop slot. Keep op-chip dimensions but
+   shrink the glyph so a two-digit answer (e.g. "20") fits. Dashed pulsing while
+   active (from .op-chip.q + .slot.active); solid once filled. */
+.mult-problem .op-chip.q.slot { width: 120px; height: 130px; font-size: 64px; }
+.mult-problem .op-chip.q.slot.filled { border-style: solid; border-color: var(--ink); }
 .op-sym { font-size: 80px; color: var(--ink); }
 .firefly-area {
   position: absolute; top: 240px; left: 80px; width: 1120px; height: 260px;
@@ -722,30 +727,6 @@ button {
 .firefly-area[data-groups="5"] .lily-group { width: 196px; height: 196px; }
 .firefly-area[data-groups="5"] .block-grid .block-host { width: 60px; height: 60px; }
 .firefly-area[data-groups="5"] .block-grid[data-count="5"] .block-host { width: 48px; height: 48px; }
-.total-reveal {
-  position: absolute; top: 520px; left: 50%; transform: translateX(-50%);
-  width: 380px; height: 120px;
-  background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
-  display: flex; align-items: center; justify-content: center; gap: 16px;
-  box-shadow: var(--sh-2);
-  padding: 0 24px;
-}
-.total-reveal.hidden { display: none; }
-.total-reveal .display { font-size: 32px; }
-/* The single mult answer slot holds a 1- OR 2-digit answer (e.g. "20"), so size
-   it to fit two digits without overflow — roomy but not oversized. Shared by the
-   tap-count TOTAL box and the drag-groups answer box (the latter otherwise falls
-   through to the base .slot whose 110px font clips two-digit answers). */
-.total-reveal .slot,
-.ans-host .slot {
-  width: 104px; height: 104px;
-  font-size: 60px;
-  border-radius: var(--r-md);
-}
-/* "HOW MANY TOTAL?" was rendering at the default ~16px — bump it up to read clearly. */
-.ans-host .display { font-size: 30px; }
-.ans-slot-host { display: flex; gap: 8px; }
-
 /* ===== TASK 29: Multiplication Drag-Groups Level Screen ===== */
 /* Wrapper around the counting trays + mango pile. Landscape: transparent, so
    the children keep their original absolute layout. Portrait: see the portrait
@@ -802,13 +783,6 @@ button {
   background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
   padding: 24px; align-items: center; justify-content: center;
 }
-.ans-host {
-  position: absolute; top: 390px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 16px; align-items: center;
-  background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
-  padding: 16px 24px; box-shadow: var(--sh-2);
-}
-.ans-host.hidden { display: none; }
 .digit-tray.hidden { display: none; }
 
 /* ===== TASK 30: Complete Screen ===== */
@@ -1089,23 +1063,7 @@ button {
   width: 46px;
   height: 46px;
 }
-#stage[data-orient="portrait"] .total-reveal {
-  top: auto;
-  /* Sits clearly above the digit tray (tray bottom-anchored at 16, height ~240). */
-  bottom: 290px;
-  width: 296px;
-  height: 116px;
-  padding: 0 16px;
-}
-#stage[data-orient="portrait"] .total-reveal .slot,
-#stage[data-orient="portrait"] .ans-host .slot {
-  width: 96px;
-  height: 96px;
-  font-size: 56px;
-}
-#stage[data-orient="portrait"] .ans-host .display {
-  font-size: 27px;
-}
+#stage[data-orient="portrait"] .mult-problem .op-chip.q.slot { width: 80px; height: 90px; font-size: 44px; }
 /* Portrait: trays + pile live inside .play-col, which the layout engine centres
    in the band between the problem and the answer box (and scales down to fit
    short phones). They flow in-column here rather than being absolutely pinned. */
@@ -1154,14 +1112,6 @@ button {
   min-height: 0;
   padding: 12px;
   gap: 8px;
-}
-#stage[data-orient="portrait"] .ans-host {
-  /* Sits clearly above the digit tray. Mult answers can include compound
-     tiles that wrap to 3 rows in the tray, so allow ~360px for the tray
-     plus a 24px gap. */
-  top: auto;
-  bottom: 384px;
-  padding: 10px 16px;
 }
 #stage[data-orient="portrait"] .count-chip {
   font-size: 14px;
