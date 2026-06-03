@@ -231,7 +231,7 @@ const fakeStorage = () => {
 };
 
 test("loadProgress returns empty map on fresh storage", () => {
-  expect(loadProgress(fakeStorage())).toEqual({ add: {}, sub: {}, mult: {} });
+  expect(loadProgress(fakeStorage())).toEqual({ add: {}, sub: {}, mult: {}, unlockAll: false });
 });
 
 test("recordStars writes new high-water mark; loadProgress reads it", () => {
