@@ -673,6 +673,11 @@ button {
   font-size: 96px; box-shadow: var(--sh-2);
 }
 .op-chip.q { border-style: dashed; background: transparent; animation: slotPulse 1.8s var(--ease-soft) infinite; }
+/* The "?" box after "=" is the answer drop slot. Keep op-chip dimensions but
+   shrink the glyph so a two-digit answer (e.g. "20") fits. Dashed pulsing while
+   active (from .op-chip.q + .slot.active); solid once filled. */
+.mult-problem .op-chip.q.slot { width: 120px; height: 130px; font-size: 64px; }
+.mult-problem .op-chip.q.slot.filled { border-style: solid; border-color: var(--ink); }
 .op-sym { font-size: 80px; color: var(--ink); }
 .firefly-area {
   position: absolute; top: 240px; left: 80px; width: 1120px; height: 260px;
@@ -734,30 +739,6 @@ button {
 .firefly-area[data-groups="5"] .lily-group { width: 196px; height: 196px; }
 .firefly-area[data-groups="5"] .block-grid .block-host { width: 60px; height: 60px; }
 .firefly-area[data-groups="5"] .block-grid[data-count="5"] .block-host { width: 48px; height: 48px; }
-.total-reveal {
-  position: absolute; top: 520px; left: 50%; transform: translateX(-50%);
-  width: 380px; height: 120px;
-  background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
-  display: flex; align-items: center; justify-content: center; gap: 16px;
-  box-shadow: var(--sh-2);
-  padding: 0 24px;
-}
-.total-reveal.hidden { display: none; }
-.total-reveal .display { font-size: 32px; }
-/* The single mult answer slot holds a 1- OR 2-digit answer (e.g. "20"), so size
-   it to fit two digits without overflow — roomy but not oversized. Shared by the
-   tap-count TOTAL box and the drag-groups answer box (the latter otherwise falls
-   through to the base .slot whose 110px font clips two-digit answers). */
-.total-reveal .slot,
-.ans-host .slot {
-  width: 104px; height: 104px;
-  font-size: 60px;
-  border-radius: var(--r-md);
-}
-/* "HOW MANY TOTAL?" was rendering at the default ~16px — bump it up to read clearly. */
-.ans-host .display { font-size: 30px; }
-.ans-slot-host { display: flex; gap: 8px; }
-
 /* ===== TASK 29: Multiplication Drag-Groups Level Screen ===== */
 /* Wrapper around the counting trays + mango pile. Landscape: transparent, so
    the children keep their original absolute layout. Portrait: see the portrait
@@ -814,13 +795,6 @@ button {
   background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
   padding: 24px; align-items: center; justify-content: center;
 }
-.ans-host {
-  position: absolute; top: 390px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 16px; align-items: center;
-  background: var(--bg-card); border: 4px solid var(--ink); border-radius: var(--r-lg);
-  padding: 16px 24px; box-shadow: var(--sh-2);
-}
-.ans-host.hidden { display: none; }
 .digit-tray.hidden { display: none; }
 
 /* ===== TASK 30: Complete Screen ===== */
@@ -1101,23 +1075,7 @@ button {
   width: 46px;
   height: 46px;
 }
-#stage[data-orient="portrait"] .total-reveal {
-  top: auto;
-  /* Sits clearly above the digit tray (tray bottom-anchored at 16, height ~240). */
-  bottom: 290px;
-  width: 296px;
-  height: 116px;
-  padding: 0 16px;
-}
-#stage[data-orient="portrait"] .total-reveal .slot,
-#stage[data-orient="portrait"] .ans-host .slot {
-  width: 96px;
-  height: 96px;
-  font-size: 56px;
-}
-#stage[data-orient="portrait"] .ans-host .display {
-  font-size: 27px;
-}
+#stage[data-orient="portrait"] .mult-problem .op-chip.q.slot { width: 80px; height: 90px; font-size: 44px; }
 /* Portrait: trays + pile live inside .play-col, which the layout engine centres
    in the band between the problem and the answer box (and scales down to fit
    short phones). They flow in-column here rather than being absolutely pinned. */
@@ -1166,14 +1124,6 @@ button {
   min-height: 0;
   padding: 12px;
   gap: 8px;
-}
-#stage[data-orient="portrait"] .ans-host {
-  /* Sits clearly above the digit tray. Mult answers can include compound
-     tiles that wrap to 3 rows in the tray, so allow ~360px for the tray
-     plus a 24px gap. */
-  top: auto;
-  bottom: 384px;
-  padding: 10px 16px;
 }
 #stage[data-orient="portrait"] .count-chip {
   font-size: 14px;
@@ -2916,7 +2866,6 @@ button {
 
   // src/layout.js
   var TRAY_BOTTOM = 16;
-  var BOX_GAP = 20;
   var BAND_PAD = 14;
   var MAX_W = 112;
   var MIN_W = 84;
@@ -3019,39 +2968,31 @@ button {
   function layoutMultTap(stage2, sec) {
     if (!sec || !sec.isConnected) return;
     const tray = sec.querySelector(".digit-tray");
-    const reveal = sec.querySelector(".total-reveal");
     const firefly2 = sec.querySelector(".firefly-area");
     if (!isPortrait(stage2)) {
       if (tray) {
         clearTileSizes(tray.querySelectorAll(".tile"));
         tray.style.height = "";
       }
-      clearInline(reveal, ["bottom", "top"]);
       clearInline(firefly2, ["position", "left", "top", "transform"]);
       return;
     }
     const H = stage2.offsetHeight;
     if (H < 400 || !tray) return;
     const trayH = fitTray(stage2, tray, maxTrayHeight(H));
-    if (reveal && !reveal.classList.contains("hidden")) {
-      reveal.style.top = "auto";
-      reveal.style.bottom = `${TRAY_BOTTOM + trayH + BOX_GAP}px`;
-    }
     const bandTop = headerBottom(stage2, sec) + BAND_PAD;
-    const boxTop = reveal ? logicalRect(stage2, reveal).top : H - TRAY_BOTTOM - trayH;
-    centerPlay(stage2, firefly2, bandTop, boxTop - BAND_PAD, true);
+    const bandBottom = H - TRAY_BOTTOM - trayH - BAND_PAD;
+    centerPlay(stage2, firefly2, bandTop, bandBottom, true);
   }
   function layoutMultDrag(stage2, sec) {
     if (!sec || !sec.isConnected) return;
     const tray = sec.querySelector(".digit-tray");
-    const ansHost = sec.querySelector(".ans-host");
     const playCol = sec.querySelector(".play-col");
     if (!isPortrait(stage2)) {
       if (tray) {
         clearTileSizes(tray.querySelectorAll(".tile"));
         tray.style.height = "";
       }
-      clearInline(ansHost, ["bottom", "top"]);
       clearInline(playCol, ["position", "left", "top", "transform"]);
       return;
     }
@@ -3059,14 +3000,9 @@ button {
     if (H < 400 || !tray) return;
     const trayHidden = tray.classList.contains("hidden");
     const trayH = trayHidden ? 0 : fitTray(stage2, tray, maxTrayHeight(H));
-    let boxTop = H - TRAY_BOTTOM - trayH;
-    if (ansHost && !ansHost.classList.contains("hidden")) {
-      ansHost.style.top = "auto";
-      ansHost.style.bottom = `${TRAY_BOTTOM + trayH + BOX_GAP}px`;
-      boxTop = logicalRect(stage2, ansHost).top;
-    }
     const bandTop = headerBottom(stage2, sec) + BAND_PAD;
-    centerPlay(stage2, playCol, bandTop, boxTop - BAND_PAD, true);
+    const bandBottom = H - TRAY_BOTTOM - trayH - BAND_PAD;
+    centerPlay(stage2, playCol, bandTop, bandBottom, true);
   }
 
   // src/screens/add.js
@@ -3596,7 +3532,6 @@ button {
     </div>
     <div class="mult-problem"></div>
     <div class="firefly-area"></div>
-    <div class="total-reveal hidden"><span class="display">TOTAL</span><div class="ans-slot-host"></div></div>
     <div class="digit-tray"></div>
     <div class="corner-mascot"></div>
   `;
@@ -3626,7 +3561,7 @@ button {
       <div class="op-sym display">\xD7</div>
       <div class="op-chip display">${p.b}</div>
       <div class="op-sym display">=</div>
-      <div class="op-chip q display">?</div>
+      <div class="op-chip q slot active display" data-index="0"></div>
     `;
       const area = sec.querySelector(".firefly-area");
       area.innerHTML = "";
@@ -3653,7 +3588,7 @@ button {
       }
       area.dataset.groups = String(p.b);
       blockFlyIn(blockEls);
-      showReveal();
+      buildTray();
       relayout();
     }
     function onBlockTap(wrap) {
@@ -3666,16 +3601,8 @@ button {
       globalCount++;
       tapBlock(wrap, globalCount);
     }
-    function showReveal() {
+    function buildTray() {
       const p = problems[idx];
-      const reveal = sec.querySelector(".total-reveal");
-      const host = reveal.querySelector(".ans-slot-host");
-      host.innerHTML = `<div class="slot active" data-index="0"></div>`;
-      reveal.classList.remove("hidden");
-      reveal.animate(
-        [{ opacity: 0, transform: "translateY(20px) scale(0.9)" }, { opacity: 1, transform: "translateY(0) scale(1)" }],
-        { duration: 400, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
-      );
       const tray = sec.querySelector(".digit-tray");
       tray.innerHTML = "";
       tray.classList.remove("two-row");
@@ -3800,15 +3727,6 @@ button {
     groupRow.className = "group-row";
     const blockPile = document.createElement("div");
     blockPile.className = "block-pile";
-    const ansHost = document.createElement("div");
-    ansHost.className = "ans-host hidden";
-    const ansLabel = document.createElement("span");
-    ansLabel.className = "display";
-    ansLabel.textContent = "HOW MANY TOTAL?";
-    const ansSlotHost = document.createElement("div");
-    ansSlotHost.className = "ans-slot-host";
-    ansHost.appendChild(ansLabel);
-    ansHost.appendChild(ansSlotHost);
     const digitTray = document.createElement("div");
     digitTray.className = "digit-tray hidden";
     const cornerMascot = document.createElement("div");
@@ -3821,7 +3739,6 @@ button {
     sec.appendChild(topbar);
     sec.appendChild(multProblem);
     sec.appendChild(playCol);
-    sec.appendChild(ansHost);
     sec.appendChild(digitTray);
     sec.appendChild(cornerMascot);
     const relayout = () => layoutMultDrag(stage2, sec);
@@ -3853,8 +3770,8 @@ button {
       symEq.className = "op-sym display";
       symEq.textContent = "=";
       const chipQ = document.createElement("div");
-      chipQ.className = "op-chip q display";
-      chipQ.textContent = "?";
+      chipQ.className = "op-chip q slot active display";
+      chipQ.dataset.index = "0";
       multProblem.appendChild(chipA);
       multProblem.appendChild(symMult);
       multProblem.appendChild(chipB);
@@ -3891,7 +3808,6 @@ button {
         wrap.addEventListener("pointerup", () => onPileTap(wrap));
         blockPile.appendChild(wrap);
       }
-      setupAnswerArea();
       dragMgr = createDragManager({
         getTargets() {
           return Array.from(sec.querySelectorAll(".slot")).map((el) => ({
@@ -3927,6 +3843,7 @@ button {
           }
         }
       });
+      buildTray();
       relayout();
     }
     function onPileTap(srcMango) {
@@ -3978,14 +3895,8 @@ button {
         }
       };
     }
-    function setupAnswerArea() {
+    function buildTray() {
       const p = problems[idx];
-      ansSlotHost.textContent = "";
-      const slot = document.createElement("div");
-      slot.className = "slot active";
-      slot.dataset.index = "0";
-      ansSlotHost.appendChild(slot);
-      ansHost.classList.remove("hidden");
       digitTray.classList.remove("hidden", "two-row");
       digitTray.textContent = "";
       if (p.answer >= 10) {
