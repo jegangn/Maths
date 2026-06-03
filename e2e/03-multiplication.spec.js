@@ -13,9 +13,8 @@ test('Firefly Meadow L1 opens tap-count screen', async ({ page }) => {
   // Third world panel = Firefly Meadow (mult)
   await page.locator('.world-panel').nth(2).locator('.level-node').first().click();
   await expect(page.locator('#screen-mult-tap')).toBeVisible();
-  // Problem 1 is 2×1 = 2 fireflies across 2 groups of 1
-  // p.a = 2 groups → 2 lily-group elements
-  await expect(page.locator('.lily-group')).toHaveCount(2);
+  // Problem 1 is 2×1 → b = 1 group of a = 2 fireflies (a items, b times)
+  await expect(page.locator('.lily-group')).toHaveCount(1);
 });
 
 test('Firefly Meadow L1: problem equation displayed correctly', async ({ page }) => {

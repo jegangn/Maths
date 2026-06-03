@@ -78,14 +78,14 @@ export function mount(stage, ctx, router) {
     const area = sec.querySelector(".firefly-area");
     area.innerHTML = "";
     const blockEls = [];
-    for (let g = 0; g < p.a; g++) {
+    for (let g = 0; g < p.b; g++) {            // b groups
       const pad = document.createElement("div");
       pad.className = "lily-group";
       pad.insertAdjacentHTML("beforeend", lilypad());
       const blocks = document.createElement("div");
       blocks.className = "block-grid";
-      blocks.dataset.count = String(p.b);
-      for (let i = 0; i < p.b; i++) {
+      blocks.dataset.count = String(p.a);       // a items per group
+      for (let i = 0; i < p.a; i++) {           // a items
         const wrap = document.createElement("div");
         wrap.className = "block-host untapped";
         wrap.dataset.groupIndex = String(g);
@@ -98,6 +98,7 @@ export function mount(stage, ctx, router) {
       pad.appendChild(blocks);
       area.appendChild(pad);
     }
+    area.dataset.groups = String(p.b);           // drives the 5-group CSS tier
     blockFlyIn(blockEls);
 
     // Show the answer panel + digit tray immediately so the kid can drag the

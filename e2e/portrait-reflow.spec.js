@@ -10,6 +10,19 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
 });
 
+// Drag a mult option tile (data-value) onto the active answer slot.
+async function dragValueToSlot(page, value) {
+  const tile = page.locator(`.tile[data-value="${value}"]`).first();
+  const slot = page.locator('.slot.active').first();
+  const tb = await tile.boundingBox();
+  const sb = await slot.boundingBox();
+  await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await page.waitForTimeout(800);
+}
+
 test('portrait phone viewport sets data-orient="portrait" on stage', async ({ page }) => {
   await page.setViewportSize(PHONE_PORTRAIT);
   await page.goto('/');
@@ -108,9 +121,12 @@ test('mult tap-count in portrait: lily-pads wrap into a 2-wide grid', async ({ p
   await page.setViewportSize(PHONE_PORTRAIT);
   await page.goto('/');
   await unlockAll(page);
-  await goToLevel(page, 'mult', 2); // L2 = 3xN, so the screen has 3 lily-pads
-
+  await goToLevel(page, 'mult', 2); // L2 = 3×N
   await expect(page.locator('#screen-mult-tap')).toBeVisible();
+  // First problems now make 1 then 2 groups; drive to 3×3 → 3 groups (b=3).
+  await dragValueToSlot(page, 3); // 3×1
+  await dragValueToSlot(page, 6); // 3×2
+  await page.waitForTimeout(300);
   const pads = await page.locator('.lily-group').all();
   expect(pads.length).toBe(3);
 
@@ -123,23 +139,24 @@ test('mult tap-count in portrait: lily-pads wrap into a 2-wide grid', async ({ p
   expect(boxes[2].y).toBeGreaterThan(boxes[0].y + 20);
 });
 
-test('mult drag-groups in portrait: 3 group trays stacked + block pile below', async ({ page }) => {
+test('mult drag-groups in portrait: 4 group trays stacked + block pile below', async ({ page }) => {
   await page.setViewportSize(PHONE_PORTRAIT);
   await page.goto('/');
   await unlockAll(page);
-  await goToLevel(page, 'mult', 5); // L5 first problem is 3x4 → 3 group trays
+  await goToLevel(page, 'mult', 5); // L5 first problem 3×4 → b = 4 group trays
 
   await expect(page.locator('#screen-mult-drag')).toBeVisible();
   const trays = await page.locator('.group-tray').all();
-  expect(trays.length).toBe(3);
+  expect(trays.length).toBe(4);
 
   const trayBoxes = await Promise.all(trays.map((t) => t.boundingBox()));
-  // Stacked vertically: tray[1].top > tray[0].top by at least 30px
+  // Stacked vertically, each below the last.
   expect(trayBoxes[1].y).toBeGreaterThan(trayBoxes[0].y + 30);
   expect(trayBoxes[2].y).toBeGreaterThan(trayBoxes[1].y + 30);
+  expect(trayBoxes[3].y).toBeGreaterThan(trayBoxes[2].y + 30);
 
   const pile = await page.locator('.block-pile').boundingBox();
-  expect(pile.y).toBeGreaterThan(trayBoxes[2].y + trayBoxes[2].height - 10);
+  expect(pile.y).toBeGreaterThan(trayBoxes[3].y + trayBoxes[3].height - 10);
 });
 
 test('complete screen in portrait: 3 buttons stacked vertically', async ({ page }) => {
@@ -257,19 +274,6 @@ test('full smoke: iPhone SE can complete addition L1 problem 1 (12+3)', async ({
 // Point 2 regression: the number pad must never cover the answer box, for any
 // tile count or phone height. These reproduce the exact reported screenshots.
 // ---------------------------------------------------------------------------
-
-// Drag a mult option tile (data-value) onto the active answer slot.
-async function dragValueToSlot(page, value) {
-  const tile = page.locator(`.tile[data-value="${value}"]`).first();
-  const slot = page.locator('.slot.active').first();
-  const tb = await tile.boundingBox();
-  const sb = await slot.boundingBox();
-  await page.mouse.move(tb.x + tb.width / 2, tb.y + tb.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(sb.x + sb.width / 2, sb.y + sb.height / 2, { steps: 8 });
-  await page.mouse.up();
-  await page.waitForTimeout(800);
-}
 
 test('mult tap-count ≥10: TOTAL box clears the tray (reported screenshot 1)', async ({ page }) => {
   await page.setViewportSize(PHONE_PORTRAIT);

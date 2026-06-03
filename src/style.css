@@ -714,6 +714,14 @@ button {
 .block-grid[data-count="5"] > :nth-child(3) { grid-column: 5 / span 2; grid-row: 1; }
 .block-grid[data-count="5"] > :nth-child(4) { grid-column: 2 / span 2; grid-row: 2; }
 .block-grid[data-count="5"] > :nth-child(5) { grid-column: 4 / span 2; grid-row: 2; }
+
+/* After the grouping flip, ×5 problems make 5 lily-pads. The landscape
+   firefly-area is a fixed 1120px no-wrap row, so shrink pads + fireflies for
+   5 groups to fit one row (5×196 + 4×24 = 1076 ≤ 1120). ≤4 groups unchanged. */
+.firefly-area[data-groups="5"] { gap: 24px; }
+.firefly-area[data-groups="5"] .lily-group { width: 196px; height: 196px; }
+.firefly-area[data-groups="5"] .block-grid .block-host { width: 60px; height: 60px; }
+.firefly-area[data-groups="5"] .block-grid[data-count="5"] .block-host { width: 48px; height: 48px; }
 .total-reveal {
   position: absolute; top: 520px; left: 50%; transform: translateX(-50%);
   width: 380px; height: 120px;

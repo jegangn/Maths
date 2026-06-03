@@ -122,21 +122,21 @@ export function mount(stage, ctx, router) {
 
     if (groupRowFade) { groupRowFade.cancel(); groupRowFade = null; }
     groupRow.textContent = "";
-    for (let g = 0; g < p.a; g++) {
+    for (let g = 0; g < p.b; g++) {              // b groups (trays)
       const tray = document.createElement("div");
       tray.className = "group-tray";
       tray.dataset.idx = String(g);
-      for (let i = 0; i < p.b; i++) {
+      for (let i = 0; i < p.a; i++) {            // a items per tray
         const ghost = document.createElement("div");
         ghost.className = "ghost";
         tray.appendChild(ghost);
       }
       const chip = document.createElement("div");
       chip.className = "count-chip";
-      chip.textContent = `0 / ${p.b}`;
+      chip.textContent = `0 / ${p.a}`;
       tray.appendChild(chip);
       groupRow.appendChild(tray);
-      groupContents.push({ filled: 0, needed: p.b });
+      groupContents.push({ filled: 0, needed: p.a });
     }
 
     blockPile.textContent = "";
