@@ -22,6 +22,7 @@ export function mount(stage, ctx, router) {
   let trayWrongOnCurrentSlot = 0;
   const groupContents = [];
   let groupRowFade = null;
+  let placedCount = 0; // units that have LANDED in a box this problem (drives rising pitch)
 
   const sec = document.createElement("section");
   sec.className = "screen active";
@@ -86,6 +87,7 @@ export function mount(stage, ctx, router) {
     trayWrongOnCurrentSlot = 0;
     const p = problems[idx];
     groupContents.length = 0;
+    placedCount = 0;
 
     multProblem.textContent = "";
     const chipA = document.createElement("div");
@@ -215,7 +217,6 @@ export function mount(stage, ctx, router) {
     clone.style.left = `${(srcRect.left - stageRect.left) / scale}px`;
     clone.style.top = `${(srcRect.top - stageRect.top) / scale}px`;
     stage.appendChild(clone);
-    sfx.tilePickup();
     const dx = (slotRect.left - srcRect.left) / scale;
     const dy = (slotRect.top - srcRect.top) / scale;
     clone.animate(
@@ -223,6 +224,8 @@ export function mount(stage, ctx, router) {
       { duration: 380, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
     ).onfinish = () => {
       clone.remove();
+      placedCount++;
+      sfx.blockTap(placedCount); // rising pitch each time a unit lands in its box
       const planted = document.createElement("div");
       planted.className = "block-host in-group";
       planted.insertAdjacentHTML("beforeend", mango());
