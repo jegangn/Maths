@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const ROOT = join(__dirname, "src");
-const PORT = 5173;
+const PORT = Number(process.env.PORT) || 5173;
 
 Bun.serve({
   port: PORT,
