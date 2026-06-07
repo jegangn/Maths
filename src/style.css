@@ -51,6 +51,16 @@ html, body {
 #viewport {
   position: fixed; inset: 0;
   display: flex; align-items: center; justify-content: center;
+  /* Themed backdrop for the letterbox bands that appear when the fixed stage is
+     centered inside a screen whose shape doesn't match it (tablet-landscape and
+     near-square foldables like the Find N5 unfolded). A soft paper vignette
+     makes those bands read as an intentional frame, not dead space. On phones
+     and tablet-portrait the stage fills the viewport, so none of this shows. */
+  background:
+    radial-gradient(135% 125% at 50% 50%,
+      color-mix(in srgb, var(--bg-paper) 93%, #fff) 0%,
+      var(--bg-paper) 56%,
+      color-mix(in srgb, var(--bg-paper) 83%, var(--ink) 17%) 100%);
 }
 
 #stage {
@@ -60,6 +70,10 @@ html, body {
      logical size — the transform-scale handles fit, not flex layout. */
   flex-shrink: 0;
   transform-origin: center center;
+  /* Soft drop shadow frames the playfield against the letterbox bands. When the
+     stage fills the viewport exactly (phones/tablet-portrait) the shadow falls
+     outside the screen edges and is clipped, so it only shows when letterboxed. */
+  box-shadow: 0 10px 44px rgba(58, 34, 8, 0.28);
   background:
     radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--world-sky) 55%, #fff) 0%, transparent 60%),
     linear-gradient(180deg, color-mix(in srgb, var(--world-sky) 88%, #fff) 0%, var(--world-sky) 100%);

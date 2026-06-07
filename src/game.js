@@ -11,14 +11,33 @@ import * as settings from "./screens/settings.js";
 const stage = document.getElementById("stage");
 const viewport = document.getElementById("viewport");
 
-// Logical canvas dimensions per orientation.
-// Landscape stays fixed at 1280×800 (tablet target). Portrait fixes WIDTH at
-// 720 and stretches HEIGHT to match the phone's aspect ratio — that way the
-// stage fills the entire phone viewport with no letterbox bars on any device.
+// Logical canvas dimensions. The game has two fixed designs: a 720×1280
+// portrait canvas and a 1280×800 landscape canvas. fitStage() maps the real
+// viewport onto one of them using THREE bands of aspect ratio (w/h):
+//
+//   aspect < 0.65            → STRETCH portrait. Fix width 720, stretch height to
+//                              the screen. Fills tall phones edge-to-edge (no
+//                              bars); the extra height is room the design absorbs.
+//   0.65 ≤ aspect < 0.9      → FIT portrait. Render the full 720×1280 design and
+//                              scale-to-fit with side letterbox. 4:3 tablets held
+//                              in portrait (iPad 0.75) are too SHORT to stretch
+//                              without cramping — map titles collide with level
+//                              nodes, the tall carry tray covers the answer slots.
+//                              Fitting the 1280-tall design keeps proportions
+//                              correct with no cramping (themed side bars).
+//   aspect ≥ 0.9             → FIT landscape. The 1280×800 design scaled-to-fit,
+//                              centered. Near-square foldables (Find N5 unfolded:
+//                              1.10 / 0.91 rotated) and all landscape tablets.
+//
+// Boundaries: 0.9 keeps a safe margin so a near-square foldable never collapses
+// to a short portrait canvas; 0.65 sits just above the tallest tablet that still
+// stretches cleanly (Samsung 10:16 = 0.625, ~1152 logical px) and below the 4:3
+// tablets (0.75, ~960 logical px) that cramp.
 const LANDSCAPE = { w: 1280, h: 800 };
 const PORTRAIT_W = 720;
-// Aspect threshold: viewports wider than this (w/h > 1.2) use landscape.
-const PORTRAIT_ASPECT_THRESHOLD = 1.2;
+const PORTRAIT_H = 1280;
+const PORTRAIT_ASPECT_THRESHOLD = 0.9; // at/above → landscape
+const STRETCH_MAX_ASPECT = 0.65;        // below → stretch-fill portrait; between → fit portrait
 
 let lastOrient = null;
 
@@ -29,27 +48,35 @@ function fitStage() {
   // scale(0) and blank the whole game until the next resize. Skip until the
   // viewport has real dimensions.
   if (!vw || !vh) return;
-  const isPortrait = (vw / vh) < PORTRAIT_ASPECT_THRESHOLD;
-  const nextOrient = isPortrait ? "portrait" : "landscape";
-  stage.dataset.orient = nextOrient;
+  const aspect = vw / vh;
 
-  let scale;
-  if (isPortrait) {
-    // Scale to fit width; canvas height stretches so the stage fills the
-    // viewport exactly. Elements anchored to top/bottom move with the edges;
-    // central elements (worksheet, firefly-area) centre via top:50%.
-    scale = vw / PORTRAIT_W;
-    const logicalH = vh / scale;
-    stage.style.width = `${PORTRAIT_W}px`;
-    stage.style.height = `${logicalH}px`;
-    // Expose for code that needs to read the current logical canvas size.
-    stage.style.setProperty("--stage-h", `${logicalH}px`);
+  let scale, logicalW, logicalH, nextOrient;
+  if (aspect >= PORTRAIT_ASPECT_THRESHOLD) {
+    // Near-square & wider → landscape design, scaled to fit (themed letterbox).
+    nextOrient = "landscape";
+    logicalW = LANDSCAPE.w;
+    logicalH = LANDSCAPE.h;
+    scale = Math.min(vw / logicalW, vh / logicalH);
+  } else if (aspect >= STRETCH_MAX_ASPECT) {
+    // 4:3-ish tablet held portrait → render the full 720×1280 design and
+    // scale-to-fit (side letterbox). Keeps correct proportions; no cramming.
+    nextOrient = "portrait";
+    logicalW = PORTRAIT_W;
+    logicalH = PORTRAIT_H;
+    scale = Math.min(vw / logicalW, vh / logicalH);
   } else {
-    scale = Math.min(vw / LANDSCAPE.w, vh / LANDSCAPE.h);
-    stage.style.width = `${LANDSCAPE.w}px`;
-    stage.style.height = `${LANDSCAPE.h}px`;
-    stage.style.setProperty("--stage-h", `${LANDSCAPE.h}px`);
+    // Tall phone → stretch the portrait design to fill the screen height. The
+    // canvas grows taller than 1280; content anchored top/centre/bottom fills it.
+    nextOrient = "portrait";
+    logicalW = PORTRAIT_W;
+    scale = vw / PORTRAIT_W;
+    logicalH = vh / scale;
   }
+  stage.dataset.orient = nextOrient;
+  stage.style.width = `${logicalW}px`;
+  stage.style.height = `${logicalH}px`;
+  // Expose the live logical canvas height for code/CSS that needs it.
+  stage.style.setProperty("--stage-h", `${logicalH}px`);
   stage.style.transform = `scale(${scale})`;
 
   // Re-render active screen when orientation flips so JS-positioned elements recompute.

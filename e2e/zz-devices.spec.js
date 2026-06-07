@@ -55,5 +55,13 @@ for (const vp of DEVICES) {
 
     await goToLevel(page, 'mult', 3);
     await shot(page, '04-multtap-l3', vp);
+
+    await page.evaluate(() => window.__router.go('complete', { world: 'mult', level: 3, wrongCount: 0 }));
+    await page.waitForTimeout(2600);
+    await shot(page, '05-complete', vp);
+
+    await page.evaluate(() => window.__router.go('settings'));
+    await page.waitForTimeout(200);
+    await shot(page, '06-settings', vp);
   });
 }
