@@ -63,6 +63,16 @@ html, body {
 #viewport {
   position: fixed; inset: 0;
   display: flex; align-items: center; justify-content: center;
+  /* Themed backdrop for the letterbox bands that appear when the fixed stage is
+     centered inside a screen whose shape doesn't match it (tablet-landscape and
+     near-square foldables like the Find N5 unfolded). A soft paper vignette
+     makes those bands read as an intentional frame, not dead space. On phones
+     and tablet-portrait the stage fills the viewport, so none of this shows. */
+  background:
+    radial-gradient(135% 125% at 50% 50%,
+      color-mix(in srgb, var(--bg-paper) 93%, #fff) 0%,
+      var(--bg-paper) 56%,
+      color-mix(in srgb, var(--bg-paper) 83%, var(--ink) 17%) 100%);
 }
 
 #stage {
@@ -72,6 +82,10 @@ html, body {
      logical size — the transform-scale handles fit, not flex layout. */
   flex-shrink: 0;
   transform-origin: center center;
+  /* Soft drop shadow frames the playfield against the letterbox bands. When the
+     stage fills the viewport exactly (phones/tablet-portrait) the shadow falls
+     outside the screen edges and is clipped, so it only shows when letterboxed. */
+  box-shadow: 0 10px 44px rgba(58, 34, 8, 0.28);
   background:
     radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--world-sky) 55%, #fff) 0%, transparent 60%),
     linear-gradient(180deg, color-mix(in srgb, var(--world-sky) 88%, #fff) 0%, var(--world-sky) 100%);
@@ -4128,28 +4142,36 @@ button {
   var viewport = document.getElementById("viewport");
   var LANDSCAPE = { w: 1280, h: 800 };
   var PORTRAIT_W = 720;
-  var PORTRAIT_ASPECT_THRESHOLD = 1.2;
+  var PORTRAIT_H = 1280;
+  var PORTRAIT_ASPECT_THRESHOLD = 0.9;
+  var STRETCH_MAX_ASPECT = 0.65;
   var lastOrient = null;
   function fitStage() {
     const vw = viewport.clientWidth;
     const vh = viewport.clientHeight;
     if (!vw || !vh) return;
-    const isPortrait2 = vw / vh < PORTRAIT_ASPECT_THRESHOLD;
-    const nextOrient = isPortrait2 ? "portrait" : "landscape";
-    stage.dataset.orient = nextOrient;
-    let scale;
-    if (isPortrait2) {
-      scale = vw / PORTRAIT_W;
-      const logicalH = vh / scale;
-      stage.style.width = `${PORTRAIT_W}px`;
-      stage.style.height = `${logicalH}px`;
-      stage.style.setProperty("--stage-h", `${logicalH}px`);
+    const aspect = vw / vh;
+    let scale, logicalW, logicalH, nextOrient;
+    if (aspect >= PORTRAIT_ASPECT_THRESHOLD) {
+      nextOrient = "landscape";
+      logicalW = LANDSCAPE.w;
+      logicalH = LANDSCAPE.h;
+      scale = Math.min(vw / logicalW, vh / logicalH);
+    } else if (aspect >= STRETCH_MAX_ASPECT) {
+      nextOrient = "portrait";
+      logicalW = PORTRAIT_W;
+      logicalH = PORTRAIT_H;
+      scale = Math.min(vw / logicalW, vh / logicalH);
     } else {
-      scale = Math.min(vw / LANDSCAPE.w, vh / LANDSCAPE.h);
-      stage.style.width = `${LANDSCAPE.w}px`;
-      stage.style.height = `${LANDSCAPE.h}px`;
-      stage.style.setProperty("--stage-h", `${LANDSCAPE.h}px`);
+      nextOrient = "portrait";
+      logicalW = PORTRAIT_W;
+      scale = vw / PORTRAIT_W;
+      logicalH = vh / scale;
     }
+    stage.dataset.orient = nextOrient;
+    stage.style.width = `${logicalW}px`;
+    stage.style.height = `${logicalH}px`;
+    stage.style.setProperty("--stage-h", `${logicalH}px`);
     stage.style.transform = `scale(${scale})`;
     if (lastOrient !== null && lastOrient !== nextOrient && router.lastRoute) {
       router.go(router.lastRoute.name, router.lastRoute.ctx);
