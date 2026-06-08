@@ -1,20 +1,18 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Helper: trigger long-press on the cog.
- * The cog listens for pointerdown → setTimeout(1500ms) → router.go("settings").
- * After the 1500ms, the splash screen is unmounted and .cog-corner no longer exists.
- * We dispatch pointerdown, wait for the settings screen to appear, then skip pointerup
- * (the cog is gone). The settings transition is triggered purely by the timeout.
+ * Helper: open the parent gate by pressing the cog.
+ * The cog (".cog-corner", labelled PARENTS) listens for `pointerup` and goes
+ * straight to the parent-gate screen — a short press, no long hold. (It used to
+ * be a 1500ms long-press; commit f96f25c replaced that with a tap and added a 5s
+ * lockout after two wrong answers as the anti-kid guard instead.)
  */
 async function openParentGate(page) {
-  const cog = page.locator('.cog-corner');
-  await cog.dispatchEvent('pointerdown');
-  // Wait for parent gate card to appear (timer fires at 1500ms, add buffer)
+  await page.locator('.cog-corner').dispatchEvent('pointerup');
   await expect(page.locator('.parent-gate-card')).toBeVisible({ timeout: 4000 });
 }
 
-test('long-press cog opens parent gate', async ({ page }) => {
+test('short-press cog opens parent gate', async ({ page }) => {
   await page.goto('/');
   await openParentGate(page);
   await expect(page.locator('.parent-gate-card')).toBeVisible();
