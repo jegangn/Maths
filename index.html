@@ -210,6 +210,21 @@ html, body {
 .mascot-sparkle:nth-child(3n) { background: var(--world-primary); }
 .mascot-sparkle:nth-child(3n+1) { background: var(--success); }
 
+/* Big encouraging word that pops mid-screen when a problem is solved. */
+.praise-pop {
+  position: absolute; left: 50%; top: 38%;
+  transform: translate(-50%, -50%);
+  font-size: 88px;
+  color: var(--star);
+  -webkit-text-stroke: 8px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 rgba(120,70,20,.3);
+  pointer-events: none;
+  z-index: 600;
+  white-space: nowrap;
+}
+#stage[data-orient="portrait"] .praise-pop { font-size: 68px; }
+
 .block-host {
   width: 96px; height: 96px;
   display: inline-block;
@@ -220,7 +235,9 @@ html, body {
 }
 .block-host.idle-wobble { animation: blockWobble 2s ease-in-out infinite; }
 @keyframes blockWobble { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
-.block-host.untapped { opacity: .55; filter: none; }
+/* Untapped stays clearly dimmer than tapped (no glow, no badge) but bright
+   enough that the screen doesn't read as washed-out. */
+.block-host.untapped { opacity: .8; filter: none; }
 .block-host.tapped   { opacity: 1; animation: blockPop .35s var(--ease-pop); }
 .block-host.dragging { transform: scale(1.15); animation: none; z-index: 200; cursor: grabbing; }
 .block-host.in-group { transform: scale(1); animation: none; }
@@ -277,7 +294,7 @@ button {
      !important; the explicit disabled state still needs to mute. */
   opacity: .55 !important;
 }
-.btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
+.btn.pill   { min-width: 480px; height: 120px; font-size: 56px; white-space: nowrap; }
 .btn.ghost  { background: linear-gradient(180deg, #FFFDF4, var(--bg-card)); }
 .btn.success{ background: linear-gradient(180deg, color-mix(in srgb, var(--success) 75%, #fff), var(--success) 55%, var(--success-deep)); color: #fff; }
 .btn:disabled, .btn.disabled {
@@ -373,19 +390,24 @@ button {
 }
 
 /* ===== TASK 19: Block Styles ===== */
+/* The running count IS the lesson in tap-count — make the numeral big and
+   bold enough for a 5-year-old to read at arm's length. */
 .count-badge {
   position: absolute;
-  top: -8px; right: -8px;
-  width: 28px; height: 28px;
+  top: -14px; right: -14px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   background: var(--gentle-no);
   color: white;
+  border: 3px solid var(--ink);
   font-family: 'Lilita One', system-ui;
-  font-size: 16px;
+  font-size: 24px;
   display: flex; align-items: center; justify-content: center;
   opacity: 0;
   transform: scale(0);
   transition: all .2s var(--ease-pop);
+  z-index: 5;
+  box-shadow: 0 3px 0 rgba(120,70,20,.25);
 }
 .count-badge.show { opacity: 1; transform: scale(1); }
 
@@ -537,11 +559,19 @@ button {
   gap: 24px; height: 100%; padding: 120px 24px 24px;
 }
 .world-panel {
-  background: linear-gradient(180deg, #FFFBEE 0%, var(--bg-card) 100%);
+  background: linear-gradient(180deg, #FFFBEE 0%, var(--wp-bg, var(--bg-card)) 100%);
   border: 5px solid var(--ink);
   border-radius: var(--r-lg);
   box-shadow: var(--sh-1), inset 0 0 0 3px rgba(255,255,255,.5);
   padding: 16px; position: relative; overflow: hidden;
+}
+/* Each world gets its own tint so the three worlds read as distinct places
+   even to a non-reader — sunny yellow hills, teal river, golden meadow. */
+.world-panel.world-add  { --wp: #FFB933; --wp-bg: #FFF1CE; }
+.world-panel.world-sub  { --wp: #3DC5C5; --wp-bg: #DFF4F1; }
+.world-panel.world-mult { --wp: #E8891A; --wp-bg: #FCEBCB; }
+.world-panel .level-node:not(.locked) {
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--wp) 60%, #fff), var(--wp) 72%);
 }
 .world-title { text-align: center; font-size: 28px; margin: 0 0 12px; }
 .world-add  .world-title { color: #B07020; }
@@ -1071,23 +1101,28 @@ button {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 432px;
+  /* Wide enough for two 250px pads side-by-side; the layout engine scales the
+     whole area down when the band is short, so bigger is safe. */
+  width: 560px;
   height: auto;
   gap: 14px 12px;
   justify-content: center;
   align-content: center;
 }
+/* Generous default sizes — the portrait layout engine scales the whole
+   firefly area DOWN if it overflows the band, so big pads fill the screen on
+   1–2 group problems instead of floating tiny in empty space. */
 #stage[data-orient="portrait"] .lily-group {
-  width: 200px;
-  height: 180px;
+  width: 250px;
+  height: 225px;
 }
 #stage[data-orient="portrait"] .block-grid .block-host {
-  width: 60px;
-  height: 60px;
+  width: 76px;
+  height: 76px;
 }
 #stage[data-orient="portrait"] .block-grid[data-count="5"] .block-host {
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
 }
 #stage[data-orient="portrait"] .mult-problem .op-chip.q.slot { width: 80px; height: 90px; font-size: 44px; }
 /* Portrait: trays + pile live inside .play-col, which the layout engine centres
@@ -1873,256 +1908,6 @@ button {
     transition: () => noise({ dur: 0.28, gain: 0.15, lp: 1500 })
   };
 
-  // src/screens/splash.js
-  function mount(stage2, state2, router2) {
-    const sec = document.createElement("section");
-    sec.className = "screen active";
-    sec.id = "screen-splash";
-    const cogWrap = document.createElement("div");
-    cogWrap.className = "cog-corner";
-    const cogLabel = document.createElement("span");
-    cogLabel.className = "cog-label display";
-    cogLabel.textContent = "PARENTS";
-    cogWrap.appendChild(cogLabel);
-    cogWrap.insertAdjacentHTML("beforeend", cog());
-    sec.appendChild(cogWrap);
-    const title = document.createElement("h1");
-    title.className = "splash-title display";
-    title.textContent = "JHANAV'S MATH";
-    sec.appendChild(title);
-    const mascot = document.createElement("div");
-    mascot.className = "splash-mascot";
-    mascot.insertAdjacentHTML("beforeend", banji("idle"));
-    sec.appendChild(mascot);
-    const btn = document.createElement("button");
-    btn.className = "btn pill splash-play";
-    btn.textContent = "TAP TO PLAY \u25B6";
-    sec.appendChild(btn);
-    const lockUntil = parseInt(localStorage.getItem("bm.parentLockUntil") || "0", 10);
-    const lockRemaining = Math.max(0, lockUntil - Date.now());
-    let lockBanner = null;
-    let lockTimer = null;
-    if (lockRemaining > 0) {
-      lockBanner = document.createElement("div");
-      lockBanner.className = "parent-lock-banner display";
-      const swallow = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-      };
-      lockBanner.addEventListener("pointerdown", swallow);
-      lockBanner.addEventListener("pointerup", swallow);
-      lockBanner.addEventListener("click", swallow);
-      sec.appendChild(lockBanner);
-      const tick = () => {
-        const left = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1e3));
-        if (left <= 0) {
-          localStorage.removeItem("bm.parentLockUntil");
-          lockBanner.remove();
-          lockBanner = null;
-          clearInterval(lockTimer);
-        } else {
-          lockBanner.textContent = `PARENTS: PLEASE WAIT ${left}s`;
-        }
-      };
-      tick();
-      lockTimer = setInterval(tick, 250);
-    }
-    function isLocked() {
-      return lockBanner !== null;
-    }
-    function go() {
-      if (isLocked()) return;
-      unlockAudio();
-      sfx.transition();
-      router2.go("map");
-    }
-    btn.addEventListener("pointerup", go);
-    sec.addEventListener("pointerup", (e) => {
-      if (e.target.closest(".cog-corner")) return;
-      if (!e.target.closest("button")) go();
-    });
-    cogWrap.addEventListener("pointerup", () => {
-      if (isLocked()) return;
-      router2.go("settings");
-    });
-    stage2.appendChild(sec);
-    return () => {
-      if (lockTimer) clearInterval(lockTimer);
-      sec.remove();
-    };
-  }
-
-  // src/screens/map.js
-  var WORLDS = [
-    { id: "add", name: "BANANA HILLS" },
-    { id: "sub", name: "MISTY RIVER" },
-    { id: "mult", name: "FIREFLY MEADOW" }
-  ];
-  function mount2(stage2, state2, router2) {
-    const sec = document.createElement("section");
-    sec.className = "screen active";
-    sec.id = "screen-map";
-    const progress = loadProgress();
-    const homeBtn = document.createElement("button");
-    homeBtn.className = "home-btn";
-    homeBtn.insertAdjacentHTML("beforeend", home());
-    homeBtn.addEventListener("pointerup", () => router2.go("splash"));
-    sec.appendChild(homeBtn);
-    const meter = document.createElement("div");
-    meter.className = "star-meter total display";
-    meter.insertAdjacentHTML("beforeend", `STARS: ${star(true)} ${totalStars(progress)} / 54`);
-    sec.appendChild(meter);
-    const grid = document.createElement("div");
-    grid.className = "world-grid";
-    sec.appendChild(grid);
-    WORLDS.forEach((w) => {
-      const panel = document.createElement("div");
-      panel.className = `world-panel world-${w.id}`;
-      const worldTitle = document.createElement("h2");
-      worldTitle.className = "world-title display";
-      worldTitle.textContent = w.name;
-      panel.appendChild(worldTitle);
-      const path = document.createElement("div");
-      path.className = "level-path";
-      panel.appendChild(path);
-      for (let l = 1; l <= 6; l++) {
-        const stars = progress[w.id][l] || 0;
-        const unlocked = isLevelUnlocked(progress, w.id, l);
-        const node = document.createElement("button");
-        node.className = `level-node ${unlocked ? "unlocked" : "locked"} stars-${stars}`;
-        node.dataset.world = w.id;
-        node.dataset.level = String(l);
-        if (!unlocked) {
-          node.insertAdjacentHTML("beforeend", padlock());
-        } else {
-          const numEl = document.createElement("span");
-          numEl.className = "display";
-          numEl.textContent = String(l);
-          node.appendChild(numEl);
-          if (stars > 0) {
-            const ribbon = document.createElement("div");
-            ribbon.className = "node-ribbon";
-            for (let s = 0; s < 3; s++) ribbon.insertAdjacentHTML("beforeend", star(s < stars));
-            node.appendChild(ribbon);
-          }
-        }
-        node.addEventListener("pointerup", () => {
-          if (!unlocked) {
-            sfx.lockedTap();
-            node.animate(
-              [{ transform: "rotate(0)" }, { transform: "rotate(6deg)" }, { transform: "rotate(-6deg)" }, { transform: "rotate(0)" }],
-              { duration: 300 }
-            );
-            return;
-          }
-          sfx.transition();
-          router2.go("level", { world: w.id, level: l });
-        });
-        path.appendChild(node);
-      }
-      grid.appendChild(panel);
-    });
-    stage2.dataset.world = "add";
-    stage2.appendChild(sec);
-    return () => sec.remove();
-  }
-
-  // src/drag.js
-  function withinTolerance(rect, x, y, tol = 0) {
-    return x >= rect.left - tol && x <= rect.right + tol && y >= rect.top - tol && y <= rect.bottom + tol;
-  }
-  function rectCenter(r) {
-    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
-  }
-  function findDropTarget(targets, x, y, tol = 0) {
-    let best = null, bestD = Infinity;
-    for (const t of targets) {
-      if (!t.active) continue;
-      if (!withinTolerance(t.rect, x, y, tol)) continue;
-      const c = rectCenter(t.rect);
-      const d = (c.x - x) ** 2 + (c.y - y) ** 2;
-      if (d < bestD) {
-        bestD = d;
-        best = t;
-      }
-    }
-    return best;
-  }
-  function stageInfo() {
-    const stage2 = document.getElementById("stage");
-    const rect = stage2.getBoundingClientRect();
-    const logicalW = stage2.offsetWidth || 1280;
-    const scale = rect.width / logicalW;
-    return { stage: stage2, rect, scale };
-  }
-  function toStageLocal(clientX, clientY) {
-    const { rect, scale } = stageInfo();
-    return {
-      x: (clientX - rect.left) / scale,
-      y: (clientY - rect.top) / scale
-    };
-  }
-  function createDragManager({ getTargets, onPickup, onDrop }) {
-    const drags = /* @__PURE__ */ new Map();
-    function bindListeners() {
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", end);
-      window.addEventListener("pointercancel", end);
-    }
-    function unbindListeners() {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", end);
-      window.removeEventListener("pointercancel", end);
-    }
-    function start(e, sourceEl, payload) {
-      e.preventDefault();
-      if (drags.has(e.pointerId)) return;
-      const tileRect = sourceEl.getBoundingClientRect();
-      const { stage: stage2, rect: sRect, scale } = stageInfo();
-      const tileLocalLeft = (tileRect.left - sRect.left) / scale;
-      const tileLocalTop = (tileRect.top - sRect.top) / scale;
-      const pointerLocal = toStageLocal(e.clientX, e.clientY);
-      const offsetX = pointerLocal.x - tileLocalLeft;
-      const offsetY = pointerLocal.y - tileLocalTop;
-      const origin = { x: tileLocalLeft, y: tileLocalTop };
-      const dragEl = sourceEl.cloneNode(true);
-      dragEl.classList.add("drag-clone");
-      dragEl.classList.remove("dim", "hint-dim", "hint-target");
-      dragEl.style.position = "absolute";
-      dragEl.style.left = `${origin.x}px`;
-      dragEl.style.top = `${origin.y}px`;
-      dragEl.style.margin = "0";
-      dragEl.style.pointerEvents = "none";
-      stage2.appendChild(dragEl);
-      sourceEl.style.visibility = "hidden";
-      if (drags.size === 0) bindListeners();
-      drags.set(e.pointerId, { dragEl, sourceEl, payload, origin, offsetX, offsetY });
-      sourceEl.setPointerCapture?.(e.pointerId);
-      onPickup?.(payload, dragEl);
-      dragEl.classList.add("dragging");
-    }
-    function move(e) {
-      const d = drags.get(e.pointerId);
-      if (!d) return;
-      const p = toStageLocal(e.clientX, e.clientY);
-      d.dragEl.style.left = `${p.x - d.offsetX}px`;
-      d.dragEl.style.top = `${p.y - d.offsetY}px`;
-    }
-    function end(e) {
-      const d = drags.get(e.pointerId);
-      if (!d) return;
-      drags.delete(e.pointerId);
-      if (drags.size === 0) unbindListeners();
-      const { dragEl, sourceEl, payload, origin } = d;
-      const targets = getTargets();
-      const target = findDropTarget(targets, e.clientX, e.clientY, 40);
-      dragEl.classList.remove("dragging");
-      sourceEl.style.visibility = "";
-      onDrop?.(payload, target, dragEl, origin, { sourceEl });
-    }
-    return { start };
-  }
-
   // src/animate.js
   function tilePickup(el) {
     el.classList.add("dragging");
@@ -2234,6 +2019,32 @@ button {
         { duration: 700 + Math.random() * 200, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
       ).onfinish = () => p.remove();
     }
+  }
+  var PRAISE_WORDS = ["GREAT!", "WOW!", "SUPER!", "YAY!", "AMAZING!", "NICE ONE!"];
+  var lastPraiseIdx = -1;
+  function praiseBurst() {
+    const stage2 = document.getElementById("stage");
+    if (!stage2) return;
+    let i;
+    do {
+      i = Math.floor(Math.random() * PRAISE_WORDS.length);
+    } while (i === lastPraiseIdx);
+    lastPraiseIdx = i;
+    const el = document.createElement("div");
+    el.className = "praise-pop display";
+    el.textContent = PRAISE_WORDS[i];
+    stage2.appendChild(el);
+    const rot = (Math.random() - 0.5) * 10;
+    el.animate(
+      [
+        { transform: `translate(-50%,-50%) scale(0) rotate(${rot}deg)`, opacity: 0 },
+        { transform: `translate(-50%,-50%) scale(1.18) rotate(${rot}deg)`, opacity: 1, offset: 0.22 },
+        { transform: `translate(-50%,-50%) scale(1) rotate(${rot}deg)`, opacity: 1, offset: 0.38 },
+        { transform: `translate(-50%,-50%) scale(1) rotate(${rot}deg)`, opacity: 1, offset: 0.75 },
+        { transform: `translate(-50%,-70%) scale(1.06) rotate(${rot}deg)`, opacity: 0 }
+      ],
+      { duration: 1200, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
+    ).onfinish = () => el.remove();
   }
   function spawnSparkles(svgRoot, opts = {}) {
     const parent = svgRoot?.parentElement;
@@ -2712,6 +2523,10 @@ button {
         { duration: PHASE_A_MS, easing: SMOOTH, fill: "forwards" }
       );
       setTimeout(() => {
+        if (!tensTopEl.isConnected || !onesTopEl.isConnected) {
+          resolve();
+          return;
+        }
         const chip = document.createElement("div");
         chip.className = "borrow-chip";
         chip.textContent = "10";
@@ -2733,6 +2548,11 @@ button {
           ],
           { duration: 1700, easing: SMOOTH, fill: "forwards" }
         ).onfinish = () => {
+          if (!onesTopEl.isConnected) {
+            chip.remove();
+            resolve();
+            return;
+          }
           const plus = document.createElement("div");
           plus.className = "borrow-plus";
           plus.textContent = "+";
@@ -2878,6 +2698,264 @@ button {
     }
   }
 
+  // src/screens/splash.js
+  function mount(stage2, state2, router2) {
+    const sec = document.createElement("section");
+    sec.className = "screen active";
+    sec.id = "screen-splash";
+    const cogWrap = document.createElement("div");
+    cogWrap.className = "cog-corner";
+    const cogLabel = document.createElement("span");
+    cogLabel.className = "cog-label display";
+    cogLabel.textContent = "PARENTS";
+    cogWrap.appendChild(cogLabel);
+    cogWrap.insertAdjacentHTML("beforeend", cog());
+    sec.appendChild(cogWrap);
+    const title = document.createElement("h1");
+    title.className = "splash-title display";
+    title.textContent = "JHANAV'S MATH";
+    sec.appendChild(title);
+    const mascot = document.createElement("div");
+    mascot.className = "splash-mascot";
+    mascot.insertAdjacentHTML("beforeend", banji("idle"));
+    sec.appendChild(mascot);
+    const btn = document.createElement("button");
+    btn.className = "btn pill splash-play";
+    btn.textContent = "TAP TO PLAY \u25B6";
+    sec.appendChild(btn);
+    const lockUntil = parseInt(localStorage.getItem("bm.parentLockUntil") || "0", 10);
+    const lockRemaining = Math.max(0, lockUntil - Date.now());
+    let lockBanner = null;
+    let lockTimer = null;
+    if (lockRemaining > 0) {
+      lockBanner = document.createElement("div");
+      lockBanner.className = "parent-lock-banner display";
+      const swallow = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      lockBanner.addEventListener("pointerdown", swallow);
+      lockBanner.addEventListener("pointerup", swallow);
+      lockBanner.addEventListener("click", swallow);
+      sec.appendChild(lockBanner);
+      const tick = () => {
+        const left = Math.max(0, Math.ceil((lockUntil - Date.now()) / 1e3));
+        if (left <= 0) {
+          localStorage.removeItem("bm.parentLockUntil");
+          lockBanner.remove();
+          lockBanner = null;
+          clearInterval(lockTimer);
+        } else {
+          lockBanner.textContent = `PARENTS: PLEASE WAIT ${left}s`;
+        }
+      };
+      tick();
+      lockTimer = setInterval(tick, 250);
+    }
+    function isLocked() {
+      return lockBanner !== null;
+    }
+    function go() {
+      if (isLocked()) return;
+      unlockAudio();
+      sfx.transition();
+      router2.go("map");
+    }
+    btn.addEventListener("pointerup", go);
+    sec.addEventListener("pointerup", (e) => {
+      if (e.target.closest(".cog-corner")) return;
+      if (e.target.closest(".splash-mascot")) return;
+      if (!e.target.closest("button")) go();
+    });
+    mascot.addEventListener("pointerup", () => {
+      if (isLocked()) return;
+      unlockAudio();
+      sfx.mascotChirp();
+      const svg = mascot.querySelector("svg");
+      if (svg) mascotCheer(svg);
+    });
+    cogWrap.addEventListener("pointerup", () => {
+      if (isLocked()) return;
+      router2.go("settings");
+    });
+    stage2.appendChild(sec);
+    return () => {
+      if (lockTimer) clearInterval(lockTimer);
+      sec.remove();
+    };
+  }
+
+  // src/screens/map.js
+  var WORLDS = [
+    { id: "add", name: "BANANA HILLS" },
+    { id: "sub", name: "MISTY RIVER" },
+    { id: "mult", name: "FIREFLY MEADOW" }
+  ];
+  function mount2(stage2, state2, router2) {
+    const sec = document.createElement("section");
+    sec.className = "screen active";
+    sec.id = "screen-map";
+    const progress = loadProgress();
+    const homeBtn = document.createElement("button");
+    homeBtn.className = "home-btn";
+    homeBtn.insertAdjacentHTML("beforeend", home());
+    homeBtn.addEventListener("pointerup", () => router2.go("splash"));
+    sec.appendChild(homeBtn);
+    const meter = document.createElement("div");
+    meter.className = "star-meter total display";
+    meter.insertAdjacentHTML("beforeend", `STARS: ${star(true)} ${totalStars(progress)} / 54`);
+    sec.appendChild(meter);
+    const grid = document.createElement("div");
+    grid.className = "world-grid";
+    sec.appendChild(grid);
+    WORLDS.forEach((w) => {
+      const panel = document.createElement("div");
+      panel.className = `world-panel world-${w.id}`;
+      const worldTitle = document.createElement("h2");
+      worldTitle.className = "world-title display";
+      worldTitle.textContent = w.name;
+      panel.appendChild(worldTitle);
+      const path = document.createElement("div");
+      path.className = "level-path";
+      panel.appendChild(path);
+      for (let l = 1; l <= 6; l++) {
+        const stars = progress[w.id][l] || 0;
+        const unlocked = isLevelUnlocked(progress, w.id, l);
+        const node = document.createElement("button");
+        node.className = `level-node ${unlocked ? "unlocked" : "locked"} stars-${stars}`;
+        node.dataset.world = w.id;
+        node.dataset.level = String(l);
+        if (!unlocked) {
+          node.insertAdjacentHTML("beforeend", padlock());
+        } else {
+          const numEl = document.createElement("span");
+          numEl.className = "display";
+          numEl.textContent = String(l);
+          node.appendChild(numEl);
+          if (stars > 0) {
+            const ribbon = document.createElement("div");
+            ribbon.className = "node-ribbon";
+            for (let s = 0; s < 3; s++) ribbon.insertAdjacentHTML("beforeend", star(s < stars));
+            node.appendChild(ribbon);
+          }
+        }
+        node.addEventListener("pointerup", () => {
+          if (!unlocked) {
+            sfx.lockedTap();
+            node.animate(
+              [{ transform: "rotate(0)" }, { transform: "rotate(6deg)" }, { transform: "rotate(-6deg)" }, { transform: "rotate(0)" }],
+              { duration: 300 }
+            );
+            return;
+          }
+          sfx.transition();
+          router2.go("level", { world: w.id, level: l });
+        });
+        path.appendChild(node);
+      }
+      grid.appendChild(panel);
+    });
+    stage2.dataset.world = "add";
+    stage2.appendChild(sec);
+    return () => sec.remove();
+  }
+
+  // src/drag.js
+  function withinTolerance(rect, x, y, tol = 0) {
+    return x >= rect.left - tol && x <= rect.right + tol && y >= rect.top - tol && y <= rect.bottom + tol;
+  }
+  function rectCenter(r) {
+    return { x: (r.left + r.right) / 2, y: (r.top + r.bottom) / 2 };
+  }
+  function findDropTarget(targets, x, y, tol = 0) {
+    let best = null, bestD = Infinity;
+    for (const t of targets) {
+      if (!t.active) continue;
+      if (!withinTolerance(t.rect, x, y, tol)) continue;
+      const c = rectCenter(t.rect);
+      const d = (c.x - x) ** 2 + (c.y - y) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = t;
+      }
+    }
+    return best;
+  }
+  function stageInfo() {
+    const stage2 = document.getElementById("stage");
+    const rect = stage2.getBoundingClientRect();
+    const logicalW = stage2.offsetWidth || 1280;
+    const scale = rect.width / logicalW;
+    return { stage: stage2, rect, scale };
+  }
+  function toStageLocal(clientX, clientY) {
+    const { rect, scale } = stageInfo();
+    return {
+      x: (clientX - rect.left) / scale,
+      y: (clientY - rect.top) / scale
+    };
+  }
+  function createDragManager({ getTargets, onPickup, onDrop }) {
+    const drags = /* @__PURE__ */ new Map();
+    function bindListeners() {
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", end);
+      window.addEventListener("pointercancel", end);
+    }
+    function unbindListeners() {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    }
+    function start(e, sourceEl, payload) {
+      e.preventDefault();
+      if (drags.has(e.pointerId)) return;
+      const tileRect = sourceEl.getBoundingClientRect();
+      const { stage: stage2, rect: sRect, scale } = stageInfo();
+      const tileLocalLeft = (tileRect.left - sRect.left) / scale;
+      const tileLocalTop = (tileRect.top - sRect.top) / scale;
+      const pointerLocal = toStageLocal(e.clientX, e.clientY);
+      const offsetX = pointerLocal.x - tileLocalLeft;
+      const offsetY = pointerLocal.y - tileLocalTop;
+      const origin = { x: tileLocalLeft, y: tileLocalTop };
+      const dragEl = sourceEl.cloneNode(true);
+      dragEl.classList.add("drag-clone");
+      dragEl.classList.remove("dim", "hint-dim", "hint-target");
+      dragEl.style.position = "absolute";
+      dragEl.style.left = `${origin.x}px`;
+      dragEl.style.top = `${origin.y}px`;
+      dragEl.style.margin = "0";
+      dragEl.style.pointerEvents = "none";
+      stage2.appendChild(dragEl);
+      sourceEl.style.visibility = "hidden";
+      if (drags.size === 0) bindListeners();
+      drags.set(e.pointerId, { dragEl, sourceEl, payload, origin, offsetX, offsetY });
+      sourceEl.setPointerCapture?.(e.pointerId);
+      onPickup?.(payload, dragEl);
+      dragEl.classList.add("dragging");
+    }
+    function move(e) {
+      const d = drags.get(e.pointerId);
+      if (!d) return;
+      const p = toStageLocal(e.clientX, e.clientY);
+      d.dragEl.style.left = `${p.x - d.offsetX}px`;
+      d.dragEl.style.top = `${p.y - d.offsetY}px`;
+    }
+    function end(e) {
+      const d = drags.get(e.pointerId);
+      if (!d) return;
+      drags.delete(e.pointerId);
+      if (drags.size === 0) unbindListeners();
+      const { dragEl, sourceEl, payload, origin } = d;
+      const targets = getTargets();
+      const target = findDropTarget(targets, e.clientX, e.clientY, 40);
+      dragEl.classList.remove("dragging");
+      sourceEl.style.visibility = "";
+      onDrop?.(payload, target, dragEl, origin, { sourceEl });
+    }
+    return { start };
+  }
+
   // src/layout.js
   var TRAY_BOTTOM = 16;
   var BAND_PAD = 14;
@@ -2934,16 +3012,23 @@ button {
     tray.style.height = `${h}px`;
     return h;
   }
-  function centerPlay(stage2, el, bandTop, bandBottom, scaleToFit) {
+  function centerPlay(stage2, el, bandTop, bandBottom, scaleToFit, maxUp = 1) {
     if (!el) return;
     el.style.position = "absolute";
     el.style.left = "50%";
     el.style.transform = "none";
     el.style.top = "";
     const natH = el.offsetHeight;
+    const natW = el.offsetWidth;
     const bandH = Math.max(0, bandBottom - bandTop);
     let s = 1;
-    if (scaleToFit && natH > bandH && natH > 0) s = bandH / natH;
+    if (scaleToFit && natH > 0) {
+      if (natH > bandH) {
+        s = bandH / natH;
+      } else if (maxUp > 1 && natW > 0) {
+        s = Math.max(1, Math.min(maxUp, bandH / natH, (stage2.offsetWidth - 24) / natW));
+      }
+    }
     const center = (bandTop + bandBottom) / 2;
     el.style.top = `${center}px`;
     el.style.transform = `translate(-50%, -50%) scale(${s})`;
@@ -2996,7 +3081,7 @@ button {
     const trayH = fitTray(stage2, tray, maxTrayHeight(H));
     const bandTop = headerBottom(stage2, sec) + BAND_PAD;
     const bandBottom = H - TRAY_BOTTOM - trayH - BAND_PAD;
-    centerPlay(stage2, firefly2, bandTop, bandBottom, true);
+    centerPlay(stage2, firefly2, bandTop, bandBottom, true, 1.35);
   }
   function layoutMultDrag(stage2, sec) {
     if (!sec || !sec.isConnected) return;
@@ -3255,6 +3340,7 @@ button {
             attachTileListeners();
           } else {
             sfx.correctYay();
+            praiseBurst();
             await advanceProblem();
           }
         }
@@ -3471,6 +3557,7 @@ button {
             attachTileListeners();
           } else {
             sfx.correctYay();
+            praiseBurst();
             await advanceProblem();
           }
         }
@@ -3675,10 +3762,12 @@ button {
             await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
+            if (trayWrongOnCurrentSlot >= 2) applyHint();
             return;
           }
           await tileSnapIn(sourceEl, target.el);
           sfx.correctYay();
+          praiseBurst();
           idx++;
           renderProgressDots();
           if (idx >= problems.length) {
@@ -3690,6 +3779,18 @@ button {
         }
       });
       renderTrayListeners();
+    }
+    function applyHint() {
+      const correct = problems[idx].answer;
+      sec.querySelectorAll(".tile").forEach((tile) => {
+        if (parseInt(tile.dataset.value, 10) === correct) {
+          tile.classList.remove("dim", "hint-dim");
+          tile.classList.add("hint-target");
+        } else {
+          tile.classList.add("hint-dim");
+        }
+      });
+      sfx.hintHmm();
     }
     function renderTrayListeners() {
       sec.querySelectorAll(".tile").forEach((tile) => {
@@ -3845,10 +3946,12 @@ button {
             await tileBounceBack(sourceEl, origin, parentInfo);
             target.el.classList.add("flash-no");
             setTimeout(() => target.el.classList.remove("flash-no"), 200);
+            if (trayWrongOnCurrentSlot >= 2) applyHint();
             return;
           }
           await tileSnapIn(sourceEl, target.el);
           sfx.correctYay();
+          praiseBurst();
           idx++;
           renderProgressDots();
           if (idx >= problems.length) {
@@ -3861,6 +3964,18 @@ button {
       });
       buildTray();
       relayout();
+    }
+    function applyHint() {
+      const correct = problems[idx].answer;
+      sec.querySelectorAll(".tile").forEach((tile) => {
+        if (parseInt(tile.dataset.value, 10) === correct) {
+          tile.classList.remove("dim", "hint-dim");
+          tile.classList.add("hint-target");
+        } else {
+          tile.classList.add("hint-dim");
+        }
+      });
+      sfx.hintHmm();
     }
     function onPileTap(srcMango) {
       const gIdx = groupContents.findIndex((g) => g.filled < g.needed);
