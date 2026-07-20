@@ -1,6 +1,6 @@
 import { getProblems } from "../logic.js";
 import { createDragManager } from "../drag.js";
-import { tilePickup, tileBounceBack, tileSnapIn, tapBlock, blockFlyIn } from "../animate.js";
+import { tilePickup, tileBounceBack, tileSnapIn, tapBlock, blockFlyIn, praiseBurst } from "../animate.js";
 import { home, pip, lilypad, firefly } from "../svg.js";
 import { sfx } from "../audio.js";
 import { layoutMultTap } from "../layout.js";
@@ -172,10 +172,12 @@ export function mount(stage, ctx, router) {
           await tileBounceBack(sourceEl, origin, parentInfo);
           target.el.classList.add("flash-no");
           setTimeout(() => target.el.classList.remove("flash-no"), 200);
+          if (trayWrongOnCurrentSlot >= 2) applyHint();
           return;
         }
         await tileSnapIn(sourceEl, target.el);
         sfx.correctYay();
+        praiseBurst();
         idx++;
         renderProgressDots();
         if (idx >= problems.length) {
@@ -187,6 +189,21 @@ export function mount(stage, ctx, router) {
       },
     });
     renderTrayListeners();
+  }
+
+  // Same two-wrongs help the add/sub screens give: dim every wrong tile and
+  // let the correct one pulse, so a stuck kid always has a way forward.
+  function applyHint() {
+    const correct = problems[idx].answer;
+    sec.querySelectorAll(".tile").forEach((tile) => {
+      if (parseInt(tile.dataset.value, 10) === correct) {
+        tile.classList.remove("dim", "hint-dim");
+        tile.classList.add("hint-target");
+      } else {
+        tile.classList.add("hint-dim");
+      }
+    });
+    sfx.hintHmm();
   }
 
   function renderTrayListeners() {

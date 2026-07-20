@@ -88,17 +88,27 @@ function fitTray(stage, tray, maxH) {
 }
 
 // Centre `el` vertically inside [bandTop, bandBottom]; scale down (mult only)
-// if its natural height would overflow the band.
-function centerPlay(stage, el, bandTop, bandBottom, scaleToFit) {
+// if its natural height would overflow the band, or gently UP (capped by
+// `maxUp` and the stage width) so sparse content — one lily-pad on a tall
+// phone — fills the play space instead of floating tiny in it.
+function centerPlay(stage, el, bandTop, bandBottom, scaleToFit, maxUp = 1) {
   if (!el) return;
   el.style.position = "absolute";
   el.style.left = "50%";
   el.style.transform = "none";
   el.style.top = "";
   const natH = el.offsetHeight; // measured at scale 1
+  const natW = el.offsetWidth;
   const bandH = Math.max(0, bandBottom - bandTop);
   let s = 1;
-  if (scaleToFit && natH > bandH && natH > 0) s = bandH / natH;
+  if (scaleToFit && natH > 0) {
+    if (natH > bandH) {
+      s = bandH / natH; // shrink to fit — unchanged behavior
+    } else if (maxUp > 1 && natW > 0) {
+      // Grow into the band, but never past the stage width or the cap.
+      s = Math.max(1, Math.min(maxUp, bandH / natH, (stage.offsetWidth - 24) / natW));
+    }
+  }
   const center = (bandTop + bandBottom) / 2;
   el.style.top = `${center}px`;
   el.style.transform = `translate(-50%, -50%) scale(${s})`;
@@ -161,7 +171,8 @@ export function layoutMultTap(stage, sec) {
   const trayH = fitTray(stage, tray, maxTrayHeight(H));
   const bandTop = headerBottom(stage, sec) + BAND_PAD;
   const bandBottom = H - TRAY_BOTTOM - trayH - BAND_PAD;
-  centerPlay(stage, firefly, bandTop, bandBottom, true);
+  // Allow gentle grow so 1–2 group problems fill the band with big pads.
+  centerPlay(stage, firefly, bandTop, bandBottom, true, 1.35);
 }
 
 export function layoutMultDrag(stage, sec) {

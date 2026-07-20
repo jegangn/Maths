@@ -1,6 +1,6 @@
 import { getProblems } from "../logic.js";
 import { createDragManager } from "../drag.js";
-import { tilePickup, tileBounceBack, tileSnapIn } from "../animate.js";
+import { tilePickup, tileBounceBack, tileSnapIn, praiseBurst } from "../animate.js";
 import { home, pip, mango } from "../svg.js";
 import { sfx } from "../audio.js";
 import { layoutMultDrag } from "../layout.js";
@@ -163,10 +163,12 @@ export function mount(stage, ctx, router) {
           await tileBounceBack(sourceEl, origin, parentInfo);
           target.el.classList.add("flash-no");
           setTimeout(() => target.el.classList.remove("flash-no"), 200);
+          if (trayWrongOnCurrentSlot >= 2) applyHint();
           return;
         }
         await tileSnapIn(sourceEl, target.el);
         sfx.correctYay();
+        praiseBurst();
         idx++; renderProgressDots();
         if (idx >= problems.length) {
           router.go("complete", { world, level, wrongCount: totalWrong });
@@ -179,6 +181,21 @@ export function mount(stage, ctx, router) {
     // Tray must be built after dragMgr exists (tiles wire onpointerdown to it).
     buildTray();
     relayout();
+  }
+
+  // Two-wrongs help, matching the other level screens: dim wrong tiles and
+  // pulse the correct one so a stuck kid always has a way forward.
+  function applyHint() {
+    const correct = problems[idx].answer;
+    sec.querySelectorAll(".tile").forEach((tile) => {
+      if (parseInt(tile.dataset.value, 10) === correct) {
+        tile.classList.remove("dim", "hint-dim");
+        tile.classList.add("hint-target");
+      } else {
+        tile.classList.add("hint-dim");
+      }
+    });
+    sfx.hintHmm();
   }
 
   // Tapping a pile mango flies a copy into the next empty group slot.

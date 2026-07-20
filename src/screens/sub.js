@@ -1,6 +1,6 @@
 import { getProblems, analyze, createAnswerState, dropDigit, isComplete } from "../logic.js";
 import { createDragManager } from "../drag.js";
-import { tilePickup, tileBounceBack, tileSnapIn, animateBorrow } from "../animate.js";
+import { tilePickup, tileBounceBack, tileSnapIn, animateBorrow, praiseBurst } from "../animate.js";
 import { sfx } from "../audio.js";
 import { home, mo } from "../svg.js";
 import { layoutAddSub } from "../layout.js";
@@ -161,6 +161,7 @@ export function mount(stage, ctx, router) {
           attachTileListeners();
         } else {
           sfx.correctYay();
+          praiseBurst();
           await advanceProblem();
         }
       },

@@ -1,5 +1,6 @@
 import { banji, cog } from "../svg.js";
 import { unlockAudio, sfx } from "../audio.js";
+import { mascotCheer } from "../animate.js";
 
 export function mount(stage, state, router) {
   const sec = document.createElement("section");
@@ -73,7 +74,19 @@ export function mount(stage, state, router) {
   btn.addEventListener("pointerup", go);
   sec.addEventListener("pointerup", (e) => {
     if (e.target.closest(".cog-corner")) return;
+    if (e.target.closest(".splash-mascot")) return; // poking the mascot is its own game
     if (!e.target.closest("button")) go();
+  });
+
+  // Kids poke characters — reward it with a chirp and a little dance instead
+  // of yanking them into the map. The big PLAY button (or any other tap)
+  // still starts the game.
+  mascot.addEventListener("pointerup", () => {
+    if (isLocked()) return;
+    unlockAudio();
+    sfx.mascotChirp();
+    const svg = mascot.querySelector("svg");
+    if (svg) mascotCheer(svg);
   });
 
   cogWrap.addEventListener("pointerup", () => {

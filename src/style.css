@@ -198,6 +198,21 @@ html, body {
 .mascot-sparkle:nth-child(3n) { background: var(--world-primary); }
 .mascot-sparkle:nth-child(3n+1) { background: var(--success); }
 
+/* Big encouraging word that pops mid-screen when a problem is solved. */
+.praise-pop {
+  position: absolute; left: 50%; top: 38%;
+  transform: translate(-50%, -50%);
+  font-size: 88px;
+  color: var(--star);
+  -webkit-text-stroke: 8px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 rgba(120,70,20,.3);
+  pointer-events: none;
+  z-index: 600;
+  white-space: nowrap;
+}
+#stage[data-orient="portrait"] .praise-pop { font-size: 68px; }
+
 .block-host {
   width: 96px; height: 96px;
   display: inline-block;
@@ -208,7 +223,9 @@ html, body {
 }
 .block-host.idle-wobble { animation: blockWobble 2s ease-in-out infinite; }
 @keyframes blockWobble { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
-.block-host.untapped { opacity: .55; filter: none; }
+/* Untapped stays clearly dimmer than tapped (no glow, no badge) but bright
+   enough that the screen doesn't read as washed-out. */
+.block-host.untapped { opacity: .8; filter: none; }
 .block-host.tapped   { opacity: 1; animation: blockPop .35s var(--ease-pop); }
 .block-host.dragging { transform: scale(1.15); animation: none; z-index: 200; cursor: grabbing; }
 .block-host.in-group { transform: scale(1); animation: none; }
@@ -265,7 +282,7 @@ button {
      !important; the explicit disabled state still needs to mute. */
   opacity: .55 !important;
 }
-.btn.pill   { min-width: 480px; height: 120px; font-size: 56px; }
+.btn.pill   { min-width: 480px; height: 120px; font-size: 56px; white-space: nowrap; }
 .btn.ghost  { background: linear-gradient(180deg, #FFFDF4, var(--bg-card)); }
 .btn.success{ background: linear-gradient(180deg, color-mix(in srgb, var(--success) 75%, #fff), var(--success) 55%, var(--success-deep)); color: #fff; }
 .btn:disabled, .btn.disabled {
@@ -361,19 +378,24 @@ button {
 }
 
 /* ===== TASK 19: Block Styles ===== */
+/* The running count IS the lesson in tap-count — make the numeral big and
+   bold enough for a 5-year-old to read at arm's length. */
 .count-badge {
   position: absolute;
-  top: -8px; right: -8px;
-  width: 28px; height: 28px;
+  top: -14px; right: -14px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   background: var(--gentle-no);
   color: white;
+  border: 3px solid var(--ink);
   font-family: 'Lilita One', system-ui;
-  font-size: 16px;
+  font-size: 24px;
   display: flex; align-items: center; justify-content: center;
   opacity: 0;
   transform: scale(0);
   transition: all .2s var(--ease-pop);
+  z-index: 5;
+  box-shadow: 0 3px 0 rgba(120,70,20,.25);
 }
 .count-badge.show { opacity: 1; transform: scale(1); }
 
@@ -525,11 +547,19 @@ button {
   gap: 24px; height: 100%; padding: 120px 24px 24px;
 }
 .world-panel {
-  background: linear-gradient(180deg, #FFFBEE 0%, var(--bg-card) 100%);
+  background: linear-gradient(180deg, #FFFBEE 0%, var(--wp-bg, var(--bg-card)) 100%);
   border: 5px solid var(--ink);
   border-radius: var(--r-lg);
   box-shadow: var(--sh-1), inset 0 0 0 3px rgba(255,255,255,.5);
   padding: 16px; position: relative; overflow: hidden;
+}
+/* Each world gets its own tint so the three worlds read as distinct places
+   even to a non-reader — sunny yellow hills, teal river, golden meadow. */
+.world-panel.world-add  { --wp: #FFB933; --wp-bg: #FFF1CE; }
+.world-panel.world-sub  { --wp: #3DC5C5; --wp-bg: #DFF4F1; }
+.world-panel.world-mult { --wp: #E8891A; --wp-bg: #FCEBCB; }
+.world-panel .level-node:not(.locked) {
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--wp) 60%, #fff), var(--wp) 72%);
 }
 .world-title { text-align: center; font-size: 28px; margin: 0 0 12px; }
 .world-add  .world-title { color: #B07020; }
@@ -1059,23 +1089,28 @@ button {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 432px;
+  /* Wide enough for two 250px pads side-by-side; the layout engine scales the
+     whole area down when the band is short, so bigger is safe. */
+  width: 560px;
   height: auto;
   gap: 14px 12px;
   justify-content: center;
   align-content: center;
 }
+/* Generous default sizes — the portrait layout engine scales the whole
+   firefly area DOWN if it overflows the band, so big pads fill the screen on
+   1–2 group problems instead of floating tiny in empty space. */
 #stage[data-orient="portrait"] .lily-group {
-  width: 200px;
-  height: 180px;
+  width: 250px;
+  height: 225px;
 }
 #stage[data-orient="portrait"] .block-grid .block-host {
-  width: 60px;
-  height: 60px;
+  width: 76px;
+  height: 76px;
 }
 #stage[data-orient="portrait"] .block-grid[data-count="5"] .block-host {
-  width: 46px;
-  height: 46px;
+  width: 56px;
+  height: 56px;
 }
 #stage[data-orient="portrait"] .mult-problem .op-chip.q.slot { width: 80px; height: 90px; font-size: 44px; }
 /* Portrait: trays + pile live inside .play-col, which the layout engine centres
