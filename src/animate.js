@@ -133,6 +133,37 @@ export function correctBurst(slotEl) {
   }
 }
 
+// ===== Praise word pop — a big encouraging word when a whole problem is solved =====
+//
+// A 5-year-old gets a readable, colorful reward beat between problems, not
+// just a sound. Words rotate and never repeat back-to-back.
+const PRAISE_WORDS = ["GREAT!", "WOW!", "SUPER!", "YAY!", "AMAZING!", "NICE ONE!"];
+let lastPraiseIdx = -1;
+
+export function praiseBurst() {
+  const stage = document.getElementById("stage");
+  if (!stage) return;
+  let i;
+  do { i = Math.floor(Math.random() * PRAISE_WORDS.length); }
+  while (i === lastPraiseIdx);
+  lastPraiseIdx = i;
+  const el = document.createElement("div");
+  el.className = "praise-pop display";
+  el.textContent = PRAISE_WORDS[i];
+  stage.appendChild(el);
+  const rot = (Math.random() - 0.5) * 10;
+  el.animate(
+    [
+      { transform: `translate(-50%,-50%) scale(0) rotate(${rot}deg)`, opacity: 0 },
+      { transform: `translate(-50%,-50%) scale(1.18) rotate(${rot}deg)`, opacity: 1, offset: 0.22 },
+      { transform: `translate(-50%,-50%) scale(1) rotate(${rot}deg)`, opacity: 1, offset: 0.38 },
+      { transform: `translate(-50%,-50%) scale(1) rotate(${rot}deg)`, opacity: 1, offset: 0.75 },
+      { transform: `translate(-50%,-70%) scale(1.06) rotate(${rot}deg)`, opacity: 0 },
+    ],
+    { duration: 1200, easing: "cubic-bezier(0.34,1.6,0.5,1)", fill: "forwards" }
+  ).onfinish = () => el.remove();
+}
+
 export function mascotQuickHop(svgRoot) {
   svgRoot.animate(
     [
@@ -652,6 +683,10 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
     // the ones cell. (Going ABOVE the cell, not left of it, avoids the
     // tens cell that already sits to the left of the ones cell.)
     setTimeout(() => {
+      // The screen may have been unmounted mid-animation (kid tapped Home).
+      // Detached cells report 0×0 rects, which would park a stray chip in the
+      // top-left corner of whatever screen is showing — so bail out instead.
+      if (!tensTopEl.isConnected || !onesTopEl.isConnected) { resolve(); return; }
       const chip = document.createElement("div");
       chip.className = "borrow-chip";
       chip.textContent = "10";
@@ -681,6 +716,8 @@ export function animateBorrow({ tensTopEl, onesTopEl, newTensDigit, newOnesValue
         ],
         { duration: 1700, easing: SMOOTH, fill: "forwards" }
       ).onfinish = () => {
+        // Same unmount guard for phase C — drop the chip and stop.
+        if (!onesTopEl.isConnected) { chip.remove(); resolve(); return; }
         // Phase C — explicit "10 + 4 = 14" reveal.
         // A "+" sign fades in between the chip and the ones digit (between
         // chip's bottom and the cell's top — vertically stacked equation).
