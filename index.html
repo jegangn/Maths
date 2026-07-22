@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#FFF3DC" />
-  <title>Jhanav's Math Adventure</title>
+  <title>Math Adventure</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;900&family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -522,6 +522,29 @@ button {
 }
 .cog-corner svg { width: 56px; height: 56px; }
 .cog-label { font-size: 28px; color: var(--ink); letter-spacing: 0.04em; }
+.name-entry {
+  position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 22px;
+  z-index: 5;
+}
+.name-input {
+  width: 460px; height: 92px;
+  text-align: center;
+  font-family: 'Fredoka', 'Lilita One', system-ui, sans-serif;
+  font-weight: 700; font-size: 42px; color: var(--ink);
+  background: #FFFDF4;
+  border: 4px solid var(--ink); border-radius: var(--r-pill);
+  box-shadow: var(--sh-2);
+  text-transform: uppercase;
+  outline: none;
+}
+.name-input::placeholder {
+  color: color-mix(in srgb, var(--ink) 35%, transparent);
+  font-size: 30px; letter-spacing: 1px;
+}
+.name-input:focus {
+  box-shadow: var(--sh-2), 0 0 0 6px color-mix(in srgb, var(--star) 60%, transparent);
+}
 .parent-lock-banner {
   position: absolute; top: 250px; left: 50%; transform: translateX(-50%);
   background: var(--gentle-no); color: #FFF; border: 4px solid var(--ink);
@@ -904,6 +927,12 @@ button {
   min-width: 360px;
   height: 110px;
   font-size: 44px;
+}
+#stage[data-orient="portrait"] .name-entry {
+  bottom: 130px;
+}
+#stage[data-orient="portrait"] .name-input {
+  width: 480px; height: 100px; font-size: 44px;
 }
 #stage[data-orient="portrait"] .cog-corner {
   top: 24px;
@@ -2699,6 +2728,9 @@ button {
   }
 
   // src/screens/splash.js
+  function getPlayerName() {
+    return (localStorage.getItem("bm.playerName") || "").trim();
+  }
   function mount(stage2, state2, router2) {
     const sec = document.createElement("section");
     sec.className = "screen active";
@@ -2713,7 +2745,6 @@ button {
     sec.appendChild(cogWrap);
     const title = document.createElement("h1");
     title.className = "splash-title display";
-    title.textContent = "JHANAV'S MATH";
     sec.appendChild(title);
     const mascot = document.createElement("div");
     mascot.className = "splash-mascot";
@@ -2722,7 +2753,51 @@ button {
     const btn = document.createElement("button");
     btn.className = "btn pill splash-play";
     btn.textContent = "TAP TO PLAY \u25B6";
-    sec.appendChild(btn);
+    let nameForm = null;
+    function showSplash(name) {
+      if (nameForm) {
+        nameForm.remove();
+        nameForm = null;
+      }
+      title.textContent = `${name}'S MATH`;
+      if (!btn.isConnected) sec.appendChild(btn);
+    }
+    function showNameEntry() {
+      title.textContent = "WHO'S PLAYING?";
+      nameForm = document.createElement("form");
+      nameForm.className = "name-entry";
+      const input = document.createElement("input");
+      input.className = "name-input";
+      input.type = "text";
+      input.maxLength = 12;
+      input.placeholder = "TYPE YOUR NAME";
+      input.autocomplete = "off";
+      input.setAttribute("aria-label", "Your name");
+      const go2 = document.createElement("button");
+      go2.type = "submit";
+      go2.className = "btn pill name-go";
+      go2.textContent = "LET'S GO \u25B6";
+      nameForm.append(input, go2);
+      nameForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const cleaned = input.value.replace(/[^\p{L}\p{N} ]/gu, "").replace(/\s+/g, " ").trim().slice(0, 12).toUpperCase();
+        if (!cleaned) {
+          input.focus();
+          return;
+        }
+        localStorage.setItem("bm.playerName", cleaned);
+        unlockAudio();
+        sfx.mascotChirp();
+        const svg = mascot.querySelector("svg");
+        if (svg) mascotCheer(svg);
+        showSplash(cleaned);
+      });
+      sec.appendChild(nameForm);
+      setTimeout(() => input.focus(), 50);
+    }
+    const playerName = getPlayerName();
+    if (playerName) showSplash(playerName);
+    else showNameEntry();
     const lockUntil = parseInt(localStorage.getItem("bm.parentLockUntil") || "0", 10);
     const lockRemaining = Math.max(0, lockUntil - Date.now());
     let lockBanner = null;
@@ -2756,13 +2831,14 @@ button {
       return lockBanner !== null;
     }
     function go() {
-      if (isLocked()) return;
+      if (isLocked() || nameForm) return;
       unlockAudio();
       sfx.transition();
       router2.go("map");
     }
     btn.addEventListener("pointerup", go);
     sec.addEventListener("pointerup", (e) => {
+      if (nameForm) return;
       if (e.target.closest(".cog-corner")) return;
       if (e.target.closest(".splash-mascot")) return;
       if (!e.target.closest("button")) go();
@@ -4229,6 +4305,13 @@ button {
         else localStorage.removeItem("bm.unlockAll");
         unlockBtn.textContent = nowOn ? "LOCK BACK" : "UNLOCK ALL LEVELS";
       });
+      const nameBtn = document.createElement("button");
+      nameBtn.className = "btn";
+      nameBtn.textContent = "CHANGE NAME";
+      nameBtn.addEventListener("pointerup", () => {
+        localStorage.removeItem("bm.playerName");
+        router2.go("splash");
+      });
       const resetBtn = document.createElement("button");
       resetBtn.className = "btn ghost";
       resetBtn.textContent = "RESET PROGRESS";
@@ -4245,7 +4328,7 @@ button {
       closeBtn.className = "btn ghost";
       closeBtn.textContent = "CLOSE";
       closeBtn.addEventListener("pointerup", () => router2.go("splash"));
-      c2.append(h, soundBtn, unlockBtn, resetBtn, closeBtn);
+      c2.append(h, soundBtn, unlockBtn, nameBtn, resetBtn, closeBtn);
       sec.appendChild(c2);
     }
     stage2.appendChild(sec);
