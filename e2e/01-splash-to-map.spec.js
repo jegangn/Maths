@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
 });
 
 test('boot loads splash with title and tap-to-play', async ({ page }) => {

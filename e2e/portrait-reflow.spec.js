@@ -7,7 +7,7 @@ const PHONE_LANDSCAPE = { width: 844, height: 390 };
 const TABLET_LANDSCAPE = { width: 1280, height: 800 };
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
 });
 
 // Drag a mult option tile (data-value) onto the active answer slot.

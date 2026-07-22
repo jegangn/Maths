@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('level complete: earned stars are visually filled yellow', async ({ page }) => {
   test.setTimeout(45_000);
   await page.goto('/');
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.goto('/');
   await page.locator('.splash-play').click();
   await page.locator('.world-panel').first().locator('.level-node[data-level="1"]').click();

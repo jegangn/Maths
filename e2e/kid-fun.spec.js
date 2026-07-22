@@ -9,7 +9,7 @@ import { unlockAll, goToLevel } from './helpers/math.js';
  */
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.goto('/');
   await unlockAll(page);
 });

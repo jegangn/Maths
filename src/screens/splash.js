@@ -2,6 +2,10 @@ import { banji, cog } from "../svg.js";
 import { unlockAudio, sfx } from "../audio.js";
 import { mascotCheer } from "../animate.js";
 
+export function getPlayerName() {
+  return (localStorage.getItem("bm.playerName") || "").trim();
+}
+
 export function mount(stage, state, router) {
   const sec = document.createElement("section");
   sec.className = "screen active";
@@ -18,7 +22,6 @@ export function mount(stage, state, router) {
 
   const title = document.createElement("h1");
   title.className = "splash-title display";
-  title.textContent = "JHANAV'S MATH";
   sec.appendChild(title);
 
   const mascot = document.createElement("div");
@@ -29,7 +32,57 @@ export function mount(stage, state, router) {
   const btn = document.createElement("button");
   btn.className = "btn pill splash-play";
   btn.textContent = "TAP TO PLAY ▶";
-  sec.appendChild(btn);
+
+  // First run: no stored name yet — ask who's playing before showing the
+  // personalised splash. The name lives in localStorage (bm.playerName) and
+  // can be changed later from the parent settings screen.
+  let nameForm = null;
+
+  function showSplash(name) {
+    if (nameForm) { nameForm.remove(); nameForm = null; }
+    title.textContent = `${name}'S MATH`;
+    if (!btn.isConnected) sec.appendChild(btn);
+  }
+
+  function showNameEntry() {
+    title.textContent = "WHO'S PLAYING?";
+    nameForm = document.createElement("form");
+    nameForm.className = "name-entry";
+    const input = document.createElement("input");
+    input.className = "name-input";
+    input.type = "text";
+    input.maxLength = 12;
+    input.placeholder = "TYPE YOUR NAME";
+    input.autocomplete = "off";
+    input.setAttribute("aria-label", "Your name");
+    const go = document.createElement("button");
+    go.type = "submit";
+    go.className = "btn pill name-go";
+    go.textContent = "LET'S GO ▶";
+    nameForm.append(input, go);
+    nameForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const cleaned = input.value
+        .replace(/[^\p{L}\p{N} ]/gu, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 12)
+        .toUpperCase();
+      if (!cleaned) { input.focus(); return; }
+      localStorage.setItem("bm.playerName", cleaned);
+      unlockAudio();
+      sfx.mascotChirp();
+      const svg = mascot.querySelector("svg");
+      if (svg) mascotCheer(svg);
+      showSplash(cleaned);
+    });
+    sec.appendChild(nameForm);
+    setTimeout(() => input.focus(), 50);
+  }
+
+  const playerName = getPlayerName();
+  if (playerName) showSplash(playerName);
+  else showNameEntry();
 
   // Parent-gate lock-out: if a previous gate attempt failed twice, the
   // splash is locked for 5 seconds — block all interaction and show a
@@ -66,13 +119,14 @@ export function mount(stage, state, router) {
   function isLocked() { return lockBanner !== null; }
 
   function go() {
-    if (isLocked()) return;
+    if (isLocked() || nameForm) return;
     unlockAudio();
     sfx.transition();
     router.go("map");
   }
   btn.addEventListener("pointerup", go);
   sec.addEventListener("pointerup", (e) => {
+    if (nameForm) return; // typing a name — taps must not start the game
     if (e.target.closest(".cog-corner")) return;
     if (e.target.closest(".splash-mascot")) return; // poking the mascot is its own game
     if (!e.target.closest("button")) go();

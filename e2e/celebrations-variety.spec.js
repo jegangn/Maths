@@ -67,7 +67,7 @@ test('correct drops cycle through varied celebrations (no immediate repeats)', a
 test('mascot sparkles appear on correct drop with varied count', async ({ page }) => {
   test.setTimeout(30_000);
   await page.goto('/');
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.goto('/');
   await page.locator('.splash-play').click();
   await page.locator('.world-panel').first().locator('.level-node[data-level="1"]').click();

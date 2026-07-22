@@ -80,6 +80,16 @@ export function mount(stage, state, router) {
       unlockBtn.textContent = nowOn ? "LOCK BACK" : "UNLOCK ALL LEVELS";
     });
 
+    const nameBtn = document.createElement("button");
+    nameBtn.className = "btn";
+    nameBtn.textContent = "CHANGE NAME";
+    nameBtn.addEventListener("pointerup", () => {
+      // Clearing the stored name sends the splash back into its
+      // "WHO'S PLAYING?" first-run state.
+      localStorage.removeItem("bm.playerName");
+      router.go("splash");
+    });
+
     const resetBtn = document.createElement("button");
     resetBtn.className = "btn ghost";
     resetBtn.textContent = "RESET PROGRESS";
@@ -98,7 +108,7 @@ export function mount(stage, state, router) {
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("pointerup", () => router.go("splash"));
 
-    c2.append(h, soundBtn, unlockBtn, resetBtn, closeBtn);
+    c2.append(h, soundBtn, unlockBtn, nameBtn, resetBtn, closeBtn);
     sec.appendChild(c2);
   }
 

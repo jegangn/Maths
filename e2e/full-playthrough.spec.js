@@ -188,7 +188,7 @@ async function dragMultAnswer(page, value) {
 test("Test 1: Add L1 full playthrough — 3 stars, localStorage persisted", async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
 
   // Click L1 in Banana Hills (first world panel, first level node)
@@ -268,7 +268,7 @@ test("Test 2: Add L3 carry animation — carry slot fills after ones drop", asyn
 // Answers: 12, 22, 15, 33, 44
 // ---------------------------------------------------------------------------
 test("Test 3: Sub L1 full playthrough — 3 stars", async ({ page }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
 
   // Second world panel = Misty River (sub)
@@ -358,7 +358,7 @@ test("Test 5: Mult tap L1 full playthrough — tap all blocks, drag answer", asy
   page,
 }) => {
   test.setTimeout(60_000); // 5 problems with up to 10 taps each + fly-in delays
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
 
   // Third world panel = Firefly Meadow (mult)
@@ -464,7 +464,7 @@ test("Test 6: Mult drag L4 — fill group trays then drag answer", async ({
 test("Test 7: Complete screen buttons — NEXT goes to L2, MAP returns to map", async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
   await page.locator(".world-panel").first().locator(".level-node").first().click();
   await expect(page.locator("#screen-add")).toBeVisible();
@@ -507,7 +507,7 @@ test("Test 8: Star progress persists after page reload", async ({ page }) => {
   // Do NOT use addInitScript here — it runs on reload too and would wipe localStorage.
   // Instead, clear before initial nav via evaluate after the first page.goto.
   await page.goto("/");
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.locator(".splash-play").click();
   await expect(page.locator("#screen-map")).toBeVisible();
   await page.locator(".world-panel").first().locator(".level-node").first().click();
@@ -543,7 +543,7 @@ test("Test 8: Star progress persists after page reload", async ({ page }) => {
 test("Test 9: Star scoring — 3 wrongs across level gives 2 stars", async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
   await page.locator(".world-panel").first().locator(".level-node").first().click();
   await expect(page.locator("#screen-add")).toBeVisible();
@@ -591,7 +591,7 @@ test("Test 10: Drag at 2x viewport scale — all drops land correctly", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 2560, height: 1600 });
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
   await page.locator(".world-panel").first().locator(".level-node").first().click();
   await expect(page.locator("#screen-add")).toBeVisible();
@@ -614,7 +614,7 @@ test("Test 10: Drag at 2x viewport scale — all drops land correctly", async ({
 test("Test 11: RTL enforcement — dropping tens before ones is rejected", async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
   await page.locator(".world-panel").first().locator(".level-node").first().click();
   await expect(page.locator("#screen-add")).toBeVisible();
@@ -743,7 +743,7 @@ test("Test 14: Mult tap L2 — count badge increments 1..6", async ({
 test("Test 15: Complete screen AGAIN button replays same level", async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await goToMap(page);
   await page.locator(".world-panel").first().locator(".level-node").first().click();
   await expect(page.locator("#screen-add")).toBeVisible();

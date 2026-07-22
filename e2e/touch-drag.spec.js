@@ -24,7 +24,7 @@ test.use({
 });
 
 async function navigateToAddLevel1(page) {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.goto('/');
   await unlockAll(page);
   await page.goto('/');

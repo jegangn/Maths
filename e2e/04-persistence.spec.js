@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('localStorage persists star progress across reload', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
 
   // Simulate L1 add being cleared with 3 stars
   // Key format: bm.stars.add.1
@@ -23,7 +23,7 @@ test('localStorage persists star progress across reload', async ({ page }) => {
 test('star meter on map reflects stored total', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => {
-    localStorage.clear();
+    localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV');
     localStorage.setItem('bm.stars.add.1', '3');
     localStorage.setItem('bm.stars.add.2', '2');
   });
@@ -38,7 +38,7 @@ test('star meter on map reflects stored total', async ({ page }) => {
 
 test('fresh save: all worlds L2-L6 are locked', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.goto('/');
   await page.locator('.splash-play').click();
 

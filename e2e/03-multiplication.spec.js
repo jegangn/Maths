@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.clear();
+    localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV');
     // Mult L1 is always unlocked (level === 1), no pre-seeding needed
   });
 });

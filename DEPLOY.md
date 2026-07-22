@@ -4,12 +4,17 @@
 `index.html` at the **project root**. That one file is the whole app — upload it
 or open it anywhere. It works offline (except Google Fonts on first load).
 
-## Option A — Vercel / Netlify (manual upload, no GitHub)
+## Option A — Vercel via GitHub (recommended)
 
-1. Run `bun build.js`. This writes `index.html` to the project root.
-2. **Vercel:** install the CLI once (`bun add -g vercel`), run `vercel` in this
-   folder, log in via the browser when prompted. **Netlify:** go to
-   app.netlify.com/drop and drag this folder in.
+The built `index.html` is **committed at the project root** (no longer
+gitignored), so Vercel can serve the repo as a plain static site with zero
+build configuration.
+
+1. After any code change, run `bun build.js` and commit the regenerated
+   root `index.html` along with your source changes.
+2. One-time setup on vercel.com: **Add New → Project → Import** the
+   `jegangn/Maths` GitHub repo, leave Framework Preset as **Other** and
+   Build Command **empty**, then Deploy. Every push to `main` redeploys.
 3. Bookmark the resulting URL on the tablet; in Chrome use **Add to Home
    Screen** for an app-like launch.
 

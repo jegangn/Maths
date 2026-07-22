@@ -16,7 +16,7 @@ import { test, expect } from '@playwright/test';
  */
 
 async function navigateToAddLevel(page) {
-  await page.addInitScript(() => localStorage.clear());
+  await page.addInitScript(() => { localStorage.clear(); localStorage.setItem('bm.playerName', 'JHANAV'); });
   await page.goto('/');
   await page.locator('.splash-play').click();
   await page.locator('.world-panel').first().locator('.level-node').first().click();

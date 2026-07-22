@@ -17,6 +17,15 @@ export default defineConfig({
     headless: true,
     viewport: { width: 1280, height: 800 },
     actionTimeout: 10_000,
+    // Seed a player name so every spec lands on the ready-to-play splash.
+    // The first-run "WHO'S PLAYING?" flow is covered by 00-name-entry.spec.js,
+    // which overrides this with an empty storageState.
+    storageState: {
+      cookies: [],
+      origins: [
+        { origin: BASE, localStorage: [{ name: 'bm.playerName', value: 'JHANAV' }] },
+      ],
+    },
   },
   webServer: {
     command: 'bun run dev',
